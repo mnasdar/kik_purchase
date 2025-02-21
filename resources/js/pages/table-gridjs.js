@@ -6,7 +6,11 @@ Contact: support@coderthemes.com
 File: datatable js
 */
 
-import { Grid, h, html } from "gridjs";
+import {
+    Grid,
+    h,
+    html
+} from "gridjs";
 window.gridjs = Grid;
 
 class GridDatatable {
@@ -17,30 +21,85 @@ class GridDatatable {
 
     basicTableInit() {
 
+        // Purchase Request Table
+        if (document.getElementById("table-purchase-request"))
+            new Grid({
+                columns: [{
+                        name: 'ID',
+                        width: '75px',
+                        formatter: (function (cell) {
+                            return html('<span class="fw-semibold">' + cell + '</span>');
+                        })
+                    },
+                    "PR Number", "Location", "Item Desc", "Approved Date", "Quantity", "PR Amount",
+                    {
+                        name: 'SLA',
+                        width: '75px',
+                        formatter: (function (cell) {
+                            // Jika SLA lebih dari 7, beri warna merah (danger), jika tidak, beri warna hijau (success)
+                            const colorClass = cell > 7 ? 'bg-red-500' : 'bg-green-500';
+                            return html(`<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium ${colorClass} text-white">${cell}</span>`);
+                        })
+                    },
+                    {
+                        name: 'Actions',
+                        width: '120px',
+                        formatter: (function (cell) {
+                            return html("<a href='#' class='text-reset text-decoration-underline'>" +
+                                "<span class='inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium btn border-warning text-warning hover:bg-warning hover:text-white' data-fc-type='tooltip' data-fc-placement='top'>" +
+                                "<i class='mgc_pencil_fill text-base'></i> " +
+                                "</span>" +
+                                "<div class='bg-slate-700 hidden px-2 py-1 rounded transition-all text-white opacity-0 z-50' role='tooltip'>" +
+                                " Edit " +
+                                "<div data-fc-arrow class='bg-slate-700 w-2.5 h-2.5 rotate-45 -z-10 rounded-[1px]'></div></div>" +
+                                "</a>");
+                        })
+                    },
+                ],
+                pagination: {
+                    limit: 10
+                },
+                sort: true,
+                search: true,
+                data: [
+                    ["01", "KIK0000007320", "HEAD OFFICE KIK.", "MAP FILE (SPRING FILE WARNA BIRU 1, HITAM 1, KUNING 1)", "16-Jan-2024", "3", 240000, 4],
+                    ["02", "KIK0000007320", "HEAD OFFICE KIK.", "TINTA PRINTER EPSON 664 (BLACK, CYAN, MAGENTA)", "16-Jan-2024", "1", 300000, 7],
+                    ["03", "KIK0000007320", "HEAD OFFICE KIK.", "KERTAS HVS A4 75 GRAM MULTIFUNGSI (SiDU)", "16-Jan-2024", "5", 210000, 11],
+                    ["04", "KIK0000007320", "HEAD OFFICE KIK.", "MAP PLASTIK BUSINESS FILE ", "16-Jan-2024", "5", 120000, 8],
+                    ["05", "KIK0000007320", "HEAD OFFICE KIK.", "MOUSE WIRELESS (LOGITECH M170 BLACK) (BPK. YOGA & IBU RIFKHA)", "16-Jan-2024", "2", 340000, 5],
+                    ["06", "KIK0000007320", "HEAD OFFICE KIK.", "ISOLASI BENING 2 INCH DAIMARU", "16-Jan-2024", "2", 20000, 10],
+                    ["07", "KIK0000007320", "HEAD OFFICE KIK.", "GUNTING (JOYKO)", "16-Jan-2024", "2", 30000, 9],
+                    ["08", "KIK0000007320", "HEAD OFFICE KIK.", "BUKU NOTED (CATATAN) KECIL", "16-Jan-2024", "1", 10000, 2],
+                    ["09", "KIK0000007320", "HEAD OFFICE KIK.", "MAP FILE (SPRING FILE) (HITAM 1 DAN KUNING 1)", "16-Jan-2024", "2", 160000, 1],
+                    ["10", "KIK0000007343", "HEAD OFFICE KIK.", "SSD Sandisk External Portable 1TB V2-E61", "24-Jan-2024", "3", 5370000, 11],
+
+                ]
+            }).render(document.getElementById("table-purchase-request"));
+
         // Basic Table
         if (document.getElementById("table-gridjs"))
             new Grid({
                 columns: [{
-                    name: 'ID',
-                    formatter: (function (cell) {
-                        return html('<span class="fw-semibold">' + cell + '</span>');
-                    })
-                },
+                        name: 'ID',
+                        formatter: (function (cell) {
+                            return html('<span class="fw-semibold">' + cell + '</span>');
+                        })
+                    },
                     "Name",
-                {
-                    name: 'Email',
-                    formatter: (function (cell) {
-                        return html('<a href="">' + cell + '</a>');
-                    })
-                },
+                    {
+                        name: 'Email',
+                        formatter: (function (cell) {
+                            return html('<a href="">' + cell + '</a>');
+                        })
+                    },
                     "Position", "Company", "Country",
-                {
-                    name: 'Actions',
-                    width: '120px',
-                    formatter: (function (cell) {
-                        return html("<a href='#' class='text-reset text-decoration-underline'>" + "Details" + "</a>");
-                    })
-                },
+                    {
+                        name: 'Actions',
+                        width: '120px',
+                        formatter: (function (cell) {
+                            return html("<a href='#' class='text-reset text-decoration-underline'>" + "Details" + "</a>");
+                        })
+                    },
                 ],
                 pagination: {
                     limit: 5
@@ -88,28 +147,28 @@ class GridDatatable {
         if (document.getElementById("table-pagination"))
             new Grid({
                 columns: [{
-                    name: 'ID',
-                    width: '120px',
-                    formatter: (function (cell) {
-                        return html('<a href="" class="fw-medium">' + cell + '</a>');
-                    })
-                }, "Name", "Date", "Total", "Status",
-                {
-                    name: 'Actions',
-                    width: '100px',
-                    formatter: (function (cell) {
-                        return html("<button type='button' class='btn btn-sm btn-light'>" +
-                            "Details" +
-                            "</button>");
-                    })
-                },
+                        name: 'ID',
+                        width: '120px',
+                        formatter: (function (cell) {
+                            return html('<a href="" class="fw-medium">' + cell + '</a>');
+                        })
+                    }, "Name", "Date", "Total", "Status",
+                    {
+                        name: 'Actions',
+                        width: '100px',
+                        formatter: (function (cell) {
+                            return html("<button type='button' class='btn btn-sm btn-light'>" +
+                                "Details" +
+                                "</button>");
+                        })
+                    },
                 ],
                 pagination: {
                     limit: 5
                 },
 
                 data: [
-                    ["#VL2111", "Jonathan", "07 Oct, 2021", "$24.05", "Paid",],
+                    ["#VL2111", "Jonathan", "07 Oct, 2021", "$24.05", "Paid", ],
                     ["#VL2110", "Harold", "07 Oct, 2021", "$26.15", "Paid"],
                     ["#VL2109", "Shannon", "06 Oct, 2021", "$21.25", "Refund"],
                     ["#VL2108", "Robert", "05 Oct, 2021", "$25.03", "Paid"],

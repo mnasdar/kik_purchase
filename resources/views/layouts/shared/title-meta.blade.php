@@ -1,8 +1,8 @@
 <meta charset="utf-8">
-<title>{{ $title ?? '' }} | Konrix - Responsive Tailwind Admin Dashboard</title>
+<title>{{ $title ?? '' }} | Purchasing KIK</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description">
-<meta content="coderthemes" name="author">
+<meta content="Ini adalah website untuk divisi Purchasing pada PT. Kalla Inti Karsa" name="description">
+<meta content="M. Nasdar" name="author">
 
 <!-- App favicon -->
 <link rel="shortcut icon" href="/images/favicon.ico">
