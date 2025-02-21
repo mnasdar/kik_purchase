@@ -31,7 +31,16 @@ class GridDatatable {
                             return html('<span class="fw-semibold">' + cell + '</span>');
                         })
                     },
-                    "PR Number", "Location", "Item Desc", "Approved Date", "Quantity", "PR Amount",
+                    "PR Number", "Location", "Item Desc", 
+                    {
+                        name: 'Approve Date',
+                        width: '150px',
+                    }, , 
+                    {
+                        name: 'Qty',
+                        width: '75px',
+                    }, 
+                    "PR Amount",
                     {
                         name: 'SLA',
                         width: '75px',

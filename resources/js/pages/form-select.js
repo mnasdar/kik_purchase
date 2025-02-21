@@ -16,4 +16,12 @@ document.addEventListener("DOMContentLoaded", function (e) {
     new NiceSelect(document.getElementById("search-select"), {
         searchable: true
     })
+    
+})
+document.addEventListener("DOMContentLoaded", function (e) {
+    // seachable
+    new NiceSelect(document.getElementById("search-Location"), {
+        searchable: true
+    })
+    
 })

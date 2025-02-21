@@ -1,13 +1,7 @@
 @extends('layouts.vertical', ['title' => 'PR (Purchase Request)', 'sub_title' => 'Pages', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
-    @vite([
-        'node_modules/gridjs/dist/theme/mermaid.min.css',
-        'node_modules/flatpickr/dist/flatpickr.min.css',
-        'node_modules/@simonwep/pickr/dist/themes/classic.min.css',
-        'node_modules/@simonwep/pickr/dist/themes/monolith.min.css',
-        'node_modules/@simonwep/pickr/dist/themes/nano.min.css',
-    ])
+    @vite(['node_modules/gridjs/dist/theme/mermaid.min.css', 'node_modules/flatpickr/dist/flatpickr.min.css', 'node_modules/@simonwep/pickr/dist/themes/classic.min.css', 'node_modules/@simonwep/pickr/dist/themes/monolith.min.css', 'node_modules/@simonwep/pickr/dist/themes/nano.min.css'])
 @endsection
 
 @section('content')
@@ -39,31 +33,44 @@
                                     <form class="valid-form">
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div class="form-group">
-                                                <label for="inputPRNumber" class="text-gray-800 text-sm font-medium inline-block mb-2">PR Number</label>
+                                                <label for="inputPRNumber"
+                                                    class="text-gray-800 text-sm font-medium inline-block mb-2">PR
+                                                    Number</label>
                                                 <input type="text" class="form-input" id="inputPRNumber" required>
                                             </div>
-                                            <div class="form-group col-span-2">
-                                                <label for="inputLocation" class="text-gray-800 text-sm font-medium inline-block mb-2">Location</label>
-                                                <input type="text" class="form-input" id="inputLocation" required>
+                                            <div class="form-group">
+
+                                                <label for="inputLocation"
+                                                    class="text-gray-800 text-sm font-medium inline-block mb-2">Location</label>
+                                                <div class="p-0">
+                                                    <select id="search-Location" class="search-select">
+                                                        <option value="orange">Mall MARI</option>
+                                                        <option value="White">Mall NIPAH</option>
+                                                        <option value="Purple">Wisma Kalla</option>
+                                                    </select>
+                                                </div>
                                             </div>
                                             <div class="form-group col-span-2">
-                                                <label for="inputItemDesc" class="text-gray-800 text-sm font-medium inline-block mb-2">ItemDesc</label>
+                                                <label for="inputItemDesc"
+                                                    class="text-gray-800 text-sm font-medium inline-block mb-2">ItemDesc</label>
                                                 <input type="text" class="form-input" id="inputItemDesc" required>
                                             </div>
                                             <div class="form-group">
-                                                <label for="inputApprovedDate" class="text-gray-800 text-sm font-medium inline-block mb-2">ApprovedDate</label>
+                                                <label for="inputApprovedDate"
+                                                    class="text-gray-800 text-sm font-medium inline-block mb-2">ApprovedDate</label>
                                                 <input type="text" class="form-input" id="datepicker-humanfd" required>
                                             </div>
                                             <div class="form-group">
-                                                <label for="inputQuantity" class="text-gray-800 text-sm font-medium inline-block mb-2">Quantity</label>
+                                                <label for="inputQuantity"
+                                                    class="text-gray-800 text-sm font-medium inline-block mb-2">Quantity</label>
                                                 <input type="text" class="form-input" id="inputQuantity" required>
                                             </div>
                                             <div class="form-group">
-                                                <label for="inputPRAmount" class="text-gray-800 text-sm font-medium inline-block mb-2">PRAmount</label>
+                                                <label for="inputPRAmount"
+                                                    class="text-gray-800 text-sm font-medium inline-block mb-2">PRAmount</label>
                                                 <input type="text" class="form-input" id="inputPRAmount" required>
                                             </div>
                                         </div>
-                                        <button type="submit" class="btn bg-primary text-white my-3">Sign in</button>
                                     </form>
                                 </div>
                                 <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
@@ -77,8 +84,10 @@
                     </div>
                 </div>
                 <div class="p-6">
-                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">This All Of Purchase Request (PR) Data, You
-                        Can Search and Sort items by Ascending or Descending, Data will be showing 10 items per pages</p>
+                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">This All Of Purchase Request (PR) Data,
+                        You
+                        Can Search and Sort items by Ascending or Descending, Data will be showing 10 items per pages
+                    </p>
 
                     <div id="table-purchase-request"></div>
                 </div>
@@ -87,5 +96,5 @@
     </div>
 @endsection
 @section('script')
-    @vite(['resources/js/pages/table-gridjs.js', 'resources/js/pages/highlight.js', 'resources/js/pages/form-validation.js','resources/js/pages/form-flatpickr.js'])
+    @vite(['resources/js/pages/table-gridjs.js', 'resources/js/pages/highlight.js', 'resources/js/pages/form-validation.js', 'resources/js/pages/form-flatpickr.js', 'resources/js/pages/form-select.js'])
 @endsection

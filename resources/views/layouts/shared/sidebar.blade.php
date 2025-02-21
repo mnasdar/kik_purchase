@@ -27,8 +27,8 @@
             <li class="menu-title">Goods</li>
 
             <li class="menu-item">
-                <a href="{{ route('second', ['barang','pr']) }}" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_home_3_line"></i></span>
+                <a href="{{ route('second', ['goods','purchase-request']) }}" class="menu-link">
+                    <span class="menu-icon"><i class="mgc_documents_line"></i></span>
                     <span class="menu-text"> PR </span>
                 </a>
             </li>
