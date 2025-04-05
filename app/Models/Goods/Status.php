@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Models\Goods;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Status extends Model
+{
+    use HasFactory;
+    protected $fillable = ['name'];
+
+    public function purchaseRequests()
+    {
+        return $this->hasMany(PurchaseRequest::class);
+    }
+    public function purchaseOrders()
+    {
+        return $this->hasMany(PurchaseRequest::class);
+    }
+}

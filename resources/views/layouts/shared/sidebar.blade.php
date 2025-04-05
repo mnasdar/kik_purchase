@@ -29,7 +29,7 @@
             <li class="menu-item">
                 <a href="{{ route('second', ['goods','purchase-request']) }}" class="menu-link">
                     <span class="menu-icon"><i class="mgc_documents_line"></i></span>
-                    <span class="menu-text"> PR </span>
+                    <span class="menu-text"> Purchase Request  </span>
                 </a>
             </li>
 

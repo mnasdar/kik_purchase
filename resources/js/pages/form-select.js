@@ -1,4 +1,3 @@
-
 import NiceSelect from "nice-select2/src/js/nice-select2.js";
 
 //===============================
@@ -10,18 +9,22 @@ document.addEventListener("DOMContentLoaded", function (e) {
     });
 });
 
-//
+
 document.addEventListener("DOMContentLoaded", function (e) {
-    // seachable
+    // serachable
     new NiceSelect(document.getElementById("search-select"), {
         searchable: true
-    })
-    
-})
+    });
+});
+
 document.addEventListener("DOMContentLoaded", function (e) {
-    // seachable
-    new NiceSelect(document.getElementById("search-Location"), {
+    new NiceSelect(document.getElementById("status-select"), {
         searchable: true
-    })
-    
-})
+    });
+    new NiceSelect(document.getElementById("classification-select"), {
+        searchable: true
+    });
+    new NiceSelect(document.getElementById("location-select"), {
+        searchable: true
+    });
+});
