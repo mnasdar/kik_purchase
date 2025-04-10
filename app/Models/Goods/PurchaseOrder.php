@@ -23,4 +23,9 @@ class PurchaseOrder extends Model
     {
         return $this->belongsTo(Status::class);
     }
+    public function tracking()
+    {
+        return $this->hasOne(PurchaseTracking::class, 'po_number', 'po_number');
+    }    
+
 }

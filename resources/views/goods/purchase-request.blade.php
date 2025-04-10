@@ -57,12 +57,13 @@
                                                     <div class="p-0">
                                                         <select id="classification-select" class="search-select">
                                                             <option value="orange">Pengadaan Part Lift</option>
-                                                            <option value="White">Pangadaan Material Support Kerja Engineering</option>
+                                                            <option value="White">Pangadaan Material Support Kerja
+                                                                Engineering</option>
                                                             <option value="Purple">Wisma Kalla</option>
                                                         </select>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div class="form-group">
                                                     <label for="inputApprovedDate"
                                                         class="text-gray-800 text-sm font-medium inline-block mb-2">ApprovedDate</label>
@@ -229,70 +230,54 @@
                                                 <th scope="col"
                                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                     SLA</th>
-                                                <th scope="col"
-                                                    class="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase">
-                                                    Action</th>
-
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                            <tr>
-                                                {{-- <td class="py-3 ps-4">
-                                                    <div class="flex items-center h-5">
-                                                        <input id="table-pagination-checkbox-1" type="checkbox"
-                                                            class="form-checkbox rounded">
-                                                        <label for="table-pagination-checkbox-1"
-                                                            class="sr-only">Checkbox</label>
-                                                    </div>
-                                                </td> --}}
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
-                                                    01</td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                    <span
-                                                        class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs bg-green-500 font-medium text-white">Finish</span>
-                                                </td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                    Pengadaan Part Lift</td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                    KIK0000007320</td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                    HEAD OFFICE KIK</td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                    MAP FILE (SPRING FILE WARNA BIRU 1, HITAM 1, KUNING 1) </td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                    Lumpsum </td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                    16-Jan-2024</td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                    15000000
-                                                </td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                    3
-                                                </td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                    240000
-                                                </td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                    Approved
-                                                </td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                    <span
-                                                        class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs bg-green-500 font-medium text-white">4</span>
-                                                </td>
-                                            </tr>
+                                            @foreach ($data as $item)
+                                                <tr>
+                                                    <td
+                                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
+                                                        {{ $loop->iteration }}</td>
+                                                    <td
+                                                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
+                                                        <span
+                                                            class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium text-white
+                                                            @if (strtolower($item->status->name) === 'finish') bg-green-500
+                                                            @elseif(strtolower($item->status->name) === 'on process') bg-yellow-500
+                                                            @else bg-gray-500 @endif">
+                                                            {{ ucwords($item->status->name) }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
+                                                        {{ $item->classification->name }}</td>
+                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
+                                                        {{ $item->pr_number }}</td>
+                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
+                                                        {{ $item->location }}</td>
+                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
+                                                        {{ $item->item_desc }}</td>
+                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
+                                                        {{ $item->uom }}</td>
+                                                    <td
+                                                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
+                                                        {{ $item->approved_date }}</td>
+                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
+                                                        @numeric($item->unit_price)</td>
+                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
+                                                        {{ $item->quantity }}</td>
+                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
+                                                        @numeric($item->amount)</td>
+                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
+                                                        Approved </td>
+                                                    <td
+                                                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
+                                                        <span
+                                                            class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium text-white {{ $item->sla_badge }}">
+                                                            {{ $item->working_days ?? '-' }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
                                         </tbody>
                                     </table>
                                 </div>

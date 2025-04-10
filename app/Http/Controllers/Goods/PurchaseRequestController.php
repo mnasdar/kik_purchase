@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Goods;
 use App\Http\Controllers\Controller;
 use App\Models\Goods\PurchaseRequest;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 
 class PurchaseRequestController extends Controller
 {
@@ -13,7 +15,11 @@ class PurchaseRequestController extends Controller
      */
     public function index()
     {
-        //
+        $data = PurchaseRequest::with(['status', 'classification', 'purchaseOrder'])
+                ->orderByDesc('id') // urutkan dari yang terakhir diinput
+                ->paginate(10);     // paginasi 10 data per halaman
+        
+        return view('goods.purchase-request',compact(['data']));
     }
 
     /**

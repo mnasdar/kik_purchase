@@ -13,7 +13,10 @@ class StatusController extends Controller
      */
     public function index()
     {
-        //
+        $data = Status::orderByDesc('id') // urutkan dari yang terakhir diinput
+            ->paginate(10);     // paginasi 10 data per halaman
+
+        return view('goods.status', compact(['data']));
     }
 
     /**
@@ -29,7 +32,21 @@ class StatusController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|min:3|max:255|unique:statuses,name',
+        ]);
+
+        $status = Status::create([
+            'name' => $validated['name'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status berhasil ditambahkan',
+            'data' => $status,
+            'id' => $status->id,
+            'name' => $status->name,
+        ]);
     }
 
     /**
