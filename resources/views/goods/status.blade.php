@@ -114,8 +114,8 @@
                                                     <td
                                                         class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200 flex justify-end gap-2">
                                                         <button class="btn btn-edit bg-warning p-2 text-white"
-                                                            data-fc-type="tooltip" data-fc-placement="left"
-                                                            data-id="{{ $item->id }}" data-name="{{ $item->name }}">
+                                                            data-id="{{ $item->id }}" data-name="{{ $item->name }}"
+                                                            data-fc-type="tooltip" data-fc-placement="left">
                                                             <i class="mgc_edit_2_line text-base"></i>
                                                         </button>
                                                         <div class="bg-warning hidden px-2 py-1 rounded transition-all text-white opacity-0 z-50"
@@ -175,8 +175,7 @@
         <div class="sm:max-w-lg m-3 sm:mx-auto bg-white dark:bg-slate-800 border shadow rounded-md flex flex-col">
             <div class="flex justify-between items-center px-4 py-2.5 border-b dark:border-gray-700">
                 <h3 class="text-lg font-medium text-gray-800 dark:text-white">Edit Status</h3>
-                <button class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
-                    data-fc-dismiss type="button">
+                <button type="button" class="text-gray-400 hover:text-gray-600 dark:text-gray-200" data-fc-dismiss>
                     <span class="material-symbols-rounded">close</span>
                 </button>
             </div>
