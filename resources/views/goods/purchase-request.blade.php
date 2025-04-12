@@ -183,14 +183,6 @@
                                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                         <thead class="bg-gray-50 dark:bg-gray-700">
                                             <tr>
-                                                {{-- <th scope="col" class="py-3 px-4 pe-0">
-                                                    <div class="flex items-center h-5">
-                                                        <input id="table-pagination-checkbox-all" type="checkbox"
-                                                            class="form-checkbox rounded">
-                                                        <label for="table-pagination-checkbox-all"
-                                                            class="sr-only">Checkbox</label>
-                                                    </div>
-                                                </th> --}}
                                                 <th scope="col"
                                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                     ID</th>
@@ -282,23 +274,37 @@
                                     </table>
                                 </div>
                                 <div class="py-1 px-4">
-                                    <nav class="flex items-center space-x-2">
-                                        <a class="text-gray-400 hover:text-primary p-4 inline-flex items-center gap-2 font-medium rounded-md"
-                                            href="#">
-                                            <span aria-hidden="true">«</span>
-                                            <span class="sr-only">Previous</span>
-                                        </a>
-                                        <a class="w-10 h-10 bg-primary text-white p-4 inline-flex items-center text-sm font-medium rounded-full"
-                                            href="#" aria-current="page">1</a>
-                                        <a class="w-10 h-10 text-gray-400 hover:text-primary p-4 inline-flex items-center text-sm font-medium rounded-full"
-                                            href="#">2</a>
-                                        <a class="w-10 h-10 text-gray-400 hover:text-primary p-4 inline-flex items-center text-sm font-medium rounded-full"
-                                            href="#">3</a>
-                                        <a class="text-gray-400 hover:text-primary p-4 inline-flex items-center gap-2 font-medium rounded-md"
-                                            href="#">
-                                            <span class="sr-only">Next</span>
-                                            <span aria-hidden="true">»</span>
-                                        </a>
+                                <nav class="flex items-center space-x-2">
+                                        {{-- Tombol Previous --}}
+                                        @if ($data->onFirstPage())
+                                            <span class="text-gray-300 p-4 inline-flex items-center gap-2 font-medium rounded-md">«</span>
+                                        @else
+                                            <a href="{{ $data->previousPageUrl() }}"
+                                                class="text-gray-400 hover:text-primary p-4 inline-flex items-center gap-2 font-medium rounded-md">
+                                                <span aria-hidden="true">«</span>
+                                            </a>
+                                        @endif
+                                
+                                        {{-- Tombol Halaman --}}
+                                        @for ($i = 1; $i <= $data->lastPage(); $i++)
+                                            @if ($i == $data->currentPage())
+                                                <a class="w-10 h-10 bg-primary text-white p-4 inline-flex items-center text-sm font-medium rounded-full"
+                                                    href="#">{{ $i }}</a>
+                                            @else
+                                                <a class="w-10 h-10 text-gray-400 hover:text-primary p-4 inline-flex items-center text-sm font-medium rounded-full"
+                                                    href="{{ $data->url($i) }}">{{ $i }}</a>
+                                            @endif
+                                        @endfor
+                                
+                                        {{-- Tombol Next --}}
+                                        @if ($data->hasMorePages())
+                                            <a href="{{ $data->nextPageUrl() }}"
+                                                class="text-gray-400 hover:text-primary p-4 inline-flex items-center gap-2 font-medium rounded-md">
+                                                <span aria-hidden="true">»</span>
+                                            </a>
+                                        @else
+                                            <span class="text-gray-300 p-4 inline-flex items-center gap-2 font-medium rounded-md">»</span>
+                                        @endif
                                     </nav>
                                 </div>
                             </div>

@@ -69,6 +69,12 @@ export default defineConfig({
 
                 // Code Highlight Js
                 'resources/js/pages/highlight.js',
+
+                // Code Js Custom
+                'resources/js/status-add-item.js', 
+                'resources/js/status-delete-item.js', 
+                'resources/js/status-edit-item.js', 
+                'resources/js/status-search-item.js', 
             ],
             refresh: true
         }),

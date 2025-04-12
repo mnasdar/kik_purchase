@@ -1,96 +1,80 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const form = document.getElementById("addItemForm");
-    const saveBtn = document.getElementById("btnSave");
-    const loader = saveBtn.querySelector(".loader");
-    const modal = document.querySelector(".fc-modal");
-    const tableBody = document.getElementById("statusTableBody");
+import $ from 'jquery';
 
-    // ✅ Fungsi tampilkan error otomatis
+$(document).ready(function () {
+    const $form = $("#addItemForm");
+    const $saveBtn = $("#btnSave");
+    const $loader = $saveBtn.find(".loader");
+    const $modal = $("#addModal");
+
+    // ✅ Tampilkan error validasi
     function displayValidationErrors(errors) {
-        document.querySelectorAll("[id^='error-']").forEach(el => el.textContent = "");
-        document.querySelectorAll(".form-input").forEach(el => el.classList.remove("border-red-500"));
+        $("[id^='error-']").text("");
+        $(".form-input").removeClass("border-red-500");
 
-        Object.keys(errors).forEach((field) => {
-            const errorEl = document.getElementById(`error-${field}`);
-            if (errorEl) errorEl.textContent = errors[field][0];
-
-            const inputEl = document.querySelector(`[name="${field}"]`);
-            if (inputEl) inputEl.classList.add("border-red-500");
+        $.each(errors, function (field, messages) {
+            $(`#error-${field}`).text(messages[0]);
+            $(`[name="${field}"]`).addClass("border-red-500");
         });
     }
 
-    // ✅ Fungsi reset form
+    // ✅ Reset form
     function resetForm() {
-        form.reset();
-        document.querySelectorAll("[id^='error-']").forEach(el => el.textContent = "");
-        document.querySelectorAll(".form-input").forEach(el => el.classList.remove("border-red-500"));
+        $form[0].reset();
+        $("[id^='error-']").text("");
+        $(".form-input").removeClass("border-red-500");
     }
 
-    // ✅ Fungsi tambah baris baru ke tabel
-    function prependNewRow(data) {
-        const newRow = document.createElement("tr");
-        newRow.className = "bg-success";
-        newRow.innerHTML = `
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
-                ${tableBody.children.length + 1}
-            </td>
-            <td class="px-6 py-4 text-sm text-white">
-                ${data.name}
-            </td>
-        `;
-        tableBody.prepend(newRow);
+    // ✅ Buka modal
+    function openModal() {
+        $modal.removeClass("hidden");
+        $("body").addClass("overflow-hidden");
     }
 
-    // ✅ Event submit form
-    form.addEventListener("submit", function (e) {
+    // ✅ Tutup modal
+    function closeModal() {
+        $modal.addClass("hidden");
+        $("body").removeClass("overflow-hidden");
+    }
+
+    // ✅ Submit Form
+    $form.on("submit", function (e) {
         e.preventDefault();
 
-        const action = form.getAttribute("action");
-        const formData = new FormData(form);
+        const action = $form.attr("action");
+        const formData = new FormData(this);
 
-        loader.classList.remove("hidden");
-        saveBtn.disabled = true;
+        $loader.removeClass("hidden");
+        $saveBtn.prop("disabled", true);
 
-        fetch(action, {
-                method: "POST",
-                headers: {
-                    "X-CSRF-TOKEN": document.querySelector('input[name="_token"]').value,
-                    "Accept": "application/json"
-                },
-                body: formData
-            })
-            .then((res) => {
-                if (!res.ok) throw res;
-                return res.json();
-            })
-            .then((data) => {
-                loader.classList.add("hidden");
-                saveBtn.disabled = false;
+        $.ajax({
+            url: action,
+            method: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                "X-CSRF-TOKEN": $('input[name="_token"]').val(),
+                "Accept": "application/json"
+            },
+            success: function (response) {
+                $loader.addClass("hidden");
+                $saveBtn.prop("disabled", false);
                 resetForm();
-                modal.classList.add("hidden");
+                closeModal();
 
-                // ⬇️ Tambah data ke tabel
-                prependNewRow(data);
+                // ⬇️ Reload halaman untuk update data
+                location.reload();
+            },
+            error: function (xhr) {
+                $loader.addClass("hidden");
+                $saveBtn.prop("disabled", false);
 
-                // Optional: toastr / alert sukses
-                // console.log("Berhasil disimpan", data);
-            })
-            .catch(async (error) => {
-                loader.classList.add("hidden");
-                saveBtn.disabled = false;
-
-                try {
-                    const json = await error.json();
-                    if (json.errors) {
-                        displayValidationErrors(json.errors);
-                    } else {
-                        alert("Terjadi kesalahan saat menyimpan data.");
-                    }
-                } catch (e) {
-                    alert("Terjadi kesalahan tak terduga.");
-                    console.error("Non-JSON error:", e);
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    displayValidationErrors(xhr.responseJSON.errors);
+                } else {
+                    alert("Terjadi kesalahan saat menyimpan data.");
                 }
-            });
+            }
+        });
     });
 });
-

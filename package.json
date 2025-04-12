@@ -33,6 +33,7 @@
         "gmaps": "^0.4.25",
         "gridjs": "^5.1.0",
         "inputmask": "^5.0.7",
+        "jquery": "^3.7.1",
         "jsvectormap": "1.4.2",
         "nice-select2": "^2.1.0",
         "nouislider": "^15.6.1",

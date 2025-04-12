@@ -27,4 +27,12 @@ class Handler extends ExceptionHandler
             //
         });
     }
+    public function render($request, Throwable $exception)
+{
+    if ($exception instanceof \Spatie\Permission\Exceptions\UnauthorizedException) {
+        return redirect('/')->with('error', 'Kamu tidak memiliki akses ke halaman ini.');
+    }
+
+    return parent::render($request, $exception);
+}
 }

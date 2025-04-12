@@ -3,6 +3,8 @@
 * Author: coderthemes
 * Module/App: App js
 */
+import $ from 'jquery';
+window.$ = window.jQuery = $;
 
 import "@frostui/tailwindcss"
 
