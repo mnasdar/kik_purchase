@@ -17,10 +17,12 @@ $(document).ready(function () {
     }
 
     function showLoader() {
-        $loaderOverlay.removeClass('hidden');
+        $loaderOverlay.removeClass('hidden','flex');
+        $loaderOverlay.addClass('flex');
     }
 
     function hideLoader() {
+        $loaderOverlay.removeClass('flex');
         $loaderOverlay.addClass('hidden');
     }
 
