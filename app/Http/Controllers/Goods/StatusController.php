@@ -86,22 +86,22 @@ class StatusController extends Controller
     }
     public function search(Request $request)
     {
-        $keyword = $request->query('q');
-        
-        $data = Status::where('name', 'like', '%' . $keyword . '%')
-            ->orderByDesc('id')
-            ->get()
-            ->map(function ($status) {
-                $status->is_new = Carbon::parse($status->created_at)->greaterThan(Carbon::now()->subMinutes(5));
-                $status->is_update = Carbon::parse($status->updated_at)->greaterThan(Carbon::now()->subMinutes(5));
-                return $status;
-            });
-    
-        // Jika tidak ada hasil, kembalikan data kosong
-        if ($data->isEmpty()) {
-            return view('goods.partials.status_datatable', ['data' => []])->render();
-        }
-    
-        return view('goods.partials.status_datatable', compact('data'))->render();
+        $query = $request->q;
+
+        // Filter berdasarkan pencarian
+        $data = Status::when($query, function ($q) use ($query) {
+            $q->where('name', 'like', '%' . $query . '%');
+        })->latest()->paginate(10);
+
+        // Kembalikan partial untuk AJAX
+        if ($request->ajax()) {
+            return response()->json([
+                'table' => view('goods.partials.status_datatable', compact('data'))->render(),
+                'pagination' => view('goods.partials.status_pagination', compact('data'))->render(),
+            ]);
+        }    
+
+        // Jika non-AJAX
+        return view('goods.status', compact('data'));
     }
 }

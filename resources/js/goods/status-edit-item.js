@@ -49,7 +49,7 @@ $(document).ready(function () {
                 hideLoader();
                 openModal();
             },
-            error: function () {
+            error: function (xhr) {
                 hideLoader();
                 Swal.fire({
                     icon: 'error',
@@ -74,7 +74,7 @@ $(document).ready(function () {
             url: actionUrl,
             method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': formData.get('_token'),
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), // Ensure CSRF token is set
                 'Accept': 'application/json'
             },
             data: formData,
@@ -96,7 +96,7 @@ $(document).ready(function () {
             error: function (xhr) {
                 if (xhr.status === 422) {
                     const errors = xhr.responseJSON.errors || {};
-                    $('#error-edit-name').text(errors.name?.[0] || '');
+                    $('#error-edit-name').text(errors.name?.[0] || ''); // Display validation errors
                 } else {
                     Swal.fire({
                         icon: 'error',

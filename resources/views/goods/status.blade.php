@@ -61,10 +61,12 @@
                                                 </th>
                                             </tr>
                                         </thead>
+                                        <tbody id="statusTableBody" class="divide-y divide-gray-200 dark:divide-gray-700">
                                             @include('goods.partials.status_datatable', ['data' => $data])
+                                        </tbody>
                                     </table>
                                 </div>
-                                <div class="py-1 px-4">
+                                <div id="paginationLinks">
                                     @include('goods.partials.status_pagination', ['data' => $data])
                                 </div>
                             </div>
