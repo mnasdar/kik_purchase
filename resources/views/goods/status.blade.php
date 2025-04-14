@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Status', 'sub_title' => 'Pages', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Status', 'sub_title' => 'Goods', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
 @endsection
@@ -67,7 +67,7 @@
                                     </table>
                                 </div>
                                 <div id="paginationLinks">
-                                    @include('goods.partials.status_pagination', ['data' => $data])
+                                    @include('goods.partials.pagination', ['data' => $data])
                                 </div>
                             </div>
                         </div>
@@ -87,7 +87,7 @@
             class="fc-modal-open:opacity-100 duration-500 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto flex flex-col bg-white border shadow-sm rounded-md dark:bg-slate-800 dark:border-gray-700">
             <div class="flex justify-between items-center py-2.5 px-4 border-b dark:border-gray-700">
                 <h3 class="font-medium text-gray-800 dark:text-white text-lg">
-                    Edit Item
+                    Add Item
                 </h3>
                 <button class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
                     data-fc-dismiss type="button">
@@ -198,7 +198,7 @@
     </div>
 @endsection
 @section('script')
-    @vite(['resources/js/pages/table-gridjs.js', 'resources/js/pages/highlight.js', 'resources/js/goods/status-add-item.js', 'resources/js/goods/status-edit-item.js', 'resources/js/goods/status-delete-item.js', 'resources/js/goods/status-search-item.js'])
+    @vite(['resources/js/pages/table-gridjs.js', 'resources/js/pages/highlight.js', 'resources/js/crud/add-item.js', 'resources/js/crud/status-edit-item.js', 'resources/js/crud/status-delete-item.js', 'resources/js/crud/status-search-item.js'])
     <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>

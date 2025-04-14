@@ -13,8 +13,8 @@ class PurchaseRequest extends Model
     use HasFactory;
 
     protected $fillable = [
-        'id',
-        'status',
+        'status_id',
+        'classification_id',
         'pr_number',
         'location',
         'item_desc',

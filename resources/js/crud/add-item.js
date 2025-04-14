@@ -60,10 +60,18 @@ $(document).ready(function () {
                 $loader.addClass("hidden");
                 $saveBtn.prop("disabled", false);
                 resetForm();
-                closeModal();
+                $('#error-edit-name').text('');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: 'Data berhasil diperbarui',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
 
+                closeModal();
                 // ⬇️ Reload halaman untuk update data
-                location.reload();
+                setTimeout(() => location.reload(), 1500);
             },
             error: function (xhr) {
                 $loader.addClass("hidden");
@@ -72,7 +80,11 @@ $(document).ready(function () {
                 if (xhr.responseJSON && xhr.responseJSON.errors) {
                     displayValidationErrors(xhr.responseJSON.errors);
                 } else {
-                    alert("Terjadi kesalahan saat menyimpan data.");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Terjadi kesalahan saat menyimpan data'
+                    });
                 }
             }
         });

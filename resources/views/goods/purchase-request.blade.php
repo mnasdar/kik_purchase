@@ -1,7 +1,12 @@
-@extends('layouts.vertical', ['title' => 'PR (Purchase Request)', 'sub_title' => 'Pages', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Purchase Request', 'sub_title' => 'Goods', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
-    @vite(['node_modules/gridjs/dist/theme/mermaid.min.css', 'node_modules/flatpickr/dist/flatpickr.min.css', 'node_modules/@simonwep/pickr/dist/themes/classic.min.css', 'node_modules/@simonwep/pickr/dist/themes/monolith.min.css', 'node_modules/@simonwep/pickr/dist/themes/nano.min.css'])
+@vite([
+    'node_modules/flatpickr/dist/flatpickr.min.css',
+    'node_modules/@simonwep/pickr/dist/themes/classic.min.css',
+    'node_modules/@simonwep/pickr/dist/themes/monolith.min.css',
+    'node_modules/@simonwep/pickr/dist/themes/nano.min.css',
+    ])
 @endsection
 
 @section('content')
@@ -10,152 +15,18 @@
             <div class="card">
                 <div class="card-header">
                     <div class="flex md:flex-row flex-col justify-between items-start md:items-center">
-                        <h4 class="card-title">Data Tables Purchase Request (PR)</h4>
+                        <h4 class="card-title">Data Tables Purchase Request</h4>
                         <div class="flex flex-row gap-2">
-                            <button type="button" class="btn bg-primary text-white my-3" data-fc-type="modal">
+                            <button type="button" id="btn-add" class="btn bg-primary text-white my-3"
+                                data-fc-target="addModal" data-fc-type="modal">
                                 <i class="mgc_add_fill text-base me-0 md:md-4"></i>
                                 <span class="hidden md:inline">Add Item</span>
                             </button>
-                            <div
-                                class="w-full h-full mt-5 fixed top-0 left-0 z-50 transition-all duration-500 fc-modal hidden">
-                                <div
-                                    class="sm:max-w-lg fc-modal-open:opacity-100 duration-500 opacity-0 ease-out transition-all sm:w-full m-3 sm:mx-auto flex flex-col bg-white border shadow-sm rounded-md dark:bg-slate-800 dark:border-gray-700">
-                                    <div
-                                        class="flex justify-between items-center py-2.5 px-4 border-b dark:border-gray-700">
-                                        <h3 class="font-medium text-gray-800 dark:text-white text-lg">
-                                            Add Item PR
-                                        </h3>
-                                        <button
-                                            class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
-                                            data-fc-dismiss type="button">
-                                            <span class="material-symbols-rounded">close</span>
-                                        </button>
-                                    </div>
-                                    <div class="px-4 py-8 overflow-y-auto">
-                                        <form class="valid-form">
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div class="form-group">
-                                                    <label for="inputPRNumber"
-                                                        class="text-gray-800 text-sm font-medium inline-block mb-2">PR
-                                                        Number</label>
-                                                    <input type="text" class="form-input" id="inputPRNumber" required>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="status-select"
-                                                        class="text-gray-800 text-sm font-medium inline-block mb-2">status</label>
-                                                    <div class="p-0">
-                                                        <select id="status-select" class="search-select">
-                                                            <option value="orange">On Progress</option>
-                                                            <option value="White">Proses Approve</option>
-                                                            <option value="Purple">Done</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group col-span-2">
-                                                    <label for="classification-select"
-                                                        class="text-gray-800 text-sm font-medium inline-block mb-2">Classification</label>
-                                                    <div class="p-0">
-                                                        <select id="classification-select" class="search-select">
-                                                            <option value="orange">Pengadaan Part Lift</option>
-                                                            <option value="White">Pangadaan Material Support Kerja
-                                                                Engineering</option>
-                                                            <option value="Purple">Wisma Kalla</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                <div class="form-group">
-                                                    <label for="inputApprovedDate"
-                                                        class="text-gray-800 text-sm font-medium inline-block mb-2">ApprovedDate</label>
-                                                    <input type="text" class="form-input" id="datepicker-humanfd"
-                                                        required>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="location-select"
-                                                        class="text-gray-800 text-sm font-medium inline-block mb-2">Location</label>
-                                                    <div class="p-0">
-                                                        <select id="location-select" class="search-select">
-                                                            <option value="orange">Mall MARI</option>
-                                                            <option value="White">Mall NIPAH</option>
-                                                            <option value="Purple">Wisma Kalla</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group col-span-2">
-                                                    <label for="inputItemDesc"
-                                                        class="text-gray-800 text-sm font-medium inline-block mb-2">ItemDesc</label>
-                                                    <input type="text" class="form-input" id="inputItemDesc" required>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="inputUom"
-                                                        class="text-gray-800 text-sm font-medium inline-block mb-2">UOM</label>
-                                                    <input type="text" class="form-input" id="inputUom" required>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="inputQuantity"
-                                                        class="text-gray-800 text-sm font-medium inline-block mb-2">Quantity</label>
-                                                    <input type="text" class="form-input" id="inputQuantity" required>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="inputPRAmount"
-                                                        class="text-gray-800 text-sm font-medium inline-block mb-2">PRAmount</label>
-                                                    <input type="text" class="form-input" id="inputPRAmount" required>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
-                                        <button
-                                            class="btn dark:text-gray-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:dark:bg-slate-700 transition-all"
-                                            data-fc-dismiss type="button">Close</button>
-                                        <a class="btn bg-primary text-white" href="javascript:void(0)">Save</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" href="#" class="btn bg-success text-white my-3"
-                                data-fc-type="modal">
-                                <i class="mgc_file_import_fill text-base me-0 md:md-4"></i>
-                                <span class="hidden md:inline">Import File</span>
-                            </button>
-                            <div
-                                class="w-full h-full mt-5 fixed top-0 left-0 z-50 transition-all duration-500 fc-modal hidden">
-                                <div
-                                    class="sm:max-w-lg fc-modal-open:opacity-100 duration-500 opacity-0 ease-out transition-all sm:w-full m-3 sm:mx-auto flex flex-col bg-white border shadow-sm rounded-md dark:bg-slate-800 dark:border-gray-700">
-                                    <div
-                                        class="flex justify-between items-center py-2.5 px-4 border-b dark:border-gray-700">
-                                        <h3 class="font-medium text-gray-800 dark:text-white text-lg">
-                                            Import File PR
-                                        </h3>
-                                        <button
-                                            class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
-                                            data-fc-dismiss type="button">
-                                            <span class="material-symbols-rounded">close</span>
-                                        </button>
-                                    </div>
-                                    <div class="px-4 py-8 overflow-y-auto">
-                                        <form class="valid-form">
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div class="form-group col-span-2">
-                                                    <input type="file"
-                                                        class="form-input file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-600 dark:file:text-blue-100 dark:hover:file:bg-blue-500 "
-                                                        id="inputPRNumber" required>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
-                                        <button
-                                            class="btn dark:text-gray-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:dark:bg-slate-700 transition-all"
-                                            data-fc-dismiss type="button">Close</button>
-                                        <a class="btn bg-primary text-white" href="javascript:void(0)">Save</a>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="p-6">
-                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">This All Of Purchase Request (PR) Data,
+                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">This All Of Purchase Request Data,
                         You
                         Can Search and Sort items by Ascending or Descending, Data will be showing 10 items per pages
                     </p>
@@ -170,6 +41,8 @@
                                         <input type="text" name="table-with-pagination-search"
                                             id="table-with-pagination-search" class="form-input ps-11"
                                             placeholder="Search for items">
+                                        <div id="searchRoute" data-search-url="{{ route('purchase-request.search') }}">
+                                        </div>
                                         <div class="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-4">
                                             <svg class="h-3.5 w-3.5 text-gray-400" xmlns="http://www.w3.org/2000/svg"
                                                 width="16" height="16" fill="currentColor" viewbox="0 0 16 16">
@@ -182,6 +55,7 @@
                                 <div class="overflow-hidden">
                                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                         <thead class="bg-gray-50 dark:bg-gray-700">
+                                            <tr>
                                             <tr>
                                                 <th scope="col"
                                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -222,90 +96,24 @@
                                                 <th scope="col"
                                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                     SLA</th>
+                                                <th
+                                                    class="w-1 whitespace-nowrap px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                                    Action
+                                                </th>
                                             </tr>
                                         </thead>
-                                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                            @foreach ($data as $item)
-                                                <tr>
-                                                    <td
-                                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
-                                                        {{ $loop->iteration }}</td>
-                                                    <td
-                                                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                        <span
-                                                            class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium text-white
-                                                            @if (strtolower($item->status->name) === 'finish') bg-green-500
-                                                            @elseif(strtolower($item->status->name) === 'on process') bg-yellow-500
-                                                            @else bg-gray-500 @endif">
-                                                            {{ ucwords($item->status->name) }}
-                                                        </span>
-                                                    </td>
-                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
-                                                        {{ $item->classification->name }}</td>
-                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
-                                                        {{ $item->pr_number }}</td>
-                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
-                                                        {{ $item->location }}</td>
-                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
-                                                        {{ $item->item_desc }}</td>
-                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
-                                                        {{ $item->uom }}</td>
-                                                    <td
-                                                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                        {{ $item->approved_date }}</td>
-                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
-                                                        @numeric($item->unit_price)</td>
-                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
-                                                        {{ $item->quantity }}</td>
-                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
-                                                        @numeric($item->amount)</td>
-                                                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
-                                                        Approved </td>
-                                                    <td
-                                                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                        <span
-                                                            class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium text-white {{ $item->sla_badge }}">
-                                                            {{ $item->working_days ?? '-' }}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
+                                        <tbody id="purchase-requestTableBody"
+                                            class="divide-y divide-gray-200 dark:divide-gray-700">
+                                            @include('goods.partials.purchase-request_datatable', [
+                                                'data' => $data,
+                                            ])
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="py-1 px-4">
-                                <nav class="flex items-center space-x-2">
-                                        {{-- Tombol Previous --}}
-                                        @if ($data->onFirstPage())
-                                            <span class="text-gray-300 p-4 inline-flex items-center gap-2 font-medium rounded-md">«</span>
-                                        @else
-                                            <a href="{{ $data->previousPageUrl() }}"
-                                                class="text-gray-400 hover:text-primary p-4 inline-flex items-center gap-2 font-medium rounded-md">
-                                                <span aria-hidden="true">«</span>
-                                            </a>
-                                        @endif
-                                
-                                        {{-- Tombol Halaman --}}
-                                        @for ($i = 1; $i <= $data->lastPage(); $i++)
-                                            @if ($i == $data->currentPage())
-                                                <a class="w-10 h-10 bg-primary text-white p-4 inline-flex items-center text-sm font-medium rounded-full"
-                                                    href="#">{{ $i }}</a>
-                                            @else
-                                                <a class="w-10 h-10 text-gray-400 hover:text-primary p-4 inline-flex items-center text-sm font-medium rounded-full"
-                                                    href="{{ $data->url($i) }}">{{ $i }}</a>
-                                            @endif
-                                        @endfor
-                                
-                                        {{-- Tombol Next --}}
-                                        @if ($data->hasMorePages())
-                                            <a href="{{ $data->nextPageUrl() }}"
-                                                class="text-gray-400 hover:text-primary p-4 inline-flex items-center gap-2 font-medium rounded-md">
-                                                <span aria-hidden="true">»</span>
-                                            </a>
-                                        @else
-                                            <span class="text-gray-300 p-4 inline-flex items-center gap-2 font-medium rounded-md">»</span>
-                                        @endif
-                                    </nav>
+                                <div id="paginationLinks">
+                                    @include('goods.partials.pagination', [
+                                        'data' => $data,
+                                    ])
                                 </div>
                             </div>
                         </div>
@@ -314,7 +122,221 @@
             </div>
         </div>
     </div>
+    <!-- Fullscreen Loader Overlay -->
+    <div id="loaderOverlay" class="hidden fixed inset-0 z-[999] bg-black bg-opacity-40 items-center justify-center">
+        <div class="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    {{-- Modal Add --}}
+    <div id="addModal" class="w-full h-full mt-5 fixed top-0 left-0 z-50 transition-all duration-500 fc-modal hidden">
+        <div
+            class="fc-modal-open:opacity-100 duration-500 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto flex flex-col bg-white border shadow-sm rounded-md dark:bg-slate-800 dark:border-gray-700">
+            <div class="flex justify-between items-center py-2.5 px-4 border-b dark:border-gray-700">
+                <h3 class="font-medium text-gray-800 dark:text-white text-lg">
+                    Add Item
+                </h3>
+                <button class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
+                    data-fc-dismiss type="button">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <form action="{{ route('purchase-request.store') }}" id="addItemForm" method="POST">
+                @csrf
+                <div class="px-4 py-8 overflow-y-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-group">
+                            <label for="inputPRNumber" class="text-gray-800 text-sm font-medium inline-block mb-2">PR
+                                Number</label>
+                            <input type="text" class="form-input" name="pr_number" id="inputPRNumber">
+                            {{-- Custom error message --}}
+                            <p id="error-pr_number" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="status-select"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">status</label>
+                            <div class="p-0">
+                                <select id="status-select" name="status_id" class="search-select">
+                                    @foreach ($status as $item)
+                                        <option value="{{ $item->id }}">{{ ucwords($item->name) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            {{-- Custom error message --}}
+                            <p id="error-status_id" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label for="classification-select"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">Classification</label>
+                            <div class="p-0">
+                                <select id="classification-select" name="classification_id" class="search-select">
+                                    @foreach ($classification as $item)
+                                        <option value="{{ $item->id }}">{{ ucwords($item->name) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            {{-- Custom error message --}}
+                            <p id="error-classification_id" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inputApprovedDate"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">ApprovedDate</label>
+                            <input type="text" class="form-input" name="approved_date" id="datepicker-humanfd">
+                            {{-- Custom error message --}}
+                            <p id="error-approved_date" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="location-select"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">Location</label>
+                            <div class="p-0">
+                                <select id="location-select" name="location" class="search-select">
+                                    <option value="HEAD OFFICE KIK.">Head Office</option>
+                                    <option value="KIK BRANCH MALL RATU INDAH">Mall MARI</option>
+                                    <option value="KIK BRANCH MALL NIPAH">Mall NIPAH</option>
+                                    <option value="KIK WISMA KALLA">Wisma Kalla</option>
+                                </select>
+                            </div>
+                            {{-- Custom error message --}}
+                            <p id="error-location" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label for="inputItemDesc"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">Item Description</label>
+                            <input type="text" class="form-input" name="item_desc" id="inputItemDesc">
+                            {{-- Custom error message --}}
+                            <p id="error-item_desc" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputUom" class="text-gray-800 text-sm font-medium inline-block mb-2">UOM</label>
+                            <input type="text" class="form-input" name="uom" id="inputUom">
+                            {{-- Custom error message --}}
+                            <p id="error-uom" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputUnitPrice"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">Unit Price</label>
+                            <input type="text" class="form-input" name="unit_price" id="inputUnitPrice">
+                            {{-- Custom error message --}}
+                            <p id="error-unit_price" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputQuantity"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">Quantity</label>
+                            <input type="text" class="form-input" name="quantity" id="inputQuantity">
+                            {{-- Custom error message --}}
+                            <p id="error-quantity" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputPRAmount"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">PR Amount</label>
+                            <input type="text" class="form-input" name="amount" id="inputPRAmount">
+                            {{-- Custom error message --}}
+                            <p id="error-amount" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
+                    <button
+                        class="btn dark:text-gray-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:dark:bg-slate-700 transition-all"
+                        data-fc-dismiss type="button">Close</button>
+                    <button type="submit" class="btn bg-primary text-white flex items-center gap-2" id="btnSave">
+                        <span
+                            class="loader hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span>Simpan</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Modal Edit --}}
+    <div id="editModal" class="w-full h-full mt-5 fixed top-0 left-0 z-50 transition-all duration-500 fc-modal hidden">
+        <div
+            class="fc-modal-open:opacity-100 duration-500 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto flex flex-col bg-white border shadow-sm rounded-md dark:bg-slate-800 dark:border-gray-700">
+            <div class="flex justify-between items-center py-2.5 px-4 border-b dark:border-gray-700">
+                <h3 class="font-medium text-gray-800 dark:text-white text-lg">
+                    Edit Item
+                </h3>
+                <button class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
+                    data-fc-dismiss type="button">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <form id="editItemForm" method="POST">
+                @csrf
+                @method('put')
+                <div class="px-4 py-8 overflow-y-auto">
+                    <div class="grid grid-cols-1 gap-6">
+                        <div>
+                            <label for="editName"
+                                class="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 inline-block">Name</label>
+                            <input type="text" id="editName" name="name" class="form-input" required>
+                            <p id="error-edit-name" class="text-sm text-red-500 mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
+                    <button
+                        class="btn dark:text-gray-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:dark:bg-slate-700 transition-all"
+                        data-fc-dismiss type="button">Close
+                    </button>
+                    <button type="submit" class="btn bg-primary text-white flex items-center gap-2" id="btnUpdate">
+                        <span
+                            class="loader hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span>Update</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteModal"
+        class="fixed top-0 left-0 z-50 transition-all duration-500 fc-modal hidden w-full h-full min-h-full items-center fc-modal-open:flex">
+        <div
+            class="fc-modal-open:opacity-100 duration-500 opacity-0 ease-out transition-[opacity] sm:max-w-lg sm:w-full sm:mx-auto  flex-col bg-white border shadow-sm rounded-md dark:bg-slate-800 dark:border-gray-700">
+            <div class="flex justify-between items-center py-2.5 px-4 border-b dark:border-gray-700">
+                <h3 class="font-medium text-gray-800 dark:text-white text-lg">
+                    Edit Item
+                </h3>
+                <button class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
+                    data-fc-dismiss type="button">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <form method="POST">
+                @csrf
+                @method('delete')
+                <div class="px-4 py-8 overflow-y-auto">
+                    <div class="grid grid-cols-1 gap-6">
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">
+                                Apakah Anda yakin ingin menghapus data ini?
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
+                    <button
+                        class="btn dark:text-gray-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:dark:bg-slate-700 transition-all"
+                        data-fc-dismiss type="button">Close
+                    </button>
+                    <button id="confirmDelete" class="btn bg-danger text-white" type="button">Hapus</button>
+                </div>
+            </form>
+        </div>
+    </div>
 @endsection
 @section('script')
-    @vite(['resources/js/pages/table-gridjs.js', 'resources/js/pages/highlight.js', 'resources/js/pages/form-validation.js', 'resources/js/pages/form-flatpickr.js', 'resources/js/pages/form-select.js'])
+    @vite(['resources/js/pages/table-gridjs.js', 'resources/js/pages/form-flatpickr.js', 'resources/js/pages/form-select.js', 'resources/js/pages/highlight.js', 
+    'resources/js/crud/add-item.js', 
+    'resources/js/crud/status-edit-item.js', 'resources/js/crud/status-delete-item.js', 'resources/js/crud/search-item.js'])
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        window.routes = {
+            purchase_requestEdit: "{{ route('purchase-request.edit', ['purchase_request' => '__ID__']) }}",
+            purchase_requestUpdate: "{{ route('purchase-request.update', ['purchase_request' => '__ID__']) }}",
+            purchase_requestDestroy: "{{ route('purchase-request.destroy', ['purchase_request' => '__ID__']) }}"
+        };
+    </script>
 @endsection
