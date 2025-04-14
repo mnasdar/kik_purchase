@@ -49,6 +49,7 @@ class PurchaseRequestController extends Controller
      */
     public function store(Request $request)
     {
+        // 🔍 Validasi input
         $validated = $request->validate([
             'pr_number' => 'required|string',
             'status_id' => 'required',
@@ -61,13 +62,15 @@ class PurchaseRequestController extends Controller
             'quantity' => 'required|integer|min:1',
             'amount' => 'required|numeric|min:0',
         ]);
-        // Konversi string ke integer (jika diperlukan)
+
+        // ✅ Konversi id
         $validated['status_id'] = (int) $validated['status_id'];
         $validated['classification_id'] = (int) $validated['classification_id'];
-        
+
         PurchaseTracking::firstOrCreate([
             'pr_number' => $validated['pr_number'],
         ]);
+        // 🔧 Create data
         $purchaseRequest = PurchaseRequest::create([
             'pr_number' => $validated['pr_number'],
             'status_id' => $validated['status_id'],
@@ -80,7 +83,8 @@ class PurchaseRequestController extends Controller
             'quantity' => $validated['quantity'],
             'amount' => $validated['amount'],
         ]);
-        
+
+        // 🔁 Response
         return response()->json([
             'success' => true,
             'message' => 'Status berhasil ditambahkan',
@@ -100,19 +104,11 @@ class PurchaseRequestController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(PurchaseRequest $purchaseRequest)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(PurchaseRequest $purchaseRequest)
     {
-        //
+        return response()->json($purchaseRequest);
     }
 
     /**
@@ -120,7 +116,31 @@ class PurchaseRequestController extends Controller
      */
     public function update(Request $request, PurchaseRequest $purchaseRequest)
     {
-        //
+        // 🔍 Validasi input
+        $validated = $request->validate([
+            'status_id' => 'required',
+            'classification_id' => 'required',
+            'location' => 'required|string|max:255',
+            'item_desc' => 'required|string|max:255',
+            'uom' => 'required|string|max:20',
+            'approved_date' => 'required|date|before_or_equal:today',
+            'unit_price' => 'required|numeric|min:0',
+            'quantity' => 'required|integer|min:1',
+            'amount' => 'required|numeric|min:0',
+        ]);
+
+        // ✅ Konversi id
+        $validated['status_id'] = (int) $validated['status_id'];
+        $validated['classification_id'] = (int) $validated['classification_id'];
+
+        // 🔧 Update data
+        $purchaseRequest->update($validated);
+
+        // 🔁 Response
+        return response()->json([
+            'message' => 'Data berhasil diperbarui.',
+            'data' => $purchaseRequest
+        ]);
     }
 
     /**
@@ -128,7 +148,10 @@ class PurchaseRequestController extends Controller
      */
     public function destroy(PurchaseRequest $purchaseRequest)
     {
-        //
+        $purchaseTracking = PurchaseTracking::where('pr_number',$purchaseRequest['pr_number']);
+        $purchaseTracking->delete();
+        $purchaseRequest->delete();
+        return response()->json(['message' => 'Status berhasil dihapus.']);
     }
     public function search(Request $request)
     {

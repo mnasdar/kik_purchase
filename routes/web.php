@@ -24,7 +24,7 @@ Route::group(['prefix' => '/', 'middleware'=>'auth'], function () {
     /* ================= Goods ======================== */
     Route::prefix('goods')->group(function () {
         Route::get('/purchase-request/search', [PurchaseRequestController::class, 'search'])->name('purchase-request.search');
-        Route::resource('/purchase-request', PurchaseRequestController::class);
+        Route::resource('/purchase-request', PurchaseRequestController::class)->except(['create','show']);
         Route::get('/status/search', [StatusController::class, 'search'])->name('status.search');
         Route::resource('/status', StatusController::class)->except(['create','show']);
     });

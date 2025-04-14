@@ -1,12 +1,7 @@
 @extends('layouts.vertical', ['title' => 'Purchase Request', 'sub_title' => 'Goods', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
-@vite([
-    'node_modules/flatpickr/dist/flatpickr.min.css',
-    'node_modules/@simonwep/pickr/dist/themes/classic.min.css',
-    'node_modules/@simonwep/pickr/dist/themes/monolith.min.css',
-    'node_modules/@simonwep/pickr/dist/themes/nano.min.css',
-    ])
+    @vite(['node_modules/flatpickr/dist/flatpickr.min.css', 'node_modules/@simonwep/pickr/dist/themes/classic.min.css', 'node_modules/@simonwep/pickr/dist/themes/monolith.min.css', 'node_modules/@simonwep/pickr/dist/themes/nano.min.css'])
 @endsection
 
 @section('content')
@@ -145,17 +140,17 @@
                 <div class="px-4 py-8 overflow-y-auto">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="form-group">
-                            <label for="inputPRNumber" class="text-gray-800 text-sm font-medium inline-block mb-2">PR
+                            <label for="inputpr_number" class="text-gray-800 text-sm font-medium inline-block mb-2">PR
                                 Number</label>
-                            <input type="text" class="form-input" name="pr_number" id="inputPRNumber">
+                            <input type="text" class="form-input" name="pr_number" id="inputpr_number">
                             {{-- Custom error message --}}
                             <p id="error-pr_number" class="text-red-500 text-sm mt-1"></p>
                         </div>
                         <div class="form-group">
-                            <label for="status-select"
+                            <label for="inputstatus_id"
                                 class="text-gray-800 text-sm font-medium inline-block mb-2">status</label>
                             <div class="p-0">
-                                <select id="status-select" name="status_id" class="search-select">
+                                <select id="inputstatus_id" name="status_id" class="search-select">
                                     @foreach ($status as $item)
                                         <option value="{{ $item->id }}">{{ ucwords($item->name) }}</option>
                                     @endforeach
@@ -165,10 +160,10 @@
                             <p id="error-status_id" class="text-red-500 text-sm mt-1"></p>
                         </div>
                         <div class="form-group col-span-2">
-                            <label for="classification-select"
+                            <label for="inputclassification_id"
                                 class="text-gray-800 text-sm font-medium inline-block mb-2">Classification</label>
                             <div class="p-0">
-                                <select id="classification-select" name="classification_id" class="search-select">
+                                <select id="inputclassification_id" name="classification_id" class="search-select">
                                     @foreach ($classification as $item)
                                         <option value="{{ $item->id }}">{{ ucwords($item->name) }}</option>
                                     @endforeach
@@ -179,17 +174,17 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="inputApprovedDate"
+                            <label for="inputapprove_date"
                                 class="text-gray-800 text-sm font-medium inline-block mb-2">ApprovedDate</label>
-                            <input type="text" class="form-input" name="approved_date" id="datepicker-humanfd">
+                            <input type="text" class="form-input" name="approved_date" id="inputapprove_date">
                             {{-- Custom error message --}}
                             <p id="error-approved_date" class="text-red-500 text-sm mt-1"></p>
                         </div>
                         <div class="form-group">
-                            <label for="location-select"
+                            <label for="inputlocation"
                                 class="text-gray-800 text-sm font-medium inline-block mb-2">Location</label>
                             <div class="p-0">
-                                <select id="location-select" name="location" class="search-select">
+                                <select id="inputlocation" name="location" class="search-select">
                                     <option value="HEAD OFFICE KIK.">Head Office</option>
                                     <option value="KIK BRANCH MALL RATU INDAH">Mall MARI</option>
                                     <option value="KIK BRANCH MALL NIPAH">Mall NIPAH</option>
@@ -200,36 +195,36 @@
                             <p id="error-location" class="text-red-500 text-sm mt-1"></p>
                         </div>
                         <div class="form-group col-span-2">
-                            <label for="inputItemDesc"
-                                class="text-gray-800 text-sm font-medium inline-block mb-2">Item Description</label>
-                            <input type="text" class="form-input" name="item_desc" id="inputItemDesc">
+                            <label for="inputitem_desc" class="text-gray-800 text-sm font-medium inline-block mb-2">Item
+                                Description</label>
+                            <input type="text" class="form-input" name="item_desc" id="inputitem_desc">
                             {{-- Custom error message --}}
                             <p id="error-item_desc" class="text-red-500 text-sm mt-1"></p>
                         </div>
                         <div class="form-group">
-                            <label for="inputUom" class="text-gray-800 text-sm font-medium inline-block mb-2">UOM</label>
-                            <input type="text" class="form-input" name="uom" id="inputUom">
+                            <label for="inputuom" class="text-gray-800 text-sm font-medium inline-block mb-2">UOM</label>
+                            <input type="text" class="form-input" name="uom" id="inputuom">
                             {{-- Custom error message --}}
                             <p id="error-uom" class="text-red-500 text-sm mt-1"></p>
                         </div>
                         <div class="form-group">
-                            <label for="inputUnitPrice"
-                                class="text-gray-800 text-sm font-medium inline-block mb-2">Unit Price</label>
-                            <input type="text" class="form-input" name="unit_price" id="inputUnitPrice">
+                            <label for="inputunit_price" class="text-gray-800 text-sm font-medium inline-block mb-2">Unit
+                                Price</label>
+                            <input type="text" class="form-input" name="unit_price" id="inputunit_price">
                             {{-- Custom error message --}}
                             <p id="error-unit_price" class="text-red-500 text-sm mt-1"></p>
                         </div>
                         <div class="form-group">
-                            <label for="inputQuantity"
+                            <label for="inputquantity"
                                 class="text-gray-800 text-sm font-medium inline-block mb-2">Quantity</label>
-                            <input type="text" class="form-input" name="quantity" id="inputQuantity">
+                            <input type="text" class="form-input" name="quantity" id="inputquantity">
                             {{-- Custom error message --}}
                             <p id="error-quantity" class="text-red-500 text-sm mt-1"></p>
                         </div>
                         <div class="form-group">
-                            <label for="inputPRAmount"
-                                class="text-gray-800 text-sm font-medium inline-block mb-2">PR Amount</label>
-                            <input type="text" class="form-input" name="amount" id="inputPRAmount">
+                            <label for="inputamount" class="text-gray-800 text-sm font-medium inline-block mb-2">PR
+                                Amount</label>
+                            <input type="text" class="form-input" name="amount" id="inputamount">
                             {{-- Custom error message --}}
                             <p id="error-amount" class="text-red-500 text-sm mt-1"></p>
                         </div>
@@ -267,11 +262,94 @@
                 @method('put')
                 <div class="px-4 py-8 overflow-y-auto">
                     <div class="grid grid-cols-1 gap-6">
-                        <div>
-                            <label for="editName"
-                                class="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 inline-block">Name</label>
-                            <input type="text" id="editName" name="name" class="form-input" required>
-                            <p id="error-edit-name" class="text-sm text-red-500 mt-1"></p>
+                        <div class="form-group">
+                            <label for="editpr_number" class="text-gray-800 text-sm font-medium inline-block mb-2">PR
+                                Number</label>
+                            <input type="text" class="form-input bg-slate-300" name="pr_number" id="editpr_number" disabled>
+                            {{-- Custom error message --}}
+                            <p id="error-pr_number" class="text-red-500 text-sm error-message"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="editstatus_id"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">Status</label>
+                            <div class="p-0">
+                                <select id="editstatus_id" name="status_id" class="search-select">
+                                    @foreach ($status as $item)
+                                        <option value="{{ $item->id }}">{{ ucwords($item->name) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            {{-- Custom error message --}}
+                            <p id="error-status_id" class="text-red-500 text-sm error-message"></p>
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label for="editclassification_id"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">Classification</label>
+                            <div class="p-0">
+                                <select id="editclassification_id" name="classification_id" class="search-select">
+                                    @foreach ($classification as $item)
+                                        <option value="{{ $item->id }}">{{ ucwords($item->name) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            {{-- Custom error message --}}
+                            <p id="error-classification_id" class="text-red-500 text-sm error-message"></p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="editapprove_date"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">ApprovedDate</label>
+                            <input type="text" class="form-input" name="approved_date" id="editapprove_date">
+                            {{-- Custom error message --}}
+                            <p id="error-approved_date" class="text-red-500 text-sm error-message"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="editlocation"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">Location</label>
+                            <div class="p-0">
+                                <select id="editlocation" name="location" class="search-select">
+                                    <option value="HEAD OFFICE KIK.">Head Office</option>
+                                    <option value="KIK BRANCH MALL RATU INDAH">Mall MARI</option>
+                                    <option value="KIK BRANCH MALL NIPAH">Mall NIPAH</option>
+                                    <option value="KIK WISMA KALLA">Wisma Kalla</option>
+                                </select>
+                            </div>
+                            {{-- Custom error message --}}
+                            <span id="error-location" class="text-red-500 text-sm error-message"></span>
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label for="edititem_desc" class="text-gray-800 text-sm font-medium inline-block mb-2">Item
+                                Description</label>
+                            <input type="text" class="form-input" name="item_desc" id="edititem_desc">
+                            {{-- Custom error message --}}
+                            <span id="error-item_desc" class="text-red-500 text-sm error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="edituom" class="text-gray-800 text-sm font-medium inline-block mb-2">UOM</label>
+                            <input type="text" class="form-input" name="uom" id="edituom">
+                            {{-- Custom error message --}}
+                            <span id="error-uom" class="text-red-500 text-sm error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="editunit_price" class="text-gray-800 text-sm font-medium inline-block mb-2">Unit
+                                Price</label>
+                            <input type="text" class="form-input" name="unit_price" id="editunit_price">
+                            {{-- Custom error message --}}
+                            <span id="error-unit_price" class="text-red-500 text-sm error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="editquantity"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">Quantity</label>
+                            <input type="text" class="form-input" name="quantity" id="editquantity">
+                            {{-- Custom error message --}}
+                            <span id="error-quantity" class="text-red-500 text-sm error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputamount" class="text-gray-800 text-sm font-medium inline-block mb-2">PR
+                                Amount</label>
+                            <input type="text" class="form-input" name="amount" id="inputamount">
+                            {{-- Custom error message --}}
+                            <span id="error-amount" class="text-red-500 text-sm error-message"></span>
                         </div>
                     </div>
                 </div>
@@ -327,16 +405,14 @@
     </div>
 @endsection
 @section('script')
-    @vite(['resources/js/pages/table-gridjs.js', 'resources/js/pages/form-flatpickr.js', 'resources/js/pages/form-select.js', 'resources/js/pages/highlight.js', 
-    'resources/js/crud/add-item.js', 
-    'resources/js/crud/status-edit-item.js', 'resources/js/crud/status-delete-item.js', 'resources/js/crud/search-item.js'])
+    @vite(['resources/js/pages/table-gridjs.js', 'resources/js/pages/form-flatpickr.js', 'resources/js/pages/form-select.js', 'resources/js/pages/highlight.js', 'resources/js/crud/add-item.js', 'resources/js/crud/edit-item.js', 'resources/js/crud/status-delete-item.js', 'resources/js/crud/search-item.js'])
     <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         window.routes = {
-            purchase_requestEdit: "{{ route('purchase-request.edit', ['purchase_request' => '__ID__']) }}",
-            purchase_requestUpdate: "{{ route('purchase-request.update', ['purchase_request' => '__ID__']) }}",
-            purchase_requestDestroy: "{{ route('purchase-request.destroy', ['purchase_request' => '__ID__']) }}"
+            routesEdit: "{{ route('purchase-request.edit', ['purchase_request' => '__ID__']) }}",
+            routesUpdate: "{{ route('purchase-request.update', ['purchase_request' => '__ID__']) }}",
+            routesDestroy: "{{ route('purchase-request.destroy', ['purchase_request' => '__ID__']) }}"
         };
     </script>
 @endsection

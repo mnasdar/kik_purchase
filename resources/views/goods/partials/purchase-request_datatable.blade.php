@@ -15,14 +15,14 @@
         </td>
         <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
             {{ $item->classification->name }}</td>
-        <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
+        <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200 gap-1">
             {{ $item->pr_number }}
             @if ($item->is_new)
                 <span
-                    class="ml-2 inline-block px-2 py-1 text-xs font-semibold text-white bg-success rounded-full">New</span>
+                    class="inline-block px-2 py-1 text-xs font-semibold text-white bg-success rounded-full">New</span>
             @elseif($item->is_update)
                 <span
-                    class="ml-2 inline-block px-2 py-1 text-xs font-semibold text-white bg-warning rounded-full">Update</span>
+                    class="inline-block px-2 py-1 text-xs font-semibold text-white bg-warning rounded-full">Update</span>
             @endif
         </td>
         <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">

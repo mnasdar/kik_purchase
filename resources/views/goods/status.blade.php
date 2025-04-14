@@ -203,9 +203,9 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         window.routes = {
-            statusEdit: "{{ route('status.edit', ['status' => '__ID__']) }}",
-            statusUpdate: "{{ route('status.update', ['status' => '__ID__']) }}",
-            statusDestroy: "{{ route('status.destroy', ['status' => '__ID__']) }}"
+            routesEdit: "{{ route('status.edit', ['status' => '__ID__']) }}",
+            routesUpdate: "{{ route('status.update', ['status' => '__ID__']) }}",
+            routesDestroy: "{{ route('status.destroy', ['status' => '__ID__']) }}"
         };
     </script>
 @endsection

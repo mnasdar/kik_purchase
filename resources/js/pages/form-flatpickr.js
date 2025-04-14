@@ -56,3 +56,17 @@ flatpickr('#datepicker-inline', {
     inline: true,
     defaultDate: new Date()
 });
+
+flatpickr('#inputapprove_date', {
+    altInput: true,
+    altFormat: "F j, Y",
+    dateFormat: "Y-m-d",
+    defaultDate: new Date()
+});
+
+export const approveDatePicker = flatpickr('#editapprove_date', {
+    altInput: true,
+    altFormat: "F j, Y",
+    dateFormat: "Y-m-d",
+    defaultDate: new Date()
+});

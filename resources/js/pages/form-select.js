@@ -12,19 +12,9 @@ document.addEventListener("DOMContentLoaded", function (e) {
 
 document.addEventListener("DOMContentLoaded", function (e) {
     // serachable
-    new NiceSelect(document.getElementById("search-select"), {
-        searchable: true
-    });
-});
-
-document.addEventListener("DOMContentLoaded", function (e) {
-    new NiceSelect(document.getElementById("status-select"), {
-        searchable: true
-    });
-    new NiceSelect(document.getElementById("classification-select"), {
-        searchable: true
-    });
-    new NiceSelect(document.getElementById("location-select"), {
-        searchable: true
+    document.querySelectorAll('.search-select').forEach(function (el) {
+        new NiceSelect(el, {
+            searchable: true
+        });
     });
 });

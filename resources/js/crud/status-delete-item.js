@@ -28,7 +28,7 @@ $(document).ready(function () {
         e.preventDefault();
         if (!deleteId) return;
 
-        const deleteUrl = window.routes.statusDestroy.replace("__ID__", deleteId);
+        const deleteUrl = window.routes.routesDestroy.replace("__ID__", deleteId);
 
         $.ajax({
             url: deleteUrl,
