@@ -36,6 +36,10 @@ class PurchaseRequest extends Model
     {
         return $this->belongsTo(Status::class);
     }
+    public function tracking()
+    {
+        return $this->hasMany(PurchaseTracking::class);
+    }
 
     // Format tanggal approve
     protected function approvedDate(): Attribute
@@ -45,27 +49,14 @@ class PurchaseRequest extends Model
         );
     }
 
-    public function tracking()
-    {
-        return $this->hasOne(PurchaseTracking::class, 'pr_number', 'pr_number');
-    }
-
-    public function purchaseOrder()
-    {
-        return $this->hasOneThrough(
-            PurchaseOrder::class,
-            PurchaseTracking::class,
-            'pr_number',        // Foreign key on PurchaseTracking
-            'po_number',        // Foreign key on PurchaseOrder
-            'pr_number',        // Local key on PurchaseRequest
-            'po_number'         // Local key on PurchaseTracking
-        );
-    }
 
     public function getWorkingDaysAttribute()
     {
         $prApproved = $this->getRawOriginal('approved_date'); // tanggal dari DB
-        $poApproved = $this->purchaseOrder?->getRawOriginal('approved_date');
+        // Ambil tanggal approved_date dari tracking pertama yang memiliki purchase_request valid
+        $poApproved = $this->tracking
+            ->filter(fn($tracking) => $tracking->purchase_order?->approved_date)
+            ->first()?->purchase_order?->getRawOriginal('approved_date');
 
         if (!$prApproved || !$poApproved) {
             return null;

@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('statuses', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable()->unique();
+            $table->string('name');
+            $table->enum('type',['Barang','Jasa']);
             $table->timestamps();
         });
     }

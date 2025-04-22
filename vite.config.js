@@ -72,7 +72,7 @@ export default defineConfig({
 
                 // Code Js Custom
                 'resources/js/goods/add-item.js', 
-                'resources/js/goods/status-delete-item.js', 
+                'resources/js/goods/delete-item.js', 
                 'resources/js/goods/edit-item.js', 
                 'resources/js/goods/search-item.js', 
             ],

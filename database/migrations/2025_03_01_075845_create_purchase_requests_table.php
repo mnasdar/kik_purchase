@@ -12,8 +12,7 @@ return new class extends Migration {
     {
         Schema::create('purchase_requests', function (Blueprint $table) {
             $table->id();
-            $table->string('pr_number')->index(); // Pastikan ini string
-            $table->foreign('pr_number')->references('pr_number')->on('purchase_trackings')->onDelete('cascade');
+            $table->string('pr_number');
             $table->foreignId('status_id')->references('id')->on('statuses')->onDelete('set null');
             $table->foreignId('classification_id')->references('id')->on('classifications')->onDelete('set null');
             $table->string('location');

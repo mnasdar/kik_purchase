@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Purchase Request', 'sub_title' => 'Goods', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Purchase Order', 'sub_title' => 'Goods', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
     @vite(['node_modules/flatpickr/dist/flatpickr.min.css', 'node_modules/@simonwep/pickr/dist/themes/classic.min.css', 'node_modules/@simonwep/pickr/dist/themes/monolith.min.css', 'node_modules/@simonwep/pickr/dist/themes/nano.min.css'])
@@ -10,7 +10,7 @@
             <div class="card">
                 <div class="card-header">
                     <div class="flex md:flex-row flex-col justify-between items-start md:items-center">
-                        <h4 class="card-title">Data Tables Purchase Request</h4>
+                        <h4 class="card-title">Data Tables Purchase Order</h4>
                         <div class="flex flex-row gap-2">
                             <button type="button" id="btn-add" class="btn bg-primary text-white my-3"
                                 data-fc-target="addModal" data-fc-type="modal">
@@ -21,7 +21,7 @@
                     </div>
                 </div>
                 <div class="p-6">
-                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">This All Of Purchase Request Data,
+                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">This All Of Purchase Order Data,
                         You
                         Can Search and Sort items by Ascending or Descending, Data will be showing 10 items per pages
                     </p>
@@ -59,29 +59,23 @@
                                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                     Status</th>
                                                 <th scope="col"
-                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                    Classification</th>
-                                                <th scope="col"
-                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                    class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">
                                                     PR Number</th>
                                                 <th scope="col"
                                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                    Location</th>
-                                                <th scope="col"
-                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                    Item Desc</th>
-                                                <th scope="col"
-                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                    UOM</th>
+                                                    PO Number</th>
                                                 <th scope="col"
                                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                     Approve Date</th>
                                                 <th scope="col"
                                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                                                    Unit Price</th>
+                                                    Supplier Name</th>
                                                 <th scope="col"
                                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                     Quantity</th>
+                                                <th scope="col"
+                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                    Unit Price</th>
                                                 <th scope="col"
                                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                     Amount</th>
@@ -97,9 +91,8 @@
                                                 </th>
                                             </tr>
                                         </thead>
-                                        <tbody id="DatatableBody"
-                                            class="divide-y divide-gray-200 dark:divide-gray-700">
-                                            @include('goods.partials.purchase-request_datatable', [
+                                        <tbody id="DatatableBody" class="divide-y divide-gray-200 dark:divide-gray-700">
+                                            @include('goods.partials.purchase-order_datatable', [
                                                 'data' => $data,
                                             ])
                                         </tbody>
@@ -145,32 +138,6 @@
                             <input type="text" class="form-input" name="pr_number" id="inputpr_number">
                             {{-- Custom error message --}}
                             <p id="error-pr_number" class="text-red-500 text-sm mt-1"></p>
-                        </div>
-                        <div class="form-group">
-                            <label for="inputstatus_id"
-                                class="text-gray-800 text-sm font-medium inline-block mb-2">status</label>
-                            <div class="p-0">
-                                <select id="inputstatus_id" name="status_id" class="search-select">
-                                    @foreach ($status as $item)
-                                        <option value="{{ $item->id }}">{{ ucwords($item->name) }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            {{-- Custom error message --}}
-                            <p id="error-status_id" class="text-red-500 text-sm mt-1"></p>
-                        </div>
-                        <div class="form-group col-span-2">
-                            <label for="inputclassification_id"
-                                class="text-gray-800 text-sm font-medium inline-block mb-2">Classification</label>
-                            <div class="p-0">
-                                <select id="inputclassification_id" name="classification_id" class="search-select">
-                                    @foreach ($classification as $item)
-                                        <option value="{{ $item->id }}">{{ ucwords($item->name) }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            {{-- Custom error message --}}
-                            <p id="error-classification_id" class="text-red-500 text-sm mt-1"></p>
                         </div>
 
                         <div class="form-group">
@@ -265,35 +232,10 @@
                         <div class="form-group">
                             <label for="editpr_number" class="text-gray-800 text-sm font-medium inline-block mb-2">PR
                                 Number</label>
-                            <input type="text" class="form-input bg-slate-300" name="pr_number" id="editpr_number" disabled>
+                            <input type="text" class="form-input bg-slate-300" name="pr_number" id="editpr_number"
+                                disabled>
                             {{-- Custom error message --}}
                             <p id="error-pr_number" class="text-red-500 text-sm error-message"></p>
-                        </div>
-                        <div class="form-group">
-                            <label for="editstatus_id"
-                                class="text-gray-800 text-sm font-medium inline-block mb-2">Status</label>
-                            <div class="p-0">
-                                <select id="editstatus_id" name="status_id" class="search-select">
-                                    @foreach ($status as $item)
-                                        <option value="{{ $item->id }}">{{ ucwords($item->name) }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            {{-- Custom error message --}}
-                            <p id="error-status_id" class="text-red-500 text-sm error-message"></p>
-                        </div>
-                        <div class="form-group col-span-2">
-                            <label for="editclassification_id"
-                                class="text-gray-800 text-sm font-medium inline-block mb-2">Classification</label>
-                            <div class="p-0">
-                                <select id="editclassification_id" name="classification_id" class="search-select">
-                                    @foreach ($classification as $item)
-                                        <option value="{{ $item->id }}">{{ ucwords($item->name) }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            {{-- Custom error message --}}
-                            <p id="error-classification_id" class="text-red-500 text-sm error-message"></p>
                         </div>
 
                         <div class="form-group">

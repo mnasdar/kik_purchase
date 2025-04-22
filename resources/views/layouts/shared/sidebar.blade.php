@@ -28,14 +28,26 @@
 
             <li class="menu-item">
                 <a href="{{ route('second', ['goods','purchase-request']) }}" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_documents_line"></i></span>
+                    <span class="menu-icon"><i class="mgc_file_upload_line"></i></span>
                     <span class="menu-text"> Purchase Request  </span>
                 </a>
             </li>
             <li class="menu-item">
+                <a href="{{ route('second', ['goods','purchase-order']) }}" class="menu-link">
+                    <span class="menu-icon"><i class="mgc_file_import_line"></i></span>
+                    <span class="menu-text"> Purchase Order  </span>
+                </a>
+            </li>
+            <li class="menu-item">
                 <a href="{{ route('second', ['goods','status']) }}" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_documents_line"></i></span>
+                    <span class="menu-icon"><i class="mgc_list_check_2_line"></i></span>
                     <span class="menu-text"> Status </span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{{ route('second', ['goods','classification']) }}" class="menu-link">
+                    <span class="menu-icon"><i class="mgc_list_search_line"></i></span>
+                    <span class="menu-text"> Classification </span>
                 </a>
             </li>
 

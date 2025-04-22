@@ -79,6 +79,7 @@ $(document).ready(function () {
             method: 'GET',
             dataType: 'json',
             success: function (data) {
+                console.log(data);
                 $form.find('input, select, textarea').each(function () {
                     const input = $(this);
                     const key = input.attr('name');

@@ -13,10 +13,45 @@ class StatusSeeder extends Seeder
      */
     public function run(): void
     {
-        $statuses = ['on process', 'new', 'finish'];
+        $data = [
+            [
+                
+                'name' => 'New',
+                'type' => 'Barang',
+            ],
+            [
+                
+                'name' => 'On Proses',
+                'type' => 'Barang',
+            ],
+            [
+                
+                'name' => 'Finish',
+                'type' => 'Barang',
+            ],
+            [
+                
+                'name' => 'New',
+                'type' => 'Jasa',
+            ],
+            [
+                
+                'name' => 'On Proses',
+                'type' => 'Jasa',
+            ],
+            [
+                
+                'name' => 'Finish',
+                'type' => 'Jasa',
+            ],
+            // Tambahkan baris lainnya dari tabel Excel yang kamu upload
+        ];
 
-        foreach ($statuses as $status) {
-            Status::firstOrCreate(['name' => $status]);
+        foreach ($data as $row) {
+            Status::create([
+                'name' => $row['name'],
+                'type' => $row['type'],
+            ]);
         }
     }
 }

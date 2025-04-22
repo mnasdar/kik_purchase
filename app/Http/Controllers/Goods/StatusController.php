@@ -14,7 +14,7 @@ class StatusController extends Controller
      */
     public function index()
     {
-        $data = Status::orderByDesc('id') // urutkan dari yang terakhir diinput
+        $data = Status::orderBy('type','asc') // urutkan dari yang terakhir diinput
             ->paginate(10);     // paginasi 10 data per halaman
 
         // Cek apakah status dibuat dalam 5 menit terakhir
@@ -33,11 +33,13 @@ class StatusController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|min:3|max:255|unique:statuses,name',
+            'name' => 'required|string|min:3|max:255',
+            'type' => 'required|string',
         ]);
 
         $status = Status::create([
             'name' => $validated['name'],
+            'type' => $validated['type'],
         ]);
 
         return response()->json([
@@ -64,7 +66,8 @@ class StatusController extends Controller
     public function update(Request $request, Status $status)
     {
         $validated = $request->validate([
-            'name' => 'required|string|min:3|max:255|unique:statuses,name,' . $status->id,
+            'type' => 'required|string',
+            'name' => 'required|string|min:3|max:255',
         ]);
 
         $status->update($validated);
@@ -90,14 +93,15 @@ class StatusController extends Controller
 
         // Filter berdasarkan pencarian
         $data = Status::when($query, function ($q) use ($query) {
-            $q->where('name', 'like', '%' . $query . '%');
-        })->latest()->paginate(10);
+            $q->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($query) . '%'])
+            ->orWhereRaw('LOWER(type) LIKE ?', ['%' . strtolower($query) . '%']);
+        })->orderBy('type','asc')->paginate(10);
 
         // Kembalikan partial untuk AJAX
         if ($request->ajax()) {
             return response()->json([
                 'table' => view('goods.partials.status_datatable', compact('data'))->render(),
-                'pagination' => view('goods.partials.status_pagination', compact('data'))->render(),
+                'pagination' => view('goods.partials.pagination', compact('data'))->render(),
             ]);
         }    
 

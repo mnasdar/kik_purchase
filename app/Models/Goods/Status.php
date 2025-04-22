@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Status extends Model
 {
     use HasFactory;
-    protected $fillable = ['name'];
+    protected $fillable = ['type','name'];
 
     public function purchaseRequests()
     {

@@ -19,20 +19,16 @@ class PurchaseOrderSeeder extends Seeder
         $data = [
             [
                 'po_number' => 'KIK3600002066',
-                'location' => 'HEAD OFFICE KIK.',
-                'item_desc' => 'IC POWER LAPTOP HP',
-                'uom' => 'EA',
                 'approved_date' => '2022-01-24',
+                'supplier_name' => 'PT.KAWAUSO TEKNOLOGI INDONESIA',
                 'unit_price' => 1250000,
                 'quantity' => 1,
                 'amount' => 1250000,
             ],
             [
                 'po_number' => 'KIK3600002077',
-                'location' => 'HEAD OFFICE KIK.',
-                'item_desc' => 'POWER SUPPLY (PA-LGA-450W)',
-                'uom' => 'EA',
                 'approved_date' => '2022-01-27',
+                'supplier_name' => 'PT.KAWAUSO TEKNOLOGI INDONESIA',
                 'unit_price' => 590909,
                 'quantity' => 1,
                 'amount' => 590909,
@@ -43,10 +39,8 @@ class PurchaseOrderSeeder extends Seeder
         foreach ($data as $row) {
             PurchaseOrder::create([
                 'po_number' => $row['po_number'],
-                'location' => $row['location'],
-                'item_desc' => $row['item_desc'],
-                'uom' => $row['uom'],
                 'approved_date' => $row['approved_date'],
+                'supplier_name' => $row['supplier_name'],
                 'unit_price' => $row['unit_price'],
                 'quantity' => $row['quantity'],
                 'amount' => $row['amount'],

@@ -2,7 +2,7 @@ import $ from 'jquery';
 
 $(document).ready(function () {
     const searchInput = $('#table-with-pagination-search');
-    const statusTableBody = $('#statusTableBody');
+    const statusTableBody = $('#DatatableBody');
     const paginationLinks = $('#paginationLinks');
     const searchRoute = $('#searchRoute').data('search-url'); // Pastikan ini sudah ada jika diperlukan
 

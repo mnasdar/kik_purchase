@@ -48,9 +48,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             StatusSeeder::class,
             ClassificationSeeder::class,
-            PurchaseTrackingSeeder::class,
             PurchaseRequestSeeder::class,
             PurchaseOrderSeeder::class,
+            PurchaseTrackingSeeder::class,
         ]);
     }
 }

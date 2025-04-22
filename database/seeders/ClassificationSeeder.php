@@ -13,26 +13,73 @@ class ClassificationSeeder extends Seeder
      */
     public function run(): void
     {
-        $classifications = [
-            'Pengadaan Perlengkapan Kantor',
-            'Pengadaan Perlengkapan Operasional',
-            'Pengadaan Fasilitas Kantor',
-            'Material Pendukung',
-            'Pengadaan Mekanikal Electrical',
-            'Pengadaan Gas Industri',
-            'Pengadaan Lampu',
-            'Pengadaan Pek. Jasa',
-            'Pengadaan Material Chiller',
-            'Pengadaan Tissue',
-            'Pengadaan Part Escalator',
-            'Kebutuhan Event & Marketing',
-            'Pengadaan Part Lift',
-            'Pengadaan Solar',
-            'Pengadaan Material Genset',
+        $data = [
+            [
+                'name' => 'Pengadaan Perlengkapan Kantor',
+                'type' => 'Barang',
+            ],
+            [
+                'name' => 'Pengadaan Perlengkapan Operasional',
+                'type' => 'Barang',
+            ],
+            [
+                'name' => 'Pengadaan Fasilitas Kantor',
+                'type' => 'Barang',
+            ],
+            [
+                'name' => 'Material Pendukung',
+                'type' => 'Barang',
+            ],
+            [
+                'name' => 'Pengadaan Mekanikal Electrical',
+                'type' => 'Barang',
+            ],
+            [
+                'name' => 'Pengadaan Gas Industri',
+                'type' => 'Barang',
+            ],
+            [
+                'name' => 'Pengadaan Lampu',
+                'type' => 'Barang',
+            ],
+            [
+                'name' => 'Pengadaan Pek. Jasa',
+                'type' => 'Barang',
+            ],
+            [
+                'name' => 'Pengadaan Material Chiller',
+                'type' => 'Barang',
+            ],
+            [
+                'name' => 'Pengadaan Tissue',
+                'type' => 'Barang',
+            ],
+            [
+                'name' => 'Pengadaan Part Escalator',
+                'type' => 'Barang',
+            ],
+            [
+                'name' => 'Kebutuhan Event & Marketing',
+                'type' => 'Barang',
+            ],
+            [
+                'name' => 'Pengadaan Part Lift',
+                'type' => 'Barang',
+            ],
+            [
+                'name' => 'Pengadaan Solar',
+                'type' => 'Barang',
+            ],
+            [
+                'name' => 'Pengadaan Material Genset',
+                'type' => 'Barang',
+            ],
         ];
-
-        foreach ($classifications as $classification) {
-            Classification::firstOrCreate(['name' => $classification]);
+        foreach ($data as $row) {
+            Classification::create([
+                'name' => $row['name'],
+                'type' => $row['type'],
+            ]);
         }
     }
 }

@@ -3,15 +3,13 @@
 namespace App\Http\Controllers\Goods;
 
 use DateTime;
-use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use App\Models\Goods\Status;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\Goods\Classification;
 use App\Models\Goods\PurchaseRequest;
-use App\Models\Goods\PurchaseTracking;
 
 class PurchaseRequestController extends Controller
 {
@@ -30,8 +28,8 @@ class PurchaseRequestController extends Controller
             return $status;
         });
 
-        $status = Status::all();
-        $classification = Classification::all();
+        $status = Status::where('type','Barang')->get();
+        $classification = Classification::where('type','Barang')->get();
 
         return view('goods.purchase-request', compact(['data', 'status', 'classification']));
     }
@@ -67,9 +65,6 @@ class PurchaseRequestController extends Controller
         $validated['status_id'] = (int) $validated['status_id'];
         $validated['classification_id'] = (int) $validated['classification_id'];
 
-        PurchaseTracking::firstOrCreate([
-            'pr_number' => $validated['pr_number'],
-        ]);
         // 🔧 Create data
         $purchaseRequest = PurchaseRequest::create([
             'pr_number' => $validated['pr_number'],
@@ -148,10 +143,8 @@ class PurchaseRequestController extends Controller
      */
     public function destroy(PurchaseRequest $purchaseRequest)
     {
-        $purchaseTracking = PurchaseTracking::where('pr_number',$purchaseRequest['pr_number']);
-        $purchaseTracking->delete();
         $purchaseRequest->delete();
-        return response()->json(['message' => 'Status berhasil dihapus.']);
+        return response()->json(['message' => 'Data berhasil dihapus.']);
     }
     public function search(Request $request)
     {
@@ -161,10 +154,10 @@ class PurchaseRequestController extends Controller
 
         if ($query) {
             $data->where(function ($q) use ($query) {
-                $q->where('pr_number', 'like', '%' . $query . '%')
-                    ->orWhere('location', 'like', '%' . $query . '%')
-                    ->orWhere('item_desc', 'like', '%' . $query . '%')
-                    ->orWhere('uom', 'like', '%' . $query . '%');
+                $q->whereRaw('LOWER(pr_number) LIKE ?', ['%' . strtolower($query) . '%'])
+                    ->orWhereRaw('LOWER(location) LIKE ?', ['%' . strtolower($query) . '%'])
+                    ->orWhereRaw('LOWER(item_desc) LIKE ?', ['%' . strtolower($query) . '%'])
+                    ->orWhereRaw('LOWER(uom) LIKE ?', ['%' . strtolower($query) . '%']);
 
                 // Cek jika query adalah tanggal valid (format YYYY-MM-DD)
                 if (self::isValidDate($query)) {
@@ -175,10 +168,10 @@ class PurchaseRequestController extends Controller
                     ->orWhere(DB::raw("CAST(quantity AS TEXT)"), 'like', '%' . $query . '%')
                     ->orWhere(DB::raw("CAST(amount AS TEXT)"), 'like', '%' . $query . '%')
                     ->orWhereHas('status', function ($s) use ($query) {
-                        $s->where('name', 'like', '%' . $query . '%');
+                        $s->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($query) . '%']);
                     })
                     ->orWhereHas('classification', function ($c) use ($query) {
-                        $c->where('name', 'like', '%' . $query . '%');
+                        $c->whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($query) . '%']);
                     });
 
                 if (is_numeric($query)) {
