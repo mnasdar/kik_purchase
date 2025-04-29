@@ -128,16 +128,29 @@
                     <span class="material-symbols-rounded">close</span>
                 </button>
             </div>
-            <form action="{{ route('purchase-request.store') }}" id="addItemForm" method="POST">
+            <form action="{{ route('purchase-order.store') }}" id="addItemForm" method="POST">
                 @csrf
                 <div class="px-4 py-8 overflow-y-auto">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="form-group">
-                            <label for="inputpr_number" class="text-gray-800 text-sm font-medium inline-block mb-2">PR
+                        <div class="form-group col-span-2">
+                            <label for="inputpo_number" class="text-gray-800 text-sm font-medium inline-block mb-2">PO
                                 Number</label>
-                            <input type="text" class="form-input" name="pr_number" id="inputpr_number">
+                            <input type="text" class="form-input" name="po_number" id="inputpo_number">
                             {{-- Custom error message --}}
-                            <p id="error-pr_number" class="text-red-500 text-sm mt-1"></p>
+                            <p id="error-po_number" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputstatus_id"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">Status</label>
+                            <div class="p-0">
+                                <select id="inputstatus_id" name="status_id" class="search-select">
+                                    @foreach ($status as $item)
+                                        <option value="{{ $item->id }}">{{ ucwords($item->name) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            {{-- Custom error message --}}
+                            <p id="error-status_id" class="text-red-500 text-sm mt-1"></p>
                         </div>
 
                         <div class="form-group">
@@ -147,33 +160,15 @@
                             {{-- Custom error message --}}
                             <p id="error-approved_date" class="text-red-500 text-sm mt-1"></p>
                         </div>
-                        <div class="form-group">
-                            <label for="inputlocation"
-                                class="text-gray-800 text-sm font-medium inline-block mb-2">Location</label>
-                            <div class="p-0">
-                                <select id="inputlocation" name="location" class="search-select">
-                                    <option value="HEAD OFFICE KIK.">Head Office</option>
-                                    <option value="KIK BRANCH MALL RATU INDAH">Mall MARI</option>
-                                    <option value="KIK BRANCH MALL NIPAH">Mall NIPAH</option>
-                                    <option value="KIK WISMA KALLA">Wisma Kalla</option>
-                                </select>
-                            </div>
-                            {{-- Custom error message --}}
-                            <p id="error-location" class="text-red-500 text-sm mt-1"></p>
-                        </div>
+
                         <div class="form-group col-span-2">
-                            <label for="inputitem_desc" class="text-gray-800 text-sm font-medium inline-block mb-2">Item
-                                Description</label>
-                            <input type="text" class="form-input" name="item_desc" id="inputitem_desc">
+                            <label for="inputsupplier_name"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">Supplier Name</label>
+                            <input type="text" class="form-input" name="supplier_name" id="inputsupplier_name">
                             {{-- Custom error message --}}
-                            <p id="error-item_desc" class="text-red-500 text-sm mt-1"></p>
+                            <p id="error-supplier_name" class="text-red-500 text-sm mt-1"></p>
                         </div>
-                        <div class="form-group">
-                            <label for="inputuom" class="text-gray-800 text-sm font-medium inline-block mb-2">UOM</label>
-                            <input type="text" class="form-input" name="uom" id="inputuom">
-                            {{-- Custom error message --}}
-                            <p id="error-uom" class="text-red-500 text-sm mt-1"></p>
-                        </div>
+
                         <div class="form-group">
                             <label for="inputunit_price" class="text-gray-800 text-sm font-medium inline-block mb-2">Unit
                                 Price</label>
@@ -181,6 +176,7 @@
                             {{-- Custom error message --}}
                             <p id="error-unit_price" class="text-red-500 text-sm mt-1"></p>
                         </div>
+
                         <div class="form-group">
                             <label for="inputquantity"
                                 class="text-gray-800 text-sm font-medium inline-block mb-2">Quantity</label>
@@ -188,8 +184,9 @@
                             {{-- Custom error message --}}
                             <p id="error-quantity" class="text-red-500 text-sm mt-1"></p>
                         </div>
+
                         <div class="form-group">
-                            <label for="inputamount" class="text-gray-800 text-sm font-medium inline-block mb-2">PR
+                            <label for="inputamount" class="text-gray-800 text-sm font-medium inline-block mb-2">PO
                                 Amount</label>
                             <input type="text" class="form-input" name="amount" id="inputamount">
                             {{-- Custom error message --}}
@@ -229,13 +226,25 @@
                 @method('put')
                 <div class="px-4 py-8 overflow-y-auto">
                     <div class="grid grid-cols-1 gap-6">
-                        <div class="form-group">
-                            <label for="editpr_number" class="text-gray-800 text-sm font-medium inline-block mb-2">PR
+                        <div class="form-group col-span-2">
+                            <label for="editpo_number" class="text-gray-800 text-sm font-medium inline-block mb-2">PO
                                 Number</label>
-                            <input type="text" class="form-input bg-slate-300" name="pr_number" id="editpr_number"
-                                disabled>
+                            <input type="text" class="form-input" name="po_number" id="editpo_number">
                             {{-- Custom error message --}}
-                            <p id="error-pr_number" class="text-red-500 text-sm error-message"></p>
+                            <p id="error-po_number" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="editstatus_id"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">Status</label>
+                            <div class="p-0">
+                                <select id="editstatus_id" name="status_id" class="search-select">
+                                    @foreach ($status as $item)
+                                        <option value="{{ $item->id }}">{{ ucwords($item->name) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            {{-- Custom error message --}}
+                            <p id="error-status_id" class="text-red-500 text-sm mt-1"></p>
                         </div>
 
                         <div class="form-group">
@@ -243,55 +252,39 @@
                                 class="text-gray-800 text-sm font-medium inline-block mb-2">ApprovedDate</label>
                             <input type="text" class="form-input" name="approved_date" id="editapprove_date">
                             {{-- Custom error message --}}
-                            <p id="error-approved_date" class="text-red-500 text-sm error-message"></p>
+                            <p id="error-approved_date" class="text-red-500 text-sm mt-1"></p>
                         </div>
-                        <div class="form-group">
-                            <label for="editlocation"
-                                class="text-gray-800 text-sm font-medium inline-block mb-2">Location</label>
-                            <div class="p-0">
-                                <select id="editlocation" name="location" class="search-select">
-                                    <option value="HEAD OFFICE KIK.">Head Office</option>
-                                    <option value="KIK BRANCH MALL RATU INDAH">Mall MARI</option>
-                                    <option value="KIK BRANCH MALL NIPAH">Mall NIPAH</option>
-                                    <option value="KIK WISMA KALLA">Wisma Kalla</option>
-                                </select>
-                            </div>
-                            {{-- Custom error message --}}
-                            <span id="error-location" class="text-red-500 text-sm error-message"></span>
-                        </div>
+
                         <div class="form-group col-span-2">
-                            <label for="edititem_desc" class="text-gray-800 text-sm font-medium inline-block mb-2">Item
-                                Description</label>
-                            <input type="text" class="form-input" name="item_desc" id="edititem_desc">
+                            <label for="editsupplier_name"
+                                class="text-gray-800 text-sm font-medium inline-block mb-2">Supplier Name</label>
+                            <input type="text" class="form-input" name="supplier_name" id="editsupplier_name">
                             {{-- Custom error message --}}
-                            <span id="error-item_desc" class="text-red-500 text-sm error-message"></span>
+                            <p id="error-supplier_name" class="text-red-500 text-sm mt-1"></p>
                         </div>
-                        <div class="form-group">
-                            <label for="edituom" class="text-gray-800 text-sm font-medium inline-block mb-2">UOM</label>
-                            <input type="text" class="form-input" name="uom" id="edituom">
-                            {{-- Custom error message --}}
-                            <span id="error-uom" class="text-red-500 text-sm error-message"></span>
-                        </div>
+
                         <div class="form-group">
                             <label for="editunit_price" class="text-gray-800 text-sm font-medium inline-block mb-2">Unit
                                 Price</label>
                             <input type="text" class="form-input" name="unit_price" id="editunit_price">
                             {{-- Custom error message --}}
-                            <span id="error-unit_price" class="text-red-500 text-sm error-message"></span>
+                            <p id="error-unit_price" class="text-red-500 text-sm mt-1"></p>
                         </div>
+
                         <div class="form-group">
                             <label for="editquantity"
                                 class="text-gray-800 text-sm font-medium inline-block mb-2">Quantity</label>
                             <input type="text" class="form-input" name="quantity" id="editquantity">
                             {{-- Custom error message --}}
-                            <span id="error-quantity" class="text-red-500 text-sm error-message"></span>
+                            <p id="error-quantity" class="text-red-500 text-sm mt-1"></p>
                         </div>
+
                         <div class="form-group">
-                            <label for="inputamount" class="text-gray-800 text-sm font-medium inline-block mb-2">PR
+                            <label for="editamount" class="text-gray-800 text-sm font-medium inline-block mb-2">PO
                                 Amount</label>
-                            <input type="text" class="form-input" name="amount" id="inputamount">
+                            <input type="text" class="form-input" name="amount" id="editamount">
                             {{-- Custom error message --}}
-                            <span id="error-amount" class="text-red-500 text-sm error-message"></span>
+                            <p id="error-amount" class="text-red-500 text-sm mt-1"></p>
                         </div>
                     </div>
                 </div>
@@ -316,7 +309,7 @@
             class="fc-modal-open:opacity-100 duration-500 opacity-0 ease-out transition-[opacity] sm:max-w-lg sm:w-full sm:mx-auto  flex-col bg-white border shadow-sm rounded-md dark:bg-slate-800 dark:border-gray-700">
             <div class="flex justify-between items-center py-2.5 px-4 border-b dark:border-gray-700">
                 <h3 class="font-medium text-gray-800 dark:text-white text-lg">
-                    Edit Item
+                    Delete Item
                 </h3>
                 <button class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
                     data-fc-dismiss type="button">
@@ -345,16 +338,174 @@
             </form>
         </div>
     </div>
+    <div id="showprModal" class="w-full h-full mt-5 fixed top-0 left-0 z-50 transition-all duration-500 fc-modal hidden">
+        <div
+            class="sm:max-w-7xl fc-modal-open:opacity-100 duration-500 opacity-0 ease-out transition-all sm:w-full m-3 sm:mx-auto flex flex-col bg-white border shadow-sm rounded-md dark:bg-slate-800 dark:border-gray-700">
+            <div class="flex justify-between items-center py-2.5 px-4 border-b dark:border-gray-700">
+                <h3 class="font-medium text-gray-800 dark:text-white text-lg">
+                    PR Number List
+                </h3>
+                <button class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
+                    data-fc-dismiss type="button">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <div class="grid grid-cols-12">
+                <div class="col-span-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="flex md:flex-row flex-col justify-between items-start md:items-center">
+                                <div class="flex flex-row gap-2">
+                                    <button type="button" id="btn-addpr" class="btn-addpr btn bg-primary text-white my-3"
+                                        data-fc-target="addprModal" data-fc-behavior="static" data-fc-type="modal">
+                                        <i class="mgc_add_fill text-base me-0 md:md-4"></i>
+                                        <span class="hidden md:inline">Add PR Number</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="overflow-x-auto p-3">
+                                <div class="min-w-full inline-block align-middle">
+                                    <div
+                                        class="border rounded-lg divide-y divide-gray-200 dark:border-gray-700 dark:divide-gray-700">
+                                        <div class="overflow-hidden">
+                                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                                    <tr>
+                                                    <tr>
+                                                        <th scope="col"
+                                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                            #</th>
+                                                        <th scope="col"
+                                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                            Status</th>
+                                                        <th scope="col"
+                                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                            Classification</th>
+                                                        <th scope="col"
+                                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                            PR Number</th>
+                                                        <th scope="col"
+                                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                            Location</th>
+                                                        <th scope="col"
+                                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                            Item Desc</th>
+                                                        <th scope="col"
+                                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                            UOM</th>
+                                                        <th scope="col"
+                                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                            Approve Date</th>
+                                                        <th scope="col"
+                                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                            Unit Price</th>
+                                                        <th scope="col"
+                                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                            Quantity</th>
+                                                        <th scope="col"
+                                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                            Amount</th>
+                                                        <th scope="col"
+                                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                            Status</th>
+                                                        <th scope="col"
+                                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                            SLA</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="ShowprDatatableBody"
+                                                    class="divide-y divide-gray-200 dark:divide-gray-700">
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
+                            <button
+                                class="btn dark:text-gray-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:dark:bg-slate-700 transition-all"
+                                data-fc-dismiss type="button">Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="addprModal" class="w-full h-full mt-5 fixed top-0 left-0 z-50 transition-all duration-500 fc-modal hidden">
+        <div
+            class="sm:max-w-5xl h-auto fc-modal-open:opacity-100 duration-500 opacity-0 ease-out transition-all sm:w-full m-3 sm:mx-auto flex flex-col bg-white border shadow-sm rounded-md dark:bg-slate-800 dark:border-gray-700">
+            <div class="flex justify-between items-center py-2.5 px-4 border-b dark:border-gray-700">
+                <h3 class="font-medium text-gray-800 dark:text-white text-lg">
+                    Delete Item
+                </h3>
+                <button class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
+                    data-fc-dismiss type="button">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <form action="{{ route('purchase-tracking.store') }}" id="addFormTracking" method="POST">
+                @csrf
+                <div class="px-4 py-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                        <input type="hidden" id="inputpurchase_order_id" name="purchase_order_id">
+
+                        <div class="form-group col-span-2">
+                            <label for="inputpurchase_request_id" class="text-gray-800 text-sm font-medium inline-block mb-2">PR
+                                Number</label>
+                            <div class="p-0">
+                                <select id="inputpurchase_request_id" name="purchase_request_id" class="search-select">
+                                    <option value="" disabled selected>Pilih Data</option>
+                                    @foreach ($purchaseRequests as $item)
+                                        <option value="{{ $item->id }}">{{ $item->pr_number }} | {{ $item->item_desc }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            {{-- Custom error message --}}
+                            <p id="error-purchase_request_id" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
+                    <button
+                        class="btn dark:text-gray-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:dark:bg-slate-700 transition-all"
+                        data-fc-dismiss type="button">Close</button>
+                    <button type="submit" class="btn bg-primary text-white flex items-center gap-2" id="btnSave">
+                        <span
+                            class="loader hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span>Simpan</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 @endsection
 @section('script')
-    @vite(['resources/js/pages/table-gridjs.js', 'resources/js/pages/form-flatpickr.js', 'resources/js/pages/form-select.js', 'resources/js/pages/highlight.js', 'resources/js/crud/add-item.js', 'resources/js/crud/edit-item.js', 'resources/js/crud/delete-item.js', 'resources/js/crud/search-item.js'])
+    @vite([
+        // Masukkan JS disini
+        'resources/js/pages/table-gridjs.js',
+        'resources/js/pages/form-flatpickr.js',
+        'resources/js/pages/form-select.js',
+        'resources/js/pages/highlight.js',
+        'resources/js/crud/add-item.js',
+        'resources/js/crud/edit-item.js',
+        'resources/js/crud/delete-item.js',
+        'resources/js/crud/search-item.js',
+        'resources/js/crud/show-pr.js',
+    ])
     <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         window.routes = {
-            routesEdit: "{{ route('purchase-request.edit', ['purchase_request' => '__ID__']) }}",
-            routesUpdate: "{{ route('purchase-request.update', ['purchase_request' => '__ID__']) }}",
-            routesDestroy: "{{ route('purchase-request.destroy', ['purchase_request' => '__ID__']) }}"
+            routesEdit: "{{ route('purchase-order.edit', ['purchase_order' => '__ID__']) }}",
+            routesUpdate: "{{ route('purchase-order.update', ['purchase_order' => '__ID__']) }}",
+            routesDestroy: "{{ route('purchase-order.destroy', ['purchase_order' => '__ID__']) }}",
+            routesShowpr: "{{ route('purchase-order.showpr', ['purchase_order' => '__ID__']) }}"
         };
     </script>
 @endsection

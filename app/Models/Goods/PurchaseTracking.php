@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class PurchaseTracking extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'purchase_request_id',
+        'purchase_order_id',
+    ];
     public function purchase_request()
     {
         return $this->belongsTo(PurchaseRequest::class);

@@ -8,13 +8,21 @@
             <span
                 class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium text-white
                                                             @if (strtolower($item->status->name) === 'finish') bg-green-500
-                                                            @elseif(strtolower($item->status->name) === 'on process') bg-yellow-500
+                                                            @elseif(strtolower($item->status->name) === 'on proses') bg-yellow-500
                                                             @else bg-gray-500 @endif">
                 {{ ucwords($item->status->name) }}
             </span>
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-800 dark:text-gray-200">
-            <span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">{{ $item->trackings->count() }}</span>
+            <a
+                class="relative inline-flex flex-shrink-0 justify-center items-center h-[2rem] w-[2rem] rounded-md border font-medium bg-yellow-100 text-yellow-800 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-yellow-300 transition-all text-sm  dark:hover:bg-slate-800 dark:border-gray-700  dark:hover:text-white dark:focus:bg-slate-800 dark:focus:text-white dark:focus:ring-offset-gray-800 dark:focus:ring-yellow-200 btn-showpr"
+                edit-data-id="{{ $item->id }}" data-fc-behavior="static" data-fc-target="showprModal" data-fc-type="modal">
+                <i class="mgc_eye_2_fill text-2xl"></i>
+                @if ($item->trackings->count() > 0)
+                    <span
+                        class="absolute top-0 end-0 inline-flex items-center py-0.5 px-1.5 rounded-full text-xs font-medium transform -translate-y-1/2 translate-x-1/2 bg-rose-500 text-white">{{ $item->trackings->count() }}</span>
+                @endif
+            </a>
         </td>
         <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200 gap-1">
             {{ $item->po_number }}

@@ -1,4 +1,4 @@
-@forelse($data as $item)
+@forelse($purchaseRequests as $item)
     <tr id="row-{{ $item->id }}"
         class="odd:bg-white even:bg-gray-100 hover:bg-gray-200 dark:odd:bg-gray-800 dark:even:bg-gray-700 dark:hover:bg-gray-600">
         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
@@ -46,18 +46,6 @@
                 class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium text-white {{ $item->sla_badge }}">
                 {{ $item->working_days ?? '-' }}
             </span>
-        </td>
-        <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
-            <div class="inline-flex items-center gap-1">
-                <button class="btn bg-warning p-2 text-white btn-edit" edit-data-id="{{ $item->id }}"
-                    data-fc-target="editModal" data-fc-type="modal" type="button">
-                    <i class="mgc_edit_2_line text-base"></i>
-                </button>
-                <button class="btn bg-danger p-2 text-white btn-delete" delete-data-id="{{ $item->id }}"
-                    data-fc-target="deleteModal" data-fc-type="modal" type="button">
-                    <i class="mgc_delete_2_line text-base"></i>
-                </button>
-            </div>
         </td>
     </tr>
 @empty

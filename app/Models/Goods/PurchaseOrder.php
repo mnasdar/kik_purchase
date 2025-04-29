@@ -11,9 +11,8 @@ class PurchaseOrder extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'purchase_request_id',
         'po_number',
-        'status',
+        'status_id',
         'approved_date',
         'supplier_name',
         'quantity',

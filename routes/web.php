@@ -6,6 +6,7 @@ use App\Http\Controllers\Goods\StatusController;
 use App\Http\Controllers\Goods\PurchaseOrderController;
 use App\Http\Controllers\Goods\ClassificationController;
 use App\Http\Controllers\Goods\PurchaseRequestController;
+use App\Http\Controllers\Goods\PurchaseTrackingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,7 +29,9 @@ Route::group(['prefix' => '/', 'middleware'=>'auth'], function () {
         Route::get('/purchase-request/search', [PurchaseRequestController::class, 'search'])->name('purchase-request.search');
         Route::resource('/purchase-request', PurchaseRequestController::class)->except(['create','show']);
         Route::get('/purchase-order/search', [PurchaseOrderController::class, 'search'])->name('purchase-order.search');
+        Route::get('/purchase-order/{purchase_order}/showpr', [PurchaseOrderController::class, 'showpr'])->name('purchase-order.showpr');
         Route::resource('/purchase-order', PurchaseOrderController::class)->except(['create','show']);
+        Route::resource('/purchase-tracking', PurchaseTrackingController::class)->only('store');
         Route::get('/status/search', [StatusController::class, 'search'])->name('status.search');
         Route::resource('/status', StatusController::class)->except(['create','show']);
         Route::get('/classification/search', [ClassificationController::class, 'search'])->name('classification.search');

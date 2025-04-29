@@ -14,7 +14,7 @@ class PurchaseOrderSeeder extends Seeder
      */
     public function run(): void
     {
-        $statusIds = Status::pluck('id')->toArray();
+        $statusIds = Status::where('type','Barang')->pluck('id')->toArray();
 
         $data = [
             [

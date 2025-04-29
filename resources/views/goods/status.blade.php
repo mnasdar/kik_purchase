@@ -190,7 +190,7 @@
         class="fc-modal-open:opacity-100 duration-500 opacity-0 ease-out transition-[opacity] sm:max-w-lg sm:w-full sm:mx-auto  flex-col bg-white border shadow-sm rounded-md dark:bg-slate-800 dark:border-gray-700">
         <div class="flex justify-between items-center py-2.5 px-4 border-b dark:border-gray-700">
             <h3 class="font-medium text-gray-800 dark:text-white text-lg">
-                Edit Item
+                Delete Item
             </h3>
             <button class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
                 data-fc-dismiss type="button">
