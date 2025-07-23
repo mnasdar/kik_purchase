@@ -24,28 +24,42 @@
     <!--- Menu -->
     <div class="srcollbar" data-simplebar>
         <ul class="menu" data-fc-type="accordion">
-            <li class="menu-title">Goods</li>
+            <li class="menu-title">Menu</li>
 
             <li class="menu-item">
-                <a href="{{ route('second', ['goods','purchase-request']) }}" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_file_upload_line"></i></span>
-                    <span class="menu-text"> Purchase Request  </span>
+                <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
+                    <span class="menu-icon"><i class="mgc_building_2_line"></i></span>
+                    <span class="menu-text"> Barang </span>
+                    <span class="menu-arrow"></span>
                 </a>
+
+                <ul class="sub-menu hidden">
+                    <li class="menu-item">
+                        <a href="{{ route('purchase-request.index') }}" class="menu-link">
+                            <span class="menu-text">PR (Purchase Request)</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="{{ route('purchase-order.index') }}" class="menu-link">
+                            <span class="menu-text">PO (Purchase Order)</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="{{ route('second', ['project', 'create']) }}" class="menu-link">
+                            <span class="menu-text">PO On Site</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
+
             <li class="menu-item">
-                <a href="{{ route('second', ['goods','purchase-order']) }}" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_file_import_line"></i></span>
-                    <span class="menu-text"> Purchase Order  </span>
-                </a>
-            </li>
-            <li class="menu-item">
-                <a href="{{ route('second', ['goods','status']) }}" class="menu-link">
+                <a href="{{ route('second', ['goods', 'status']) }}" class="menu-link">
                     <span class="menu-icon"><i class="mgc_list_check_2_line"></i></span>
                     <span class="menu-text"> Status </span>
                 </a>
             </li>
             <li class="menu-item">
-                <a href="{{ route('second', ['goods','classification']) }}" class="menu-link">
+                <a href="{{ route('second', ['goods', 'classification']) }}" class="menu-link">
                     <span class="menu-icon"><i class="mgc_list_search_line"></i></span>
                     <span class="menu-text"> Classification </span>
                 </a>
@@ -59,7 +73,7 @@
                     <span class="menu-text"> Dashboard </span>
                 </a>
             </li>
-            
+
 
             <li class="menu-title">Apps</li>
 

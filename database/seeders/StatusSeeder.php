@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Goods\Status;
+use App\Models\Barang\Status;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 

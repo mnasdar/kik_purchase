@@ -71,6 +71,7 @@ export default defineConfig({
                 'resources/js/pages/highlight.js',
 
                 // Code Js Custom
+                'resources/js/custom/data-table.js', 
                 'resources/js/goods/add-item.js', 
                 'resources/js/goods/delete-item.js', 
                 'resources/js/goods/edit-item.js', 

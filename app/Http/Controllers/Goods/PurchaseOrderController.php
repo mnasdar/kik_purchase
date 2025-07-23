@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Goods;
 
 use DateTime;
-use App\Models\Goods\Status;
+use App\Models\Barang\Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use App\Models\Goods\PurchaseOrder;
+use App\Models\Barang\PurchaseOrder;
 use App\Http\Controllers\Controller;
-use App\Models\Goods\PurchaseRequest;
-use App\Models\Goods\PurchaseTracking;
+use App\Models\Barang\PurchaseRequest;
+use App\Models\Barang\PurchaseTracking;
 
 class PurchaseOrderController extends Controller
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Goods;
+namespace App\Http\Controllers\Barang;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
-use App\Models\Goods\Classification;
+use App\Models\Barang\Classification;
 
 class ClassificationController extends Controller
 {

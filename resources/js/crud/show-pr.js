@@ -153,4 +153,25 @@ $(document).ready(function () {
             }
         });
     });
+
+    // Delete Modal
+    const $deleteModal = $("#deleteprModal");
+    let deleteId = null;
+
+    // ✅ Fungsi buka modal delete
+    function openDeleteModal() {
+        $deleteModal.removeClass("hidden");
+    }
+
+    // ✅ Fungsi tutup modal delete
+    function closeDeleteModal() {
+        $deleteModal.addClass("hidden");
+        deleteId = null;
+    }
+
+    // ✅ Tombol delete → buka modal
+    $(".btn-prdelete").on("click", function () {
+        const id = $(this).attr("delete-data-id");
+        openDeleteModal();
+    });
 });

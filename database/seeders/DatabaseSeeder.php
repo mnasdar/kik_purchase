@@ -7,8 +7,8 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\Goods\PurchaseRequest;
-use App\Models\Goods\PurchaseTracking;
+use App\Models\Barang\PurchaseRequest;
+use App\Models\Barang\PurchaseTracking;
 use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder

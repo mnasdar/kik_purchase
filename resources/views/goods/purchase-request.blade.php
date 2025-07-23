@@ -1,7 +1,13 @@
 @extends('layouts.vertical', ['title' => 'Purchase Request', 'sub_title' => 'Goods', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
-    @vite(['node_modules/flatpickr/dist/flatpickr.min.css', 'node_modules/@simonwep/pickr/dist/themes/classic.min.css', 'node_modules/@simonwep/pickr/dist/themes/monolith.min.css', 'node_modules/@simonwep/pickr/dist/themes/nano.min.css'])
+    @vite([
+        //
+        'node_modules/flatpickr/dist/flatpickr.min.css',
+        'node_modules/@simonwep/pickr/dist/themes/classic.min.css',
+        'node_modules/@simonwep/pickr/dist/themes/monolith.min.css',
+        'node_modules/@simonwep/pickr/dist/themes/nano.min.css',
+    ])
 @endsection
 
 @section('content')
@@ -97,8 +103,7 @@
                                                 </th>
                                             </tr>
                                         </thead>
-                                        <tbody id="DatatableBody"
-                                            class="divide-y divide-gray-200 dark:divide-gray-700">
+                                        <tbody id="DatatableBody" class="divide-y divide-gray-200 dark:divide-gray-700">
                                             @include('goods.partials.purchase-request_datatable', [
                                                 'data' => $data,
                                             ])
@@ -265,7 +270,8 @@
                         <div class="form-group">
                             <label for="editpr_number" class="text-gray-800 text-sm font-medium inline-block mb-2">PR
                                 Number</label>
-                            <input type="text" class="form-input bg-slate-300" name="pr_number" id="editpr_number" disabled>
+                            <input type="text" class="form-input bg-slate-300" name="pr_number" id="editpr_number"
+                                disabled>
                             {{-- Custom error message --}}
                             <p id="error-pr_number" class="text-red-500 text-sm error-message"></p>
                         </div>
@@ -405,7 +411,17 @@
     </div>
 @endsection
 @section('script')
-    @vite(['resources/js/pages/table-gridjs.js', 'resources/js/pages/form-flatpickr.js', 'resources/js/pages/form-select.js', 'resources/js/pages/highlight.js', 'resources/js/crud/add-item.js', 'resources/js/crud/edit-item.js', 'resources/js/crud/delete-item.js', 'resources/js/crud/search-item.js'])
+    @vite([
+        //
+        'resources/js/pages/table-gridjs.js',
+        'resources/js/pages/form-flatpickr.js',
+        'resources/js/pages/form-select.js',
+        'resources/js/pages/highlight.js',
+        'resources/js/crud/add-item.js',
+        'resources/js/crud/edit-item.js',
+        'resources/js/crud/delete-item.js',
+        'resources/js/crud/search-item.js',
+    ])
     <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>

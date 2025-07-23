@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Goods;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\Goods\PurchaseTracking;
+use App\Models\Barang\PurchaseTracking;
 
 class PurchaseTrackingController extends Controller
 {

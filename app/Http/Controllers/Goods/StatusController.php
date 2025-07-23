@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Goods;
+namespace App\Http\Controllers\Barang;
 
-use App\Models\Goods\Status;
+use App\Models\Barang\Status;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;

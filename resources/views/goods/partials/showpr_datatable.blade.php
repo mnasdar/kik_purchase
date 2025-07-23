@@ -2,7 +2,9 @@
     <tr id="row-{{ $item->id }}"
         class="odd:bg-white even:bg-gray-100 hover:bg-gray-200 dark:odd:bg-gray-800 dark:even:bg-gray-700 dark:hover:bg-gray-600">
         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-gray-200">
-            {{ $loop->iteration }}
+            <div class="form-check">
+                <input type="checkbox" value="{{ $item->id }}" class="form-checkbox rounded border-primary text-primary">
+            </div>
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
             <span
@@ -18,8 +20,7 @@
         <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-200 gap-1">
             {{ $item->pr_number }}
             @if ($item->is_new)
-                <span
-                    class="inline-block px-2 py-1 text-xs font-semibold text-white bg-success rounded-full">New</span>
+                <span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-success rounded-full">New</span>
             @elseif($item->is_update)
                 <span
                     class="inline-block px-2 py-1 text-xs font-semibold text-white bg-warning rounded-full">Update</span>

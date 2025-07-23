@@ -64,6 +64,15 @@ flatpickr('#inputapprove_date', {
     defaultDate: new Date()
 });
 
+const approvedDate = document.getElementById('inputApproveDate').value;
+
+flatpickr('#inputApproveDate', {
+    altInput: true,
+    altFormat: "j F, Y",
+    dateFormat: "Y-m-d",
+    defaultDate: approvedDate || new Date(), // fallback kalau kosong
+});
+
 export const approveDatePicker = flatpickr('#editapprove_date', {
     altInput: true,
     altFormat: "F j, Y",

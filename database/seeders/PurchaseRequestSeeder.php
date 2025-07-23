@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\Goods\Status;
+use App\Models\Barang\Status;
 use Illuminate\Database\Seeder;
-use App\Models\Goods\Classification;
-use App\Models\Goods\PurchaseRequest;
+use App\Models\Barang\Classification;
+use App\Models\Barang\PurchaseRequest;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class PurchaseRequestSeeder extends Seeder

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Goods;
+namespace App\Models\Barang;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -41,15 +41,6 @@ class PurchaseRequest extends Model
         return $this->hasMany(PurchaseTracking::class);
     }
 
-    // Format tanggal approve
-    protected function approvedDate(): Attribute
-    {
-        return Attribute::make(
-            get: fn($value) => Carbon::parse($value)->translatedFormat('d-M-y'),
-        );
-    }
-
-
     public function getWorkingDaysAttribute()
     {
         $prApproved = $this->getRawOriginal('approved_date'); // tanggal dari DB
@@ -80,5 +71,11 @@ class PurchaseRequest extends Model
         }
 
         return $days > 7 ? 'bg-red-500' : 'bg-green-500';
+    }
+    protected function approvedDate(): Attribute
+    {
+        return Attribute::make(
+            get: fn($value) => Carbon::parse($value)->translatedFormat('d-M-y'),
+        );
     }
 }

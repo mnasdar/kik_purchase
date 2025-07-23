@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Goods\Classification;
+use App\Models\Barang\Classification;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class ClassificationSeeder extends Seeder

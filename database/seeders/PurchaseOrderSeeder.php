@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Goods\Status;
+use App\Models\Barang\Status;
 use Illuminate\Database\Seeder;
-use App\Models\Goods\PurchaseOrder;
+use App\Models\Barang\PurchaseOrder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class PurchaseOrderSeeder extends Seeder
