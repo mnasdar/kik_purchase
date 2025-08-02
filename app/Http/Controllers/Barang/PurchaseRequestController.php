@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Barang;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Models\Barang\Status;
+use App\Models\Config\Status;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\Barang\Classification;
+use App\Models\Config\Classification;
 use App\Models\Barang\PurchaseRequest;
 
 class PurchaseRequestController extends Controller

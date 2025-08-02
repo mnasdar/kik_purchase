@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Models\Barang;
+namespace App\Models\Config;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Barang\PurchaseOrder;
+use App\Models\Barang\PurchaseRequest;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Status extends Model
 {
@@ -16,6 +18,6 @@ class Status extends Model
     }
     public function purchaseOrders()
     {
-        return $this->hasMany(PurchaseRequest::class);
+        return $this->hasMany(PurchaseOrder::class);
     }
 }

@@ -1,0 +1,239 @@
+@extends('layouts.vertical', ['title' => 'Klasifikasi', 'sub_title' => 'Menu', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+
+@section('css')
+    @vite([
+        // Script css disini
+        'node_modules/nice-select2/dist/css/nice-select2.css',
+        'node_modules/gridjs/dist/theme/mermaid.min.css',
+        'node_modules/glightbox/dist/css/glightbox.min.css',
+        'node_modules/tippy.js/dist/tippy.css',
+    ])
+@endsection
+
+@section('content')
+    <div class="grid grid-cols-12">
+        <div class="col-span-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="flex md:flex-row flex-col justify-between items-start md:items-center">
+                        <h4 class="card-title">Data Klasifikasi</h4>
+                        <div class="flex flex-row gap-2">
+                            <div class="inline-flex items-center gap-1">
+                                <span data-fc-target="addModal" data-fc-type="modal">
+                                    <button class="btn bg-primary text-white p-2" title="Buat Klasifikasi" tabindex="0"
+                                        data-plugin="tippy" data-tippy-animation="scale" data-tippy-inertia="true"
+                                        data-tippy-duration="[600, 300]" data-tippy-arrow="true">
+                                        <i class="mgc_add_fill text-base"></i>
+                                    </button>
+                                </span>
+                                <button class="btn disabled:bg-slate-400 bg-warning p-2 text-white btn-edit"
+                                    data-fc-target="editModal" data-fc-type="modal" type="button" title="Edit"
+                                    tabindex="0" data-plugin="tippy" data-tippy-animation="scale"
+                                    data-tippy-inertia="true" data-tippy-duration="[600, 300]" data-tippy-arrow="true"
+                                    disabled>
+                                    <i class="mgc_edit_2_line text-base"></i>
+                                </button>
+                                <button class="btn disabled:bg-slate-400 bg-danger p-2 text-white btn-delete"
+                                    data-fc-target="deleteModal" data-fc-type="modal" type="button" title="Hapus"
+                                    tabindex="0" data-plugin="tippy" data-tippy-animation="scale"
+                                    data-tippy-inertia="true" data-tippy-duration="[600, 300]" data-tippy-arrow="true"
+                                    disabled>
+                                    <i class="mgc_delete_2_line text-base"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">Berikut adalah data klasifikasi. Anda bisa
+                        mencari
+                        dan mengurutkan data secara naik atau turun. Setiap halaman menampilkan 10 item.
+                    </p>
+                    <!-- Disini tampilkan data -->
+                    <div id="classification-table" class="w-full overflow-x-auto"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Loader Overlay -->
+    <div id="loaderOverlay" class="hidden fixed inset-0 z-[999] bg-black bg-opacity-40 items-center justify-center">
+        <div class="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <!-- Modal Add -->
+    <div id="addModal" class="w-full h-full mt-5 fixed top-0 left-0 z-50 transition-all duration-500 fc-modal hidden">
+        <div
+            class="fc-modal-open:opacity-100 duration-500 max-h-min opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto flex flex-col bg-white border shadow-sm rounded-md dark:bg-slate-800 dark:border-gray-700">
+            <div class="flex justify-between items-center py-2.5 px-4 border-b dark:border-gray-700">
+                <h3 class="font-medium text-gray-800 dark:text-white text-lg">
+                    Add Item
+                </h3>
+                <button class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
+                    data-fc-dismiss type="button">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <form action="{{ route('classification.store') }}" id="addItemForm" method="POST">
+                @csrf
+                <div class="px-4 py-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-group col-span-2">
+                            <label for="inputtype" class="text-gray-800 text-sm font-medium inline-block mb-2">Type</label>
+                            <div class="p-0">
+                                <select id="inputtype" name="type" class="search-select">
+                                    <option value="" disabled selected>Pilih</option>
+                                    @foreach ($type as $item)
+                                        <option value="{{ $item }}">{{ ucwords($item) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            {{-- Custom error message --}}
+                            <p id="error-type" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label for="inputName" class="text-gray-800 text-sm font-medium inline-block mb-2">Name</label>
+                            <input type="text" class="form-input" name="name" id="inputName">
+                            {{-- Custom error message --}}
+                            <p id="error-name" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputSla" class="text-gray-800 text-sm font-medium inline-block mb-2">SLA (Hari)</label>
+                            <input type="number" class="form-input" name="sla" id="inputSla" min="1" max="365">
+                            {{-- Custom error message --}}
+                            <p id="error-sla" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
+                    <button
+                        class="btn dark:text-gray-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:dark:bg-slate-700 transition-all"
+                        data-fc-dismiss type="button">Close</button>
+                    <button type="submit" class="btn bg-primary text-white flex items-center gap-2 disabled:bg-slate-500"
+                        id="btnSave">
+                        <span
+                            class="loader hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span>Simpan</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Edit -->
+    <div id="editModal" class="w-full h-full mt-5 fixed top-0 left-0 z-50 transition-all duration-500 fc-modal hidden">
+        <div
+            class="fc-modal-open:opacity-100 duration-500 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto flex flex-col bg-white border shadow-sm rounded-md dark:bg-slate-800 dark:border-gray-700">
+            <div class="flex justify-between items-center py-2.5 px-4 border-b dark:border-gray-700">
+                <h3 class="font-medium text-gray-800 dark:text-white text-lg">
+                    Edit Item
+                </h3>
+                <button class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
+                    data-fc-dismiss type="button">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <form id="editItemForm" method="POST">
+                @csrf
+                @method('put')
+                <div class="px-4 py-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-group col-span-2">
+                            <label for="editType" class="text-gray-800 text-sm font-medium inline-block mb-2">Type</label>
+                            <div class="p-0">
+                                <select id="editType" name="type" class="search-select">
+                                    <option value="" disabled selected>Pilih</option>
+                                    @foreach ($type as $item)
+                                        <option value="{{ $item }}">{{ ucwords($item) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            {{-- Custom error message --}}
+                            <p id="error-edit-type" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label for="editName"
+                                class="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2 inline-block">Name</label>
+                            <input type="text" id="editName" name="name" class="form-input" required>
+                            {{-- Custom error message --}}
+                            <p id="error-edit-name" class="text-sm text-red-500 mt-1"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="editSla" class="text-gray-800 text-sm font-medium inline-block mb-2">SLA (Hari)</label>
+                            <input type="number" class="form-input" name="sla" id="editSla" min="1" max="365">
+                            {{-- Custom error message --}}
+                            <p id="error-edit-sla" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
+                    <button
+                        class="btn dark:text-gray-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:dark:bg-slate-700 transition-all"
+                        data-fc-dismiss type="button">Close
+                    </button>
+                    <button type="submit" class="btn bg-primary text-white flex items-center gap-2" id="btnUpdate">
+                        <span
+                            class="loader hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span>Update</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Delete -->
+    <div id="deleteModal"
+        class="fixed top-0 left-0 z-50 transition-all duration-500 fc-modal hidden w-full h-full min-h-full items-center fc-modal-open:flex">
+        <div
+            class="fc-modal-open:opacity-100 duration-500 opacity-0 ease-out transition-[opacity] sm:max-w-lg sm:w-full sm:mx-auto  flex-col bg-white border shadow-sm rounded-md dark:bg-slate-800 dark:border-gray-700">
+            <div class="flex justify-between items-center py-2.5 px-4 border-b dark:border-gray-700">
+                <h3 class="font-medium text-gray-800 dark:text-white text-lg">
+                    Delete Item
+                </h3>
+                <button class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
+                    data-fc-dismiss type="button">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <form method="POST">
+                @csrf
+                @method('delete')
+                <div class="px-4 py-8 overflow-y-auto">
+                    <div class="grid grid-cols-1 gap-6">
+                        <div>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-6">
+                                Apakah Anda yakin ingin menghapus data ini?
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
+                    <button
+                        class="btn dark:text-gray-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:dark:bg-slate-700 transition-all"
+                        data-fc-dismiss type="button">Close
+                    </button>
+                    <button id="confirmDelete" class="btn bg-danger text-white" type="button">Hapus</button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection
+
+@section('script')
+    <script>
+        const Data = @json($dataJson);
+    </script>
+    @vite([
+        // Script JS disini
+        'resources/js/pages/extended-lightbox.js',
+        'resources/js/pages/form-select.js',
+        'resources/js/pages/highlight.js',
+        'resources/js/custom/data-table.js',
+        'resources/js/custom/form-delete.js',
+        'resources/js/custom/modal-create.js',
+        'resources/js/custom/modal-update.js',
+        'resources/js/pages/extended-tippy.js',
+    ])
+@endsection

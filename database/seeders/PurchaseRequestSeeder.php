@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Barang\Status;
+use App\Models\Config\Status;
 use Illuminate\Database\Seeder;
-use App\Models\Barang\Classification;
+use App\Models\Config\Classification;
 use App\Models\Barang\PurchaseRequest;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 

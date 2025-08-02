@@ -93,7 +93,8 @@ class ThemeCustomizer {
         var self = this;
         var pageUrl = window.location.href.split(/[?#]/)[0];
         document.querySelectorAll('ul.menu a.menu-link').forEach((element) => {
-            if (element.href === pageUrl) {
+            // BANDINGKAN apakah element.href adalah awalan dari pageUrl
+            if (pageUrl.startsWith(element.href)) {
                 element.classList.add('active');
                 let parentMenu = element.parentElement.parentElement.parentElement;
                 if (parentMenu && parentMenu.classList.contains('menu-item')) {

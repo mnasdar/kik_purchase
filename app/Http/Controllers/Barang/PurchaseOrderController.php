@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Barang;
 
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use App\Models\Barang\Status;
+use App\Models\Config\Status;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\Barang\PurchaseOrder;
 use App\Models\Barang\PurchaseRequest;
+use App\Models\Barang\PurchaseOrderOnsite;
 
 class PurchaseOrderController extends Controller
 {
@@ -87,70 +89,6 @@ class PurchaseOrderController extends Controller
                     '<div class="my-1 flex md:flex-row flex-col justify-between items-start md:items-center text-red-600">
                         <span>Rp.</span><span class="text-right">' . number_format($item->unit_price, 0) . '</span>
                     </div>',
-                'amount' => '<div class="my-1 flex md:flex-row flex-col justify-between items-start md:items-center text-red-600">
-                        <span>Rp.</span><span class="text-right">' . number_format($item->amount, 0) . '</span>
-                    </div>',
-                'sla' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium text-white ' . $item->sla_badge . '">'
-                    . ($item->working_days ?? '-') .
-                    '</span>',
-            ];
-        });
-
-        $pr = PurchaseRequest::with(['status']) // Eager load relasi
-            ->doesntHave('tracking') // Filter yang tidak memiliki relasi 'tracking'
-            ->orderByDesc('updated_at') // Lebih singkat untuk descending
-            ->cursor(); // Mengembalikan LazyCollection
-
-        // return $pr;
-
-        $showDataPRJson = $pr->values()->map(function ($item, $index) {
-            // Badge tambahan (misal: 'New', 'Update')
-            $badge = '';
-            if ($item->is_new) {
-                $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-success rounded-full">New</span>';
-            } elseif ($item->is_update) {
-                $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-warning rounded-full">Update</span>';
-            }
-
-            // Badge stok (jika diperlukan)
-            if ($item->stok < $item->min_stok) {
-                $badge_stok = '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-red-100 text-red-800">';
-            } elseif ($item->stok >= $item->min_stok) {
-                $badge_stok = '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-green-100 text-green-800">';
-            }
-
-            // Status badge berdasarkan status->name
-            $statusName = strtolower($item->status->name);
-            if ($statusName === 'finish') {
-                $statusClass = 'bg-green-500';
-            } elseif ($statusName === 'on proses') {
-                $statusClass = 'bg-yellow-500';
-            } else {
-                $statusClass = 'bg-gray-500';
-            }
-            $statusBadge = '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium text-white ' . $statusClass . '">'
-                . ucwords($item->status->name) .
-                '</span>';
-
-            return [
-                'checkbox' => '<div class="form-check">
-                                <input type="checkbox" class="form-checkbox rounded text-primary" value="' . $item->id . '">
-                            </div>',
-                'number' => ($index + 1),
-                'status' => $statusBadge, // gabungkan badge status dan badge tambahan jika perlu
-                // kamu bisa menambahkan 'stok' => $badge_stok jika ingin ditampilkan juga
-
-                'classification' => $item->classification->name,
-                'pr_number' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-primary/25 text-sky-800">' . $item->pr_number . '</span>' . $badge,
-                'location' => $item->location,
-                'item_desc' => $item->item_desc,
-                'uom' => $item->uom,
-                'approved_date' => $item->approved_date,
-                'unit_price' =>
-                    '<div class="my-1 flex md:flex-row flex-col justify-between items-start md:items-center text-red-600">
-                        <span>Rp.</span><span class="text-right">' . number_format($item->unit_price, 0) . '</span>
-                    </div>',
-                'qty' => '<div class="text-center">' . $item->quantity . '</div>',
                 'amount' => '<div class="my-1 flex md:flex-row flex-col justify-between items-start md:items-center text-red-600">
                         <span>Rp.</span><span class="text-right">' . number_format($item->amount, 0) . '</span>
                     </div>',
@@ -279,6 +217,9 @@ class PurchaseOrderController extends Controller
                 '</span>';
 
             return [
+                'checkbox' => '<div class="form-check">
+                                <input type="checkbox" class="form-checkbox rounded text-primary" value="' . $item->id . '">
+                            </div>',
                 'number' => ($index + 1),
                 'status' => $statusBadge, // gabungkan badge status dan badge tambahan jika perlu
                 // kamu bisa menambahkan 'stok' => $badge_stok jika ingin ditampilkan juga
@@ -373,17 +314,115 @@ class PurchaseOrderController extends Controller
 
     public function bulkDestroy(Request $request)
     {
-        $ids = $request->input('ids');
+        try {
+            $ids = $request->input('ids');
 
-        if (!is_array($ids) || empty($ids)) {
-            return response()->json(['message' => 'Tidak ada data yang dikirim.'], 400);
+            if (!is_array($ids) || empty($ids)) {
+                return response()->json(['message' => 'Tidak ada data yang dikirim.'], 400);
+            }
+
+            PurchaseOrder::whereIn('id', $ids)->each(function ($po) {
+                // Misal: hapus relasi manual
+                // $po->items()->delete();
+                $po->delete();
+            });
+
+            return response()->json(['message' => 'Data berhasil dihapus.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Terjadi kesalahan saat menghapus data.', 'error' => $e->getMessage()], 500);
         }
+    }
 
-        // Hapus relasi unit terlebih dahulu
-        PurchaseOrder::whereIn('id', $ids)->each(function ($satuan) {
-            $satuan->delete();
+    public function showpr()
+    {
+        $pr = PurchaseRequest::with(['status', 'classification']) // Eager load relasi
+            ->doesntHave('tracking') // Filter yang tidak memiliki relasi 'tracking'
+            ->orderByDesc('updated_at') // Lebih singkat untuk descending
+            ->cursor(); // Mengembalikan LazyCollection
+
+        // return $pr;
+
+        $showDataPRJson = $pr->values()->map(function ($item, $index) {
+            // Badge tambahan (misal: 'New', 'Update')
+            $badge = '';
+            if ($item->is_new) {
+                $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-success rounded-full">New</span>';
+            } elseif ($item->is_update) {
+                $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-warning rounded-full">Update</span>';
+            }
+
+            // Badge stok (jika diperlukan)
+            if ($item->stok < $item->min_stok) {
+                $badge_stok = '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-red-100 text-red-800">';
+            } elseif ($item->stok >= $item->min_stok) {
+                $badge_stok = '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-green-100 text-green-800">';
+            }
+
+            // Status badge berdasarkan status->name
+            $statusName = strtolower($item->status->name);
+            if ($statusName === 'finish') {
+                $statusClass = 'bg-green-500';
+            } elseif ($statusName === 'on proses') {
+                $statusClass = 'bg-yellow-500';
+            } else {
+                $statusClass = 'bg-gray-500';
+            }
+            $statusBadge = '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium text-white ' . $statusClass . '">'
+                . ucwords($item->status->name) .
+                '</span>';
+
+            return [
+                'checkbox' => '<div class="form-check">
+                                <input type="checkbox" class="form-checkbox rounded text-primary" value="' . $item->id . '">
+                            </div>',
+                'number' => ($index + 1),
+                'status' => $statusBadge, // gabungkan badge status dan badge tambahan jika perlu
+                // kamu bisa menambahkan 'stok' => $badge_stok jika ingin ditampilkan juga
+
+                'classification' => $item->classification->name,
+                'pr_number' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-primary/25 text-sky-800">' . $item->pr_number . '</span>' . $badge,
+                'location' => $item->location,
+                'item_desc' => $item->item_desc,
+                'uom' => $item->uom,
+                'approved_date' => $item->approved_date,
+                'unit_price' =>
+                    '<div class="my-1 flex md:flex-row flex-col justify-between items-start md:items-center text-red-600">
+                        <span>Rp.</span><span class="text-right">' . number_format($item->unit_price, 0) . '</span>
+                    </div>',
+                'qty' => '<div class="text-center">' . $item->quantity . '</div>',
+                'amount' => '<div class="my-1 flex md:flex-row flex-col justify-between items-start md:items-center text-red-600">
+                        <span>Rp.</span><span class="text-right">' . number_format($item->amount, 0) . '</span>
+                    </div>',
+                'sla' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium text-white ' . $item->sla_badge . '">'
+                    . ($item->working_days ?? '-') .
+                    '</span>',
+            ];
         });
 
-        return response()->json(['message' => 'Data berhasil dihapus.']);
+        return response()->json($showDataPRJson);
+    }
+
+    public function onsite(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'tgl_terima' => 'required|date',
+        ]);
+
+        $ids = $request->input('ids');
+        $tglTerima = $request->input('tgl_terima');
+
+        // Generate unique onsite number (contoh: ONSITE-20250726-XXX)
+        $onsiteNumber = 'ONSITE-' . now()->format('Ymd') . '-' . strtoupper(Str::random(5));
+
+        foreach ($ids as $poId) {
+            PurchaseOrderOnsite::create([
+                'onsite_number' => $onsiteNumber,
+                'purchase_order_id' => $poId,
+                'tgl_terima' => $tglTerima,
+            ]);
+        }
+
+        return response()->json(['message' => 'Data berhasil disimpan.']);
     }
 }

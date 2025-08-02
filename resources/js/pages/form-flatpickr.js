@@ -2,80 +2,93 @@ import flatpickr from "flatpickr";
 
 // flatpickr
 
-flatpickr('#datepicker-basic', {
-    defaultDate: new Date()
+flatpickr("#datepicker-basic", {
+    defaultDate: new Date(),
 });
 
-flatpickr('#datepicker-datetime', {
+flatpickr("#datepicker-datetime", {
     enableTime: true,
     dateFormat: "m-d-Y H:i",
-    defaultDate: new Date()
+    defaultDate: new Date(),
 });
 
-flatpickr('#datepicker-humanfd', {
+flatpickr("#datepicker-humanfd", {
     altInput: true,
     altFormat: "F j, Y",
     dateFormat: "Y-m-d",
-    defaultDate: new Date()
+    defaultDate: new Date(),
 });
 
-flatpickr('#datepicker-minmax', {
+flatpickr("#datepicker-minmax", {
     minDate: "today",
     defaultDate: new Date(),
-    maxDate: new Date().fp_incr(14) // 14 days from now
+    maxDate: new Date().fp_incr(14), // 14 days from now
 });
 
-flatpickr('#datepicker-disable', {
+flatpickr("#datepicker-disable", {
     onReady: function () {
-        this.jumpToDate("2025-01")
+        this.jumpToDate("2025-01");
     },
     disable: ["2025-01-30", "2025-02-21", "2025-03-08", new Date(2025, 4, 9)],
     dateFormat: "Y-m-d",
-    defaultDate: new Date()
+    defaultDate: new Date(),
 });
 
-flatpickr('#datepicker-multiple', {
+flatpickr("#datepicker-multiple", {
     mode: "multiple",
     dateFormat: "Y-m-d",
-    defaultDate: new Date()
+    defaultDate: new Date(),
 });
 
-flatpickr('#datepicker-range', {
+flatpickr("#datepicker-range", {
     mode: "range",
-    defaultDate: new Date()
+    defaultDate: new Date(),
 });
 
-flatpickr('#datepicker-timepicker', {
+flatpickr("#datepicker-timepicker", {
     enableTime: true,
     noCalendar: true,
     dateFormat: "H:i",
-    defaultDate: new Date()
+    defaultDate: new Date(),
 });
 
-flatpickr('#datepicker-inline', {
+flatpickr("#datepicker-inline", {
     inline: true,
-    defaultDate: new Date()
+    defaultDate: new Date(),
 });
 
-flatpickr('#inputapprove_date', {
+const inputApproveDate = document.getElementById("inputApproveDate");
+if (inputApproveDate) {
+    flatpickr("#inputapprove_date", {
+        altInput: true,
+        altFormat: "F j, Y",
+        dateFormat: "Y-m-d",
+        defaultDate: new Date(),
+    });
+
+    const approvedDate = inputApproveDate.value;
+
+    flatpickr("#inputApproveDate", {
+        altInput: true,
+        altFormat: "j F, Y",
+        dateFormat: "Y-m-d",
+        defaultDate: approvedDate || new Date(), // fallback kalau kosong
+    });
+
+}
+export const approveDatePicker = flatpickr("#editapprove_date", {
     altInput: true,
     altFormat: "F j, Y",
     dateFormat: "Y-m-d",
-    defaultDate: new Date()
+    defaultDate: new Date(),
 });
 
-const approvedDate = document.getElementById('inputApproveDate').value;
-
-flatpickr('#inputApproveDate', {
+// ======================================================
+// Inisialisasi date picker untuk input tanggal onsite PO
+// ======================================================
+flatpickr("#datepo-onsite", {
     altInput: true,
-    altFormat: "j F, Y",
+    altFormat: "d-M-Y",
     dateFormat: "Y-m-d",
-    defaultDate: approvedDate || new Date(), // fallback kalau kosong
-});
-
-export const approveDatePicker = flatpickr('#editapprove_date', {
-    altInput: true,
-    altFormat: "F j, Y",
-    dateFormat: "Y-m-d",
-    defaultDate: new Date()
+    defaultDate: new Date(),
 });

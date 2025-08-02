@@ -2,11 +2,13 @@
 
 namespace App\Models\Barang;
 
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
+use App\Models\Config\Status;
+use App\Models\Config\Classification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 
 class PurchaseRequest extends Model
 {

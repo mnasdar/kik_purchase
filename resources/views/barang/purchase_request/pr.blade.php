@@ -28,7 +28,7 @@
                                 <i class="mgc_edit_2_line text-base"></i>
                             </button>
                             <button class="btn disabled:bg-slate-400 bg-danger p-2 text-white btn-delete"
-                                data-fc-target="deleteModal" data-fc-type="modal" type="button" title="Hapus"
+                                data-fc-target="deleteModal" data-fc-behavior="static" data-fc-type="modal" type="button" title="Hapus"
                                 tabindex="0" data-plugin="tippy" data-tippy-animation="scale" data-tippy-inertia="true"
                                 data-tippy-duration="[600, 300]" data-tippy-arrow="true" disabled>
                                 <i class="mgc_delete_2_line text-base"></i>

@@ -45,7 +45,7 @@
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="{{ route('second', ['project', 'create']) }}" class="menu-link">
+                        <a href="{{ route('po-onsite.index') }}" class="menu-link">
                             <span class="menu-text">PO On Site</span>
                         </a>
                     </li>
@@ -53,15 +53,28 @@
             </li>
 
             <li class="menu-item">
-                <a href="{{ route('second', ['goods', 'status']) }}" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_list_check_2_line"></i></span>
-                    <span class="menu-text"> Status </span>
+                <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
+                    <span class="menu-icon"><i class="mgc_settings_1_line"></i></span>
+                    <span class="menu-text"> Konfigurasi </span>
+                    <span class="menu-arrow"></span>
                 </a>
+                <ul class="sub-menu hidden">
+                    <li class="menu-item">
+                        <a href="{{ route('status.index') }}" class="menu-link">
+                            <span class="menu-text">Status</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="{{ route('classification.index') }}" class="menu-link">
+                            <span class="menu-text">Klasifikasi</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li class="menu-item">
-                <a href="{{ route('second', ['goods', 'classification']) }}" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_list_search_line"></i></span>
-                    <span class="menu-text"> Classification </span>
+                <a href="{{ route('klasifikasi.index') }}" class="menu-link">
+                    <span class="menu-icon"><i class="mgc_list_check_2_line"></i></span>
+                    <span class="menu-text"> Klasifikasi </span>
                 </a>
             </li>
 

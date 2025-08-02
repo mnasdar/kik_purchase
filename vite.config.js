@@ -71,11 +71,15 @@ export default defineConfig({
                 'resources/js/pages/highlight.js',
 
                 // Code Js Custom
-                'resources/js/custom/data-table.js', 
-                'resources/js/goods/add-item.js', 
-                'resources/js/goods/delete-item.js', 
-                'resources/js/goods/edit-item.js', 
-                'resources/js/goods/search-item.js', 
+                'resources/js/custom/data-table.js',
+                'resources/js/custom/form-create.js',
+                'resources/js/custom/form-delete.js',
+                'resources/js/custom/modal-create.js',
+                'resources/js/custom/modal-update.js',
+                'resources/js/custom/onsite.js',
+                'resources/js/custom/po-result.js',
+                'resources/js/custom/po-search.js',
+                'resources/js/custom/po.js',
             ],
             refresh: true
         }),

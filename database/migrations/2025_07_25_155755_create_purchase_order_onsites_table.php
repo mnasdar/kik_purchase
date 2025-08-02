@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('classifications', function (Blueprint $table) {
+        Schema::create('purchase_order_onsites', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->enum('type',['Barang','Jasa']);
-            $table->integer('sla');
+            $table->string('onsite_number')->index();
+            $table->foreignId('purchase_order_id')->nullable()->constrained()->onDelete('no action');
+            $table->date('tgl_terima');
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('classifications');
+        Schema::dropIfExists('purchase_order_onsites');
     }
 };

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Goods;
+namespace App\Http\Controllers\Barang;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -31,41 +31,39 @@ class PurchaseTrackingController extends Controller
     public function store(Request $request)
     {
         // 🔍 Validasi input
-        $validated = $request->validate([
-            'purchase_request_id' => 'required|integer',
-            'purchase_order_id' => 'required|integer',
+        $request->validate([
+            'po_id' => 'required|exists:purchase_orders,id',
+            'ids' => 'required|array',
+            'ids.*' => 'exists:purchase_requests,id'
         ]);
+
+        $poId = $request->input('po_id');
+        $prIds = $request->input('ids');
+
         DB::beginTransaction();
 
         try {
             // 📝 Create Purchase Tracking pakai $validated
-            $purchaseOrder = PurchaseTracking::create([
-                'purchase_request_id' => $validated['purchase_request_id'],
-                'purchase_order_id' => $validated['purchase_order_id'],
-            ]);
+            // Contoh: simpan relasi PR ke PO
+            foreach ($prIds as $prId) {
+                PurchaseTracking::create([
+                    'purchase_request_id' => $prId,
+                    'purchase_order_id' => $poId,
+                ]);
+            }
 
             DB::commit();
 
             // 🔁 Response
-            return response()->json([
-                'success' => true,
-                'message' => 'Status berhasil ditambahkan',
-                'data' => $purchaseOrder,
-                'id' => $purchaseOrder->id,
-                'purchase_request_id' => $purchaseOrder->purchase_request_id,
-                'purchase_order_id' => $purchaseOrder->purchase_order_id,
-            ]);
+            return response()->json(['message' => 'Data berhasil dikaitkan.']);
 
         } catch (\Exception $e) {
             DB::rollBack();
 
             return response()->json([
-                'success' => false,
                 'message' => 'Gagal menyimpan data: ' . $e->getMessage(),
             ], 500);
         }
-        
-        
     }
 
     /**
@@ -98,5 +96,27 @@ class PurchaseTrackingController extends Controller
     public function destroy(PurchaseTracking $purchaseTracking)
     {
         //
+    }
+    public function bulkDestroy(Request $request)
+    {
+        // Validasi data yang dikirim
+        $validated = $request->validate([
+            'po_id' => 'required|exists:purchase_orders,id',
+            'pr_id' => 'required|array|min:1',
+            'pr_id.*' => 'integer|exists:purchase_requests,id'
+        ]);
+
+        try {   
+            // Hapus berdasarkan kombinasi PO dan daftar PR
+            PurchaseTracking::where('purchase_order_id', $validated['po_id'])
+                ->whereIn('purchase_request_id', $validated['pr_id'])
+                ->delete();
+
+            return response()->json(['message' => 'Relasi berhasil dihapus.']);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }
