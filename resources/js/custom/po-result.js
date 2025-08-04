@@ -2,7 +2,7 @@ import $ from "jquery";
 import Swal from "sweetalert2";
 import { route } from "ziggy-js";
 
-import { closeModal } from "./po-search";
+import { prefix, closeModal } from "./po-search";
 
 // Format angka ke rupiah
 function formatRupiah(angka) {
@@ -131,7 +131,7 @@ $(document).ready(function () {
             if (result.isConfirmed) {
                 // Kirim data ke controller via AJAX
                 $.ajax({
-                    url: route("po-onsite.store"), // Ganti dengan route milikmu
+                    url: route("po-onsite.store",prefix), // Ganti dengan route milikmu
                     method: "POST",
                     data: {
                         _token: $('meta[name="csrf-token"]').attr("content"),

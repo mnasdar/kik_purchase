@@ -15,46 +15,46 @@ class PurchaseRequestSeeder extends Seeder
      */
     public function run(): void
     {
-        $statusIds = Status::where('type','Barang')->pluck('id')->toArray();
+        $statusIds = Status::where('type','barang')->pluck('id')->toArray();
         $classification = Classification::where('name', 'Pengadaan Perlengkapan Kantor')->first();
 
         $data = [
             [
                 'pr_number' => 'KIK0000004013',
-                'location' => 'HEAD OFFICE KIK.',
+                'location' => 'Head Office',
                 'item_desc' => 'IC POWER LAPTOP HP',
                 'uom' => 'EA',
-                'approved_date' => '2022-01-12',
+                'approved_date' => '2025-07-12',
                 'unit_price' => 1300000,
                 'quantity' => 1,
                 'amount' => 1300000,
             ],
             [
                 'pr_number' => 'KIK0000004055',
-                'location' => 'HEAD OFFICE KIK.',
+                'location' => 'Head Office',
                 'item_desc' => 'POWER SUPPLY (PA-LGA-450W)',
                 'uom' => 'EA',
-                'approved_date' => '2022-01-24',
+                'approved_date' => '2025-07-22',
                 'unit_price' => 927273,
                 'quantity' => 1,
                 'amount' => 927273,
             ],
             [
                 'pr_number' => 'KIK0000004055',
-                'location' => 'HEAD OFFICE KIK.',
+                'location' => 'Head Office',
                 'item_desc' => 'MEMORY RAM 4GB DDR3 MERK COSAIR',
                 'uom' => 'EA',
-                'approved_date' => '2022-01-24',
+                'approved_date' => '2025-07-23',
                 'unit_price' => 363636,
                 'quantity' => 1,
                 'amount' => 363636,
             ],
             [
                 'pr_number' => 'KIK0000004113',
-                'location' => 'HEAD OFFICE KIK.',
+                'location' => 'Head Office',
                 'item_desc' => 'Charger Laptop Merk HP14s-cf2',
                 'uom' => 'Unit',
-                'approved_date' => '2022-02-06',
+                'approved_date' => '2025-07-20',
                 'unit_price' => 850000,
                 'quantity' => 1,
                 'amount' => 850000,

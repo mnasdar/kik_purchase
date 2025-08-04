@@ -14,12 +14,12 @@ class PurchaseOrderSeeder extends Seeder
      */
     public function run(): void
     {
-        $statusIds = Status::where('type','Barang')->pluck('id')->toArray();
+        $statusIds = Status::where('type','barang')->pluck('id')->toArray();
 
         $data = [
             [
                 'po_number' => 'KIK3600002066',
-                'approved_date' => '2022-01-24',
+                'approved_date' => '2025-07-24',
                 'supplier_name' => 'PT.KAWAUSO TEKNOLOGI INDONESIA',
                 'unit_price' => 1250000,
                 'quantity' => 1,
@@ -27,7 +27,7 @@ class PurchaseOrderSeeder extends Seeder
             ],
             [
                 'po_number' => 'KIK3600002077',
-                'approved_date' => '2022-01-27',
+                'approved_date' => '2025-07-27',
                 'supplier_name' => 'PT.KAWAUSO TEKNOLOGI INDONESIA',
                 'unit_price' => 590909,
                 'quantity' => 1,

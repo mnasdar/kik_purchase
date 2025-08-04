@@ -71,6 +71,7 @@ export default defineConfig({
                 'resources/js/pages/highlight.js',
 
                 // Code Js Custom
+                'resources/js/custom/autonumeric-input.js',
                 'resources/js/custom/data-table.js',
                 'resources/js/custom/form-create.js',
                 'resources/js/custom/form-delete.js',

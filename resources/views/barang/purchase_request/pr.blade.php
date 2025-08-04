@@ -17,7 +17,7 @@
                     <div class="flex md:flex-row flex-col justify-between items-start md:items-center">
                         <h4 class="card-title">Data PO (Purchase Request)</h4>
                         <div class="flex flex-row gap-2">
-                            <a href="{{ route('purchase-request.create') }}" class="btn bg-primary text-white p-2" title="Buat PR"
+                            <a href="{{ route('purchase-request.create',$prefix) }}" class="btn bg-primary text-white p-2" title="Buat PR"
                                 tabindex="0" data-plugin="tippy" data-tippy-animation="scale" data-tippy-inertia="true"
                                 data-tippy-duration="[600, 300]" data-tippy-arrow="true">
                                 <i class="mgc_add_fill text-base"></i>

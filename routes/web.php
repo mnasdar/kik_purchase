@@ -8,6 +8,10 @@ use App\Http\Controllers\Barang\PurchaseOrderController;
 use App\Http\Controllers\Barang\OnsiteController;
 use App\Http\Controllers\Barang\PurchaseRequestController;
 use App\Http\Controllers\Barang\PurchaseTrackingController;
+// use App\Http\Controllers\Jasa\PurchaseOrderController as JasaPOController;
+// use App\Http\Controllers\Jasa\OnsiteController as JasaOnsiteController;
+// use App\Http\Controllers\Jasa\PurchaseRequestController as JasaPRController;
+// use App\Http\Controllers\Jasa\PurchaseTrackingController as JasaTrackingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,7 +30,26 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('', [RoutingController::class, 'index'])->name('root');
     Route::get('/home', fn() => view('index'))->name('home');
     /* ================= Barang ======================== */
-    Route::prefix('barang')->group(function () {
+    // Route::prefix('barang')->group(function () {
+    //     /* ================= Purchase Request ======================== */
+    //     Route::resource('/purchase-request', PurchaseRequestController::class)->except(['show', 'destroy']);
+    //     Route::delete('/purchase-request', [PurchaseRequestController::class, 'bulkDestroy'])->name('purchase-request.bulkDestroy');
+
+    //     /* ================= Purchase Order ======================== */
+    //     Route::get('/purchase-order/showpr', [PurchaseOrderController::class, 'showpr'])->name('purchase-order.showpr');
+    //     Route::resource('/purchase-order', PurchaseOrderController::class)->except(['destroy']);
+    //     Route::delete('/purchase-order', [PurchaseOrderController::class, 'bulkDestroy'])->name('purchase-order.bulkDestroy');
+
+    //     /* ================= Purchase Tracking ======================== */
+    //     Route::resource('/purchase-tracking', PurchaseTrackingController::class)->only('store');
+    //     Route::delete('/purchase-tracking', [PurchaseTrackingController::class, 'bulkDestroy'])->name('purchase-tracking.bulkDestroy');
+
+    //     /* ================= PO Onsite ======================== */
+    //     Route::get('/po-onsite/search/{keyword}', [OnsiteController::class, 'search'])->name('po-onsite.search');
+    //     Route::delete('/po-onsite', [OnsiteController::class, 'bulkDestroy'])->name('po-onsite.bulkDestroy');
+    //     Route::resource('/po-onsite', OnsiteController::class)->except(['destroy']);
+    // });
+    Route::prefix('{prefix}')->group(function () {
         /* ================= Purchase Request ======================== */
         Route::resource('/purchase-request', PurchaseRequestController::class)->except(['show', 'destroy']);
         Route::delete('/purchase-request', [PurchaseRequestController::class, 'bulkDestroy'])->name('purchase-request.bulkDestroy');
@@ -44,8 +67,29 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/po-onsite/search/{keyword}', [OnsiteController::class, 'search'])->name('po-onsite.search');
         Route::delete('/po-onsite', [OnsiteController::class, 'bulkDestroy'])->name('po-onsite.bulkDestroy');
         Route::resource('/po-onsite', OnsiteController::class)->except(['destroy']);
-
     });
+
+    // Route::as('jasa.')->prefix('jasa')->group(function () {
+    //     /* ================= Purchase Request ======================== */
+    //     Route::resource('/purchase-request', JasaPRController::class)->except(['show', 'destroy']);
+    //     Route::delete('/purchase-request', [JasaPRController::class, 'bulkDestroy'])->name('purchase-request.bulkDestroy');
+
+    //     /* ================= Purchase Order ======================== */
+    //     Route::get('/purchase-order/showpr', [JasaPOController::class, 'showpr'])->name('purchase-order.showpr');
+    //     Route::resource('/purchase-order', JasaPOController::class)->except(['destroy']);
+    //     Route::delete('/purchase-order', [JasaPOController::class, 'bulkDestroy'])->name('purchase-order.bulkDestroy');
+
+    //     /* ================= Purchase Tracking ======================== */
+    //     Route::resource('/purchase-tracking', JasaTrackingController::class)->only('store');
+    //     Route::delete('/purchase-tracking', [JasaTrackingController::class, 'bulkDestroy'])->name('purchase-tracking.bulkDestroy');
+
+    //     /* ================= PO Onsite ======================== */
+    //     Route::get('/po-onsite/search/{keyword}', [JasaOnsiteController::class, 'search'])->name('po-onsite.search');
+    //     Route::delete('/po-onsite', [JasaOnsiteController::class, 'bulkDestroy'])->name('po-onsite.bulkDestroy');
+    //     Route::resource('/po-onsite', JasaOnsiteController::class)->except(['destroy']);
+    // });
+
+
     Route::prefix('config')->group(function () {
         /* ================= Status ======================== */
         Route::delete('/status', [StatusController::class, 'bulkDestroy'])->name('status.bulkDestroy');

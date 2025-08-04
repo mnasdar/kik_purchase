@@ -24,7 +24,7 @@
                                 data-tippy-duration="[600, 300]" data-tippy-arrow="true">
                                 <i class="mgc_link_fill text-base"></i>
                             </button>
-                            <a href="{{ route('purchase-order.create') }}" class="btn bg-primary text-white p-2"
+                            <a href="{{ route('purchase-order.create',$prefix) }}" class="btn bg-primary text-white p-2"
                                 title="Buat PO" tabindex="0" data-plugin="tippy" data-tippy-animation="scale"
                                 data-tippy-inertia="true" data-tippy-duration="[600, 300]" data-tippy-arrow="true">
                                 <i class="mgc_add_fill text-base"></i>

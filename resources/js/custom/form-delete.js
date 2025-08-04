@@ -2,6 +2,10 @@ import $ from "jquery";
 import Swal from "sweetalert2";
 import { route } from "ziggy-js";
 
+const path = window.location.pathname; // Ambil path dari URL
+const segments = path.split("/"); // Pecah berdasarkan slash
+const prefix = segments[1]; // Cari nilai "prefix" dari segment ke-1 (setelah domain)
+
 window.initDeleteHandler = function (options) {
     const {
         tableSelector,
@@ -81,7 +85,7 @@ $(function () {
     // Delete Purchase Request
     initDeleteHandler({
         tableSelector: "#purchase_request-table",
-        deleteUrl: route("purchase-request.bulkDestroy"),
+        deleteUrl: route("purchase-request.bulkDestroy",prefix),
         onSuccess: () => {
             Swal.fire("Sukses!", "Data berhasil dihapus.", "success").then(() =>
                 location.reload()
@@ -95,7 +99,7 @@ $(function () {
     // Delete Purchase Order
     initDeleteHandler({
         tableSelector: "#purchase_order-table",
-        deleteUrl: route("purchase-order.bulkDestroy"),
+        deleteUrl: route("purchase-order.bulkDestroy",prefix),
         onSuccess: () => {
             Swal.fire("Sukses!", "Data berhasil dihapus.", "success").then(() =>
                 location.reload()
@@ -109,7 +113,7 @@ $(function () {
     // Delete PO Onsite
     initDeleteHandler({
         tableSelector: "#onsite-table",
-        deleteUrl: route("po-onsite.bulkDestroy"),
+        deleteUrl: route("po-onsite.bulkDestroy",prefix),
         onSuccess: () => {
             Swal.fire("Sukses!", "Data berhasil dihapus.", "success").then(() =>
                 location.reload()

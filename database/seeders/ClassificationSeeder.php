@@ -16,77 +16,77 @@ class ClassificationSeeder extends Seeder
         $data = [
             [
                 'name' => 'Pengadaan Perlengkapan Kantor',
-                'type' => 'Barang',
+                'type' => 'barang',
                 'sla' => 7
             ],
             [
                 'name' => 'Pengadaan Perlengkapan Operasional',
-                'type' => 'Barang',
+                'type' => 'barang',
                 'sla' => 7
             ],
             [
                 'name' => 'Pengadaan Fasilitas Kantor',
-                'type' => 'Barang',
+                'type' => 'barang',
                 'sla' => 7
             ],
             [
                 'name' => 'Material Pendukung',
-                'type' => 'Barang',
+                'type' => 'barang',
                 'sla' => 7
             ],
             [
                 'name' => 'Pengadaan Mekanikal Electrical',
-                'type' => 'Barang',
+                'type' => 'barang',
                 'sla' => 7
             ],
             [
                 'name' => 'Pengadaan Gas Industri',
-                'type' => 'Barang',
+                'type' => 'barang',
                 'sla' => 7
             ],
             [
                 'name' => 'Pengadaan Lampu',
-                'type' => 'Barang',
+                'type' => 'barang',
                 'sla' => 7
             ],
             [
                 'name' => 'Pengadaan Pek. Jasa',
-                'type' => 'Barang',
+                'type' => 'barang',
                 'sla' => 7
             ],
             [
                 'name' => 'Pengadaan Material Chiller',
-                'type' => 'Barang',
+                'type' => 'barang',
                 'sla' => 7
             ],
             [
                 'name' => 'Pengadaan Tissue',
-                'type' => 'Barang',
+                'type' => 'barang',
                 'sla' => 7
             ],
             [
                 'name' => 'Pengadaan Part Escalator',
-                'type' => 'Barang',
+                'type' => 'barang',
                 'sla' => 7
             ],
             [
                 'name' => 'Kebutuhan Event & Marketing',
-                'type' => 'Barang',
+                'type' => 'barang',
                 'sla' => 7
             ],
             [
                 'name' => 'Pengadaan Part Lift',
-                'type' => 'Barang',
+                'type' => 'barang',
                 'sla' => 7
             ],
             [
                 'name' => 'Pengadaan Solar',
-                'type' => 'Barang',
+                'type' => 'barang',
                 'sla' => 7
             ],
             [
                 'name' => 'Pengadaan Material Genset',
-                'type' => 'Barang',
+                'type' => 'barang',
                 'sla' => 7
             ],
         ];

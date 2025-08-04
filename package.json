@@ -24,6 +24,7 @@
         "animate.css": "^4.1.1",
         "aos": "^2.3.4",
         "apexcharts": "^3.41.0",
+        "autonumeric": "^4.10.8",
         "clipboard": "^2.0.11",
         "dropzone": "^5.9.0",
         "feather-icons": "^4.29.0",
@@ -49,6 +50,7 @@
         "sweetalert2": "^11.5.1",
         "swiper": "^8.4.4",
         "tippy.js": "2.5.4",
-        "wnumb": "^1.2.0"
+        "wnumb": "^1.2.0",
+        "ziggy-js": "^2.5.3"
     }
 }

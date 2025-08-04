@@ -15,9 +15,12 @@ class PurchaseRequestController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(string $prefix)
     {
         $pr = PurchaseRequest::with('status', 'classification')
+            ->whereHas('classification', function ($query) use ($prefix) {
+                $query->where('type', $prefix);
+            })
             ->orderby('updated_at', 'desc') // urutkan dari yang terakhir diinput
             ->cursor(); // Menghasilkan LazyCollection
 
@@ -28,13 +31,6 @@ class PurchaseRequestController extends Controller
                 $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-success rounded-full">New</span>';
             } elseif ($item->is_update) {
                 $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-warning rounded-full">Update</span>';
-            }
-
-            // Badge stok (jika diperlukan)
-            if ($item->stok < $item->min_stok) {
-                $badge_stok = '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-red-100 text-red-800">';
-            } elseif ($item->stok >= $item->min_stok) {
-                $badge_stok = '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-green-100 text-green-800">';
             }
 
             // Status badge berdasarkan status->name
@@ -55,11 +51,9 @@ class PurchaseRequestController extends Controller
                                 <input type="checkbox" class="form-checkbox rounded text-primary" value="' . $item->id . '">
                             </div>',
                 'number' => ($index + 1),
-                'status' => $statusBadge, // gabungkan badge status dan badge tambahan jika perlu
-                // kamu bisa menambahkan 'stok' => $badge_stok jika ingin ditampilkan juga
-
+                'status' => $statusBadge,
                 'classification' => $item->classification->name,
-                'pr_number' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-primary/25 text-sky-800">'. $item->pr_number .'</span>' . $badge,
+                'pr_number' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-primary/25 text-sky-800">' . $item->pr_number . $badge . '</span>',
                 'location' => $item->location,
                 'item_desc' => $item->item_desc,
                 'uom' => $item->uom,
@@ -78,29 +72,29 @@ class PurchaseRequestController extends Controller
             ];
         });
 
-        return view('barang.purchase_request.pr', compact('dataJson'));
+        return view('barang.purchase_request.pr', compact(['prefix', 'dataJson']));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(string $prefix)
     {
-        $status = Status::where('type', 'Barang')->get();
-        $classification = Classification::where('type', 'Barang')->get();
+        $status = Status::where('type', $prefix)->get();
+        $classification = Classification::where('type', $prefix)->get();
         $location = [
             'Head Office',
             'Mall MARI',
             'Mall NIPAH',
             'Wisma Kalla'
         ];
-        return view('barang.purchase_request.pr-create', compact(['status', 'classification', 'location']));
+        return view('barang.purchase_request.pr-create', compact(['prefix', 'status', 'classification', 'location']));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(string $prefix, Request $request)
     {
         // 🔍 Validasi input
         $validated = $request->validate([
@@ -146,11 +140,11 @@ class PurchaseRequestController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'message' => 'Produk berhasil disimpan.',
-                    'redirect' => route('purchase-request.index'),
+                    'redirect' => route('purchase-request.index', $prefix),
                 ]);
             }
 
-            return redirect()->route('purchase-request.index')->with('success', 'Data telah berhasil disimpan.');
+            return redirect()->route('purchase-request.index', $prefix)->with('success', 'Data telah berhasil disimpan.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -178,25 +172,25 @@ class PurchaseRequestController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(PurchaseRequest $purchaseRequest)
+    public function edit(string $prefix, PurchaseRequest $purchaseRequest)
     {
         $data = $purchaseRequest;
         $data->approved_date_formatted = Carbon::parse($data->approved_date)->format('Y-m-d');
-        $status = Status::where('type', 'Barang')->get();
-        $classification = Classification::where('type', 'Barang')->get();
+        $status = Status::where('type', $prefix)->get();
+        $classification = Classification::where('type', $prefix)->get();
         $location = [
             'Head Office',
             'Mall MARI',
             'Mall NIPAH',
             'Wisma Kalla'
         ];
-        return view('barang.purchase_request.pr-edit', compact(['data', 'status', 'classification', 'location']));
+        return view('barang.purchase_request.pr-edit', compact(['prefix', 'data', 'status', 'classification', 'location']));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, PurchaseRequest $purchaseRequest)
+    public function update(string $prefix, Request $request, PurchaseRequest $purchaseRequest)
     {
         // 🔍 Validasi input
         $validated = $request->validate([
@@ -227,9 +221,9 @@ class PurchaseRequestController extends Controller
             return $request->ajax()
                 ? response()->json([
                     'message' => 'Produk berhasil diperbarui.',
-                    'redirect' => route('purchase-request.index'),
+                    'redirect' => route('purchase-request.index', $prefix),
                 ])
-                : redirect()->route('purchase-request.index')->with('success', 'Data berhasil diperbarui.');
+                : redirect()->route('purchase-request.index', $prefix)->with('success', 'Data berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
 

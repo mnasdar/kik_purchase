@@ -16,9 +16,9 @@
             <div class="card">
                 <div class="card-header">
                     <div class="flex md:flex-row flex-col justify-between items-start md:items-center">
-                        <h4 class="card-title">Data PO (Purchase Order)</h4>
+                        <h4 class="card-title">Data PO (Purchase Order) Onsite</h4>
                         <div class="flex flex-row gap-2">
-                            <a href="{{ route('po-onsite.create') }}" class="btn bg-primary text-white p-2"
+                            <a href="{{ route('po-onsite.create',$prefix) }}" class="btn bg-primary text-white p-2"
                                 title="Tambah Data PO Onsite" tabindex="0" data-plugin="tippy" data-tippy-animation="scale"
                                 data-tippy-inertia="true" data-tippy-duration="[600, 300]" data-tippy-arrow="true">
                                 <i class="mgc_add_fill text-base"></i>

@@ -17,32 +17,32 @@ class StatusSeeder extends Seeder
             [
                 
                 'name' => 'New',
-                'type' => 'Barang',
+                'type' => 'barang',
             ],
             [
                 
                 'name' => 'On Proses',
-                'type' => 'Barang',
+                'type' => 'barang',
             ],
             [
                 
                 'name' => 'Finish',
-                'type' => 'Barang',
+                'type' => 'barang',
             ],
             [
                 
                 'name' => 'New',
-                'type' => 'Jasa',
+                'type' => 'jasa',
             ],
             [
                 
                 'name' => 'On Proses',
-                'type' => 'Jasa',
+                'type' => 'jasa',
             ],
             [
                 
                 'name' => 'Finish',
-                'type' => 'Jasa',
+                'type' => 'jasa',
             ],
             // Tambahkan baris lainnya dari tabel Excel yang kamu upload
         ];

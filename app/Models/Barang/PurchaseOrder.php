@@ -60,7 +60,7 @@ class PurchaseOrder extends Model
             ->filter(fn($date) => $date->isWeekday())
             ->count();
     }
-        public function getSlaBadgeAttribute(): string
+    public function getSlaBadgeAttribute(): string
     {
         $days = $this->working_days;
 
@@ -69,5 +69,14 @@ class PurchaseOrder extends Model
         }
 
         return $days > 7 ? 'bg-red-500' : 'bg-green-500';
+    }
+    public function getIsNewAttribute()
+    {
+        return $this->created_at && Carbon::parse($this->created_at)->greaterThan(Carbon::now()->subMinutes(5));
+    }
+
+    public function getIsUpdateAttribute()
+    {
+        return $this->updated_at && Carbon::parse($this->updated_at)->greaterThan(Carbon::now()->subMinutes(5));
     }
 }

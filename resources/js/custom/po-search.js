@@ -6,6 +6,10 @@ import { route } from "ziggy-js";
 const $modal = $("#hasilCariModal");
 const form = $("#formCariPo");
 const tableId = "#hasilCari-table";
+// Ambil prefix Halaman
+const path = window.location.pathname; // Ambil path dari URL
+const segments = path.split("/"); // Pecah berdasarkan slash
+const prefix = segments[1]; // Cari nilai "prefix" dari segment ke-1 (setelah domain)
 
 function openModal() {
     $modal.removeClass("hidden").addClass("flex");
@@ -45,7 +49,7 @@ form.on("submit", function (e) {
     e.preventDefault();
 
     const keywords = $("#inputCari").val();
-    const url = route("po-onsite.search", keywords);
+    const url = route("po-onsite.search", [prefix, keywords]);
 
     const formData = {};
     form.find("[name]").each(function () {
@@ -99,16 +103,44 @@ form.on("submit", function (e) {
             initGridTable({
                 gridData,
                 columns: [
-                { name: "#", width: "60px" },
-                { name: "Aksi", width: "100px", formatter: cell => h("div", { innerHTML: cell }) },
-                { name: "Status", width: "130px", formatter: cell => h("div", { innerHTML: cell }) },
-                { name: "PO Number", width: "180px", formatter: cell => h("div", { innerHTML: cell }) },
-                { name: "Date", width: "120px" },
-                { name: "Supplier Name", width: "200px" },
-                { name: "Qty", width: "90px", formatter: cell => h("div", { innerHTML: cell }) },
-                { name: "Unit Price", width: "200px", formatter: cell => h("div", { innerHTML: cell }) },
-                { name: "Amount", width: "200px", formatter: cell => h("div", { innerHTML: cell }) },
-                { name: "SLA", width: "100px", formatter: cell => h("div", { innerHTML: cell }) },
+                    { name: "#", width: "60px" },
+                    {
+                        name: "Aksi",
+                        width: "100px",
+                        formatter: (cell) => h("div", { innerHTML: cell }),
+                    },
+                    {
+                        name: "Status",
+                        width: "130px",
+                        formatter: (cell) => h("div", { innerHTML: cell }),
+                    },
+                    {
+                        name: "PO Number",
+                        width: "200px",
+                        formatter: (cell) => h("div", { innerHTML: cell }),
+                    },
+                    { name: "Date", width: "120px" },
+                    { name: "Supplier Name", width: "200px" },
+                    {
+                        name: "Qty",
+                        width: "90px",
+                        formatter: (cell) => h("div", { innerHTML: cell }),
+                    },
+                    {
+                        name: "Unit Price",
+                        width: "200px",
+                        formatter: (cell) => h("div", { innerHTML: cell }),
+                    },
+                    {
+                        name: "Amount",
+                        width: "200px",
+                        formatter: (cell) => h("div", { innerHTML: cell }),
+                    },
+                    {
+                        name: "SLA",
+                        width: "100px",
+                        formatter: (cell) => h("div", { innerHTML: cell }),
+                    },
                 ],
             });
             openModal();
@@ -122,4 +154,4 @@ form.on("submit", function (e) {
     });
 });
 
-export { openModal, closeModal };
+export { prefix ,closeModal };

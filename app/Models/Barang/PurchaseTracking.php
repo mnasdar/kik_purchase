@@ -21,4 +21,5 @@ class PurchaseTracking extends Model
     {
         return $this->belongsTo(PurchaseOrder::class);
     }
+    
 }

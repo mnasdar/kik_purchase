@@ -2,10 +2,12 @@ import $ from "jquery";
 import Swal from "sweetalert2";
 import { route } from "ziggy-js";
 import flatpickr from "flatpickr";
+import { prefix } from "./po-search";
 
 export default function initEditModalHandler(config) {
     const {
         resourceName, // ex: 'kategori-produk'
+        params,
         editButtonSelector, // ex: '.btn-edit'
         submitButtonSelector, // ex: '#btnUpdate'
         loaderOverlaySelector, // ex: '#loaderOverlay'
@@ -65,7 +67,10 @@ export default function initEditModalHandler(config) {
         );
         if (checked.length === 1) {
             const id = checked.val();
-            const routeEdit = route(`${resourceName}.edit`, id);
+            const routeEdit = !params
+                ? route(`${resourceName}.edit`, id)
+                : route(`${resourceName}.edit`, [params, id]);
+
             showLoader();
 
             $.ajax({
@@ -156,7 +161,9 @@ export default function initEditModalHandler(config) {
         );
         if (checked.length === 1) {
             const id = checked.val();
-            const routeUpdate = route(`${resourceName}.update`, id);
+            const routeUpdate = !params
+                ? route(`${resourceName}.update`, id)
+                : route(`${resourceName}.update`, [params, id]);
 
             $submitBtn.prop("disabled", true);
             $loader.removeClass("hidden");
@@ -219,6 +226,7 @@ $(document).ready(function () {
     if ($("#onsite-table").length) {
         initEditModalHandler({
             resourceName: "po-onsite",
+            params: prefix,
             dateId: "#tgl_terimaEdit",
         });
     }

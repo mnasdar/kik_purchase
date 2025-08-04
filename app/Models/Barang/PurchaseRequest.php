@@ -80,4 +80,13 @@ class PurchaseRequest extends Model
             get: fn($value) => Carbon::parse($value)->translatedFormat('d-M-y'),
         );
     }
+        public function getIsNewAttribute()
+    {
+        return $this->created_at && Carbon::parse($this->created_at)->greaterThan(Carbon::now()->subMinutes(5));
+    }
+
+    public function getIsUpdateAttribute()
+    {
+        return $this->updated_at && Carbon::parse($this->updated_at)->greaterThan(Carbon::now()->subMinutes(5));
+    }
 }

@@ -15,8 +15,8 @@ class StatusController extends Controller
     public function index()
     {
         $type = [
-            'Barang',
-            'Jasa',
+            'barang',
+            'jasa',
         ];
         $data = Status::orderby('updated_at', 'desc') // urutkan dari yang terakhir diinput
             ->cursor(); // Menghasilkan LazyCollection
@@ -36,7 +36,7 @@ class StatusController extends Controller
                                 <input type="checkbox" class="form-checkbox rounded text-primary" value="' . $item->id . '">
                             </div>',
                 'number' => ($index + 1),
-                'type' => $item->type,
+                'type' => ucwords($item->type),
                 'name' => $item->name . ' ' . $badge,
             ];
         });

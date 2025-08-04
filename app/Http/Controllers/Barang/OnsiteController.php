@@ -14,19 +14,22 @@ class OnsiteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(string $prefix)
     {
         $po = PurchaseOrder::with('status', 'onsite')
             ->whereHas('onsite') // hanya yang punya relasi onsite
+            ->whereHas('status', function ($query) use ($prefix) {
+                $query->where('type', $prefix);
+            })
             ->orderby('updated_at', 'desc') // urutkan dari yang terakhir diinput
             ->cursor(); // Menghasilkan LazyCollection
 
         $dataJson = $po->values()->map(function ($item, $index) {
             // Badge tambahan (misal: 'New', 'Update')
             $badge = '';
-            if ($item->is_new) {
+            if ($item->onsite->is_new) {
                 $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-success rounded-full">New</span>';
-            } elseif ($item->is_update) {
+            } elseif ($item->onsite->is_update) {
                 $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-warning rounded-full">Update</span>';
             }
 
@@ -55,7 +58,7 @@ class OnsiteController extends Controller
                                 <input type="checkbox" class="form-checkbox rounded text-primary" value="' . $item->onsite->id . '">
                             </div>',
                 'number' => ($index + 1),
-                'tgl_terima' => $item->onsite->tgl_terima,
+                'tgl_terima' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-green-100 text-green-800">' . $item->onsite->tgl_terima . $badge . '</span>',
                 'status' => $statusBadge, // gabungkan badge status dan badge tambahan jika perlu
                 // kamu bisa menambahkan 'stok' => $badge_stok jika ingin ditampilkan juga
                 'po_number' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-purple-100 text-purple-800">' . $item->po_number . '</span>',
@@ -74,13 +77,13 @@ class OnsiteController extends Controller
                     '</span>',
             ];
         });
-        return view('barang.po.onsite', compact('dataJson'));
+        return view('barang.po.onsite', compact(['prefix', 'dataJson']));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(string $prefix)
     {
         return view('barang.po.onsite-create');
     }
@@ -88,7 +91,7 @@ class OnsiteController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(string $prefix, Request $request)
     {
         // Validasi request
         $validated = $request->validate([
@@ -123,7 +126,7 @@ class OnsiteController extends Controller
 
             return response()->json([
                 'message' => 'PO Onsite berhasil disimpan.',
-                'redirect' => route('po-onsite.index'),
+                'redirect' => route('po-onsite.index', $prefix),
             ]);
 
         } catch (\Throwable $e) {
@@ -147,17 +150,17 @@ class OnsiteController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(PurchaseOrderOnsite $po_onsite)
+    public function edit(string $prefix, PurchaseOrderOnsite $po_onsite)
     {
-         return response()->json($po_onsite);
+        return response()->json($po_onsite);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, PurchaseOrderOnsite $po_onsite)
+    public function update(string $prefix, Request $request, PurchaseOrderOnsite $po_onsite)
     {
-         $validated = $request->validate([
+        $validated = $request->validate([
             'tgl_terima' => 'required|string|min:3|max:255',
         ]);
 
@@ -177,7 +180,7 @@ class OnsiteController extends Controller
         //    
     }
 
-    public function bulkDestroy(Request $request)
+    public function bulkDestroy(string $prefix, Request $request)
     {
         try {
             $ids = $request->input('ids');
@@ -197,13 +200,16 @@ class OnsiteController extends Controller
             return response()->json(['message' => 'Terjadi kesalahan saat menghapus data.', 'error' => $e->getMessage()], 500);
         }
     }
-    public function search($keyword)
+    public function search(string $prefix, $keyword)
     {
         // Format keyword untuk pencarian LIKE
         $keyword = '%' . $keyword . '%';
 
         // Ambil PO yang BELUM memiliki relasi Onsite
         $po = PurchaseOrder::with('status')
+            ->whereHas('status', function ($query) use ($prefix) {
+                $query->where('type', $prefix);
+            })
             ->whereDoesntHave('onsite') // hanya PO yang belum punya data Onsite
             ->where(function ($query) use ($keyword) {
                 $query->where('po_number', 'like', $keyword)

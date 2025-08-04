@@ -17,9 +17,12 @@ class PurchaseOrderController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(string $prefix)
     {
         $po = PurchaseOrder::with('status', 'trackings')
+            ->whereHas('status', function ($query) use ($prefix) {
+                $query->where('type', $prefix);
+            })
             ->orderby('updated_at', 'desc') // urutkan dari yang terakhir diinput
             ->cursor(); // Menghasilkan LazyCollection
 
@@ -30,13 +33,6 @@ class PurchaseOrderController extends Controller
                 $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-success rounded-full">New</span>';
             } elseif ($item->is_update) {
                 $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-warning rounded-full">Update</span>';
-            }
-
-            // Badge stok (jika diperlukan)
-            if ($item->stok < $item->min_stok) {
-                $badge_stok = '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-red-100 text-red-800">';
-            } elseif ($item->stok >= $item->min_stok) {
-                $badge_stok = '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-green-100 text-green-800">';
             }
 
             // Status badge berdasarkan status->name
@@ -81,7 +77,7 @@ class PurchaseOrderController extends Controller
                 })(),
                 'status' => $statusBadge, // gabungkan badge status dan badge tambahan jika perlu
                 // kamu bisa menambahkan 'stok' => $badge_stok jika ingin ditampilkan juga
-                'po_number' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-purple-100 text-purple-800">' . $item->po_number . '</span>',
+                'po_number' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-purple-100 text-purple-800">' . $item->po_number . $badge . '</span>',
                 'approved_date' => $item->approved_date,
                 'supplier_name' => $item->supplier_name,
                 'qty' => '<div class="text-center">' . $item->quantity . '</div>',
@@ -98,22 +94,22 @@ class PurchaseOrderController extends Controller
             ];
         });
 
-        return view('barang.purchase_order.po', compact('dataJson'));
+        return view('barang.purchase_order.po', compact(['prefix', 'dataJson']));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(string $prefix)
     {
-        $status = Status::where('type', 'Barang')->get();
-        return view('barang.purchase_order.po-create', compact('status'));
+        $status = Status::where('type', $prefix)->get();
+        return view('barang.purchase_order.po-create', compact(['prefix', 'status']));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(string $prefix, Request $request)
     {
         // 🔍 Validasi input
         $validated = $request->validate([
@@ -152,11 +148,11 @@ class PurchaseOrderController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'message' => 'Produk berhasil disimpan.',
-                    'redirect' => route('purchase-order.index'),
+                    'redirect' => route('purchase-order.index', $prefix),
                 ]);
             }
 
-            return redirect()->route('purchase-order.index')->with('success', 'Data telah berhasil disimpan.');
+            return redirect()->route('purchase-order.index', $prefix)->with('success', 'Data telah berhasil disimpan.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -176,7 +172,7 @@ class PurchaseOrderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(PurchaseOrder $purchaseOrder)
+    public function show(string $prefix, PurchaseOrder $purchaseOrder)
     {
         $pr = PurchaseRequest::with(['status', 'classification'])
             ->whereHas('tracking', function ($query) use ($purchaseOrder) {
@@ -194,13 +190,6 @@ class PurchaseOrderController extends Controller
                 $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-success rounded-full">New</span>';
             } elseif ($item->is_update) {
                 $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-warning rounded-full">Update</span>';
-            }
-
-            // Badge stok (jika diperlukan)
-            if ($item->stok < $item->min_stok) {
-                $badge_stok = '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-red-100 text-red-800">';
-            } elseif ($item->stok >= $item->min_stok) {
-                $badge_stok = '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-green-100 text-green-800">';
             }
 
             // Status badge berdasarkan status->name
@@ -225,7 +214,7 @@ class PurchaseOrderController extends Controller
                 // kamu bisa menambahkan 'stok' => $badge_stok jika ingin ditampilkan juga
 
                 'classification' => $item->classification->name,
-                'pr_number' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-primary/25 text-sky-800">' . $item->pr_number . '</span>' . $badge,
+                'pr_number' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-primary/25 text-sky-800">' . $item->pr_number . $badge . '</span>',
                 'location' => $item->location,
                 'item_desc' => $item->item_desc,
                 'uom' => $item->uom,
@@ -250,19 +239,19 @@ class PurchaseOrderController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(PurchaseOrder $purchaseOrder)
+    public function edit(string $prefix, PurchaseOrder $purchaseOrder)
     {
         $data = $purchaseOrder;
         $data->approved_date_formatted = Carbon::parse($data->approved_date)->format('Y-m-d');
         // return $data;
-        $status = Status::where('type', 'Barang')->get();
-        return view('barang.purchase_order.po-edit', compact(['data', 'status']));
+        $status = Status::where('type', $prefix)->get();
+        return view('barang.purchase_order.po-edit', compact(['prefix', 'data', 'status']));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, PurchaseOrder $purchaseOrder)
+    public function update(string $prefix, Request $request, PurchaseOrder $purchaseOrder)
     {
         // 🔍 Validasi input
         $validated = $request->validate([
@@ -289,9 +278,9 @@ class PurchaseOrderController extends Controller
             return $request->ajax()
                 ? response()->json([
                     'message' => 'Produk berhasil diperbarui.',
-                    'redirect' => route('purchase-order.index'),
+                    'redirect' => route('purchase-order.index', $prefix),
                 ])
-                : redirect()->route('purchase-order.index')->with('success', 'Data berhasil diperbarui.');
+                : redirect()->route('purchase-order.index', $prefix)->with('success', 'Data berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -333,9 +322,12 @@ class PurchaseOrderController extends Controller
         }
     }
 
-    public function showpr()
+    public function showpr(string $prefix)
     {
         $pr = PurchaseRequest::with(['status', 'classification']) // Eager load relasi
+            ->whereHas('status', function ($query) use ($prefix) {
+                $query->where('type', $prefix);
+            })
             ->doesntHave('tracking') // Filter yang tidak memiliki relasi 'tracking'
             ->orderByDesc('updated_at') // Lebih singkat untuk descending
             ->cursor(); // Mengembalikan LazyCollection
@@ -402,7 +394,7 @@ class PurchaseOrderController extends Controller
         return response()->json($showDataPRJson);
     }
 
-    public function onsite(Request $request)
+    public function onsite(string $prefix, Request $request)
     {
         $request->validate([
             'ids' => 'required|array',

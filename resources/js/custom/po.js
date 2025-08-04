@@ -10,8 +10,12 @@ const tablePO = "#purchase_order-table";  // Tabel untuk daftar PO
 const $saveprBtn = $(".btn-savepr");      // Tombol untuk simpan PR ke PO
 const $deleteprBtn = $(".btn-deletepr");      // Tombol untuk simpan PR ke PO
 
-// Variabel global untuk menyimpan PO yang dipilih
-let selectedPoId = null;
+// Ambil prefix Halaman 
+const path = window.location.pathname; // Ambil path dari URL
+const segments = path.split("/"); // Pecah berdasarkan slash
+const prefix = segments[1]; // Cari nilai "prefix" dari segment ke-1 (setelah domain)
+
+let selectedPoId = null;// Variabel global untuk menyimpan PO yang dipilih
 
 // ============================================
 // Kosongkan tabel PR ketika modal ditutup
@@ -87,7 +91,7 @@ $saveprBtn.off('click').on("click", function () {
         if (result.isConfirmed) {
             // Kirim data ke server
             $.ajax({
-                url: route('purchase-tracking.store'),
+                url: route('purchase-tracking.store',prefix),
                 method: "POST",
                 headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
                 contentType: "application/json",
@@ -147,7 +151,7 @@ $deleteprBtn.off('click').on("click", function () {
         if (result.isConfirmed) {
             // Kirim data ke server
             $.ajax({
-                url: route('purchase-tracking.bulkDestroy'),
+                url: route('purchase-tracking.bulkDestroy',prefix),
                 method: "Delete",
                 headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
                 contentType: "application/json",
@@ -171,7 +175,7 @@ $deleteprBtn.off('click').on("click", function () {
 // Fungsi: Ambil daftar PR yang bisa ditautkan ke PO, dan render ke tabel (Grid.js)
 // ===================================================================================
 function linktopr() {
-    $.getJSON(route('purchase-order.showpr'), function (data) {
+    $.getJSON(route('purchase-order.showpr',prefix), function (data) {
         if (!data.length) {
             return $(tableId).html('<p class="text-center py-4 text-gray-400">Data tidak ditemukan.</p>');
         }
@@ -205,7 +209,7 @@ function linktopr() {
                 { name: "#", width: "60px" },
                 { name: "Status", width: "130px",formatter: cell => h("div", { innerHTML: cell }) },
                 { name: "Classification", width: "200px" },
-                { name: "PR Number", width: "180px",formatter: cell => h("div", { innerHTML: cell }) },
+                { name: "PR Number", width: "200px",formatter: cell => h("div", { innerHTML: cell }) },
                 { name: "Location", width: "150px" },
                 { name: "Item Desc", width: "200px" },
                 { name: "UOM", width: "100px" },
@@ -237,7 +241,7 @@ function linktopr() {
 // ===================================================================================
 function showPRDetail(purchaseOrderId) {
     $.ajax({
-        url: route('purchase-order.show', purchaseOrderId),
+        url: route('purchase-order.show', [prefix,purchaseOrderId]),
         method: "GET",
         dataType: 'json',
         success: function (data) {
@@ -274,7 +278,7 @@ function showPRDetail(purchaseOrderId) {
                     { name: "#", width: "60px" },
                     { name: "Status", width: "130px",formatter: cell => h("div", { innerHTML: cell }) },
                     { name: "Classification", width: "200px" },
-                    { name: "PR Number", width: "180px",formatter: cell => h("div", { innerHTML: cell }) },
+                    { name: "PR Number", width: "200px",formatter: cell => h("div", { innerHTML: cell }) },
                     { name: "Location", width: "150px" },
                     { name: "Item Desc", width: "200px" },
                     { name: "UOM", width: "100px" },

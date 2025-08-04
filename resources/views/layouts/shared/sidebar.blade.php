@@ -35,17 +35,43 @@
 
                 <ul class="sub-menu hidden">
                     <li class="menu-item">
-                        <a href="{{ route('purchase-request.index') }}" class="menu-link">
+                        <a href="{{ route('purchase-request.index','barang') }}" class="menu-link">
                             <span class="menu-text">PR (Purchase Request)</span>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="{{ route('purchase-order.index') }}" class="menu-link">
+                        <a href="{{ route('purchase-order.index','barang') }}" class="menu-link">
                             <span class="menu-text">PO (Purchase Order)</span>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="{{ route('po-onsite.index') }}" class="menu-link">
+                        <a href="{{ route('po-onsite.index','barang') }}" class="menu-link">
+                            <span class="menu-text">PO On Site</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="menu-item">
+                <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
+                    <span class="menu-icon"><i class="mgc_contacts_line"></i></span>
+                    <span class="menu-text"> Jasa </span>
+                    <span class="menu-arrow"></span>
+                </a>
+
+                <ul class="sub-menu hidden">
+                    <li class="menu-item">
+                        <a href="{{ route('purchase-request.index','jasa') }}" class="menu-link">
+                            <span class="menu-text">PR (Purchase Request)</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="{{ route('purchase-order.index','jasa') }}" class="menu-link">
+                            <span class="menu-text">PO (Purchase Order)</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="{{ route('po-onsite.index','jasa') }}" class="menu-link">
                             <span class="menu-text">PO On Site</span>
                         </a>
                     </li>
@@ -69,13 +95,31 @@
                             <span class="menu-text">Klasifikasi</span>
                         </a>
                     </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link">
+                            <span class="menu-text">Unit Kerja (Cooming)</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
             <li class="menu-item">
-                <a href="{{ route('klasifikasi.index') }}" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_list_check_2_line"></i></span>
-                    <span class="menu-text"> Klasifikasi </span>
+                <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
+                    <span class="menu-icon"><i class="mgc_bill_line"></i></span>
+                    <span class="menu-text"> Invoice (Coming)</span>
+                    <span class="menu-arrow"></span>
                 </a>
+                <ul class="sub-menu hidden">
+                    <li class="menu-item">
+                        <a href="#" class="menu-link">
+                            <span class="menu-text">Pengajuan</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link">
+                            <span class="menu-text">Penerimaan</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
 
             <li class="menu-title">Menu</li>

@@ -11,7 +11,7 @@
 @endsection
 
 @section('content')
-    <form id="form-update" action="{{ route('purchase-order.update', $data->id) }}" method="POST">
+    <form id="form-update" action="{{ route('purchase-order.update',[$prefix,$data->id]) }}" method="POST">
         @method('put')
         @csrf
         <div class="grid lg:grid-cols-4 gap-6">
@@ -82,7 +82,7 @@
                             <div class="form-group">
                                 <label for="inputQuantity" class="mb-2 block">Quantity</label>
                                 <input type="text" name="quantity" id="inputQuantity" class="form-input"
-                                    placeholder="Masukkan Quantity" value="{{ old('quantity',$data->quantity) }}">
+                                    placeholder="Masukkan Quantity" autocomplete="off" value="{{ old('quantity',$data->quantity) }}">
                                 <!-- Error Message -->
                                 <p id="error-quantity" class="text-red-500 text-sm mt-1"></p>
                             </div>
@@ -90,14 +90,14 @@
                             <div class="form-group">
                                 <label for="inputUnitPrice" class="mb-2 block">Unit Price</label>
                                 <input type="text" name="unit_price" id="inputUnitPrice" class="form-input"
-                                    placeholder="Masukkan Unit Price" value="{{ old('unit_price',$data->unit_price) }}">
+                                    placeholder="Masukkan Unit Price" autocomplete="off" value="{{ old('unit_price',$data->unit_price) }}">
                                 <!-- Error Message -->
                                 <p id="error-unit_price" class="text-red-500 text-sm mt-1"></p>
                             </div>
 
                             <div class="form-group">
                                 <label for="inputAmount" class="mb-2 block">Amount</label>
-                                <input type="text" name="amount" id="inputAmount" class="form-input"
+                                <input type="text" name="amount" id="inputAmount" class="form-input read-only:bg-slate-200 text-slate-600" readonly
                                     placeholder="Masukkan Amount" value="{{ old('amount',$data->amount) }}">
                                 <!-- Error Message -->
                                 <p id="error-amount" class="text-red-500 text-sm mt-1"></p>
@@ -107,7 +107,7 @@
                 </div>
                 <div class="lg:col-span-4 mt-5">
                     <div class="flex justify-start gap-3">
-                        <button type="button" id="btn-cancel" data-url="{{ route('purchase-order.index') }}"
+                        <button type="button" id="btn-cancel" data-url="{{ route('purchase-order.index',$prefix) }}"
                             class="inline-flex items-center rounded-md border border-transparent bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-500 focus:outline-none">
                             Kembali
                         </button>
