@@ -381,4 +381,29 @@ $(function () {
             ],
         });
     }
+
+        // TABEL LOCATION
+    if ($("#location-table").length) {
+        initGridTable({
+            tableId: "#location-table",
+            gridData: Data.map((item) => [
+                item.checkbox,
+                item.number,
+                item.name,
+            ]),
+            columns: [
+                { name: "#", width: "60px" },
+                {
+                    name: "Name",
+                    width: "1200px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+            ],
+            buttonConfig: [
+                { selector: ".btn-edit", when: "one" },
+                { selector: ".btn-delete", when: "any" },
+                { selector: ".btn-onsite", when: "any" },
+            ],
+        });
+    }
 });

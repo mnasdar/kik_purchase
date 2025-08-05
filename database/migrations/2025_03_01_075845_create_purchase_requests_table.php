@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->string('pr_number');
             $table->foreignId('status_id')->references('id')->on('statuses')->onDelete('set null');
             $table->foreignId('classification_id')->references('id')->on('classifications')->onDelete('set null');
-            $table->string('location');
+            $table->foreignId('location_id')->references('id')->on('locations')->onDelete('set null');
             $table->string('item_desc');
             $table->string('uom');
             $table->date('approved_date');

@@ -164,10 +164,10 @@ class ClassificationController extends Controller
                 return response()->json(['message' => 'Tidak ada data yang dikirim.'], 400);
             }
 
-            Classification::whereIn('id', $ids)->each(function ($po) {
+            Classification::whereIn('id', $ids)->each(function ($classification) {
                 // Misal: hapus relasi manual
-                // $po->items()->delete();
-                $po->delete();
+                // $classification->items()->delete();
+                $classification->delete();
             });
 
             return response()->json(['message' => 'Data berhasil dihapus.']);

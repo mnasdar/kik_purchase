@@ -96,8 +96,8 @@
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="#" class="menu-link">
-                            <span class="menu-text">Unit Kerja (Cooming)</span>
+                        <a href="{{ route('location.index') }}" class="menu-link">
+                            <span class="menu-text">Unit Kerja</span>
                         </a>
                     </li>
                 </ul>

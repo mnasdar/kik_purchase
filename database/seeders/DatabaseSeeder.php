@@ -9,6 +9,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\Barang\PurchaseRequest;
 use App\Models\Barang\PurchaseTracking;
+use App\Models\Config\Location;
 use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
@@ -48,6 +49,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             StatusSeeder::class,
             ClassificationSeeder::class,
+            LocationSeeder::class,
             PurchaseRequestSeeder::class,
             PurchaseOrderSeeder::class,
             PurchaseTrackingSeeder::class,

@@ -57,16 +57,16 @@
                     <div class="flex flex-col gap-3">
                         <div class="form-group">
                             <label for="inputLocation" class="mb-2 block">Location</label>
-                            <select id="inputLocation" name="location" class="search-select">
+                            <select id="inputLocation" name="location_id" class="search-select">
                                 <option value="" disabled selected>Pilih Location</option>
                                 @foreach ($location as $item)
-                                    <option value="{{ $item}}">{{ ucwords($item) }}
+                                    <option value="{{ $item->id}}">{{ ucwords($item->name) }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
                         <!-- Error Message -->
-                        <p id="error-location" class="text-red-500 text-sm mt-1"></p>
+                        <p id="error-location_id" class="text-red-500 text-sm mt-1"></p>
                     </div>
                 </div>
             </div>

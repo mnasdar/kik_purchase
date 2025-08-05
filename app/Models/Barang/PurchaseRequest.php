@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use App\Models\Config\Status;
 use App\Models\Config\Classification;
+use App\Models\Config\Location;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,8 +18,8 @@ class PurchaseRequest extends Model
     protected $fillable = [
         'status_id',
         'classification_id',
+        'location_id',
         'pr_number',
-        'location',
         'item_desc',
         'uom',
         'approved_date',
@@ -37,6 +38,10 @@ class PurchaseRequest extends Model
     public function status()
     {
         return $this->belongsTo(Status::class);
+    }
+    public function location()
+    {
+        return $this->belongsTo(Location::class);
     }
     public function tracking()
     {

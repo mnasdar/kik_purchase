@@ -237,11 +237,18 @@ $(document).ready(function () {
             resourceName: "status",
         });
     }
-
+    
     // Tabel Classification
     if ($("#classification-table").length) {
         initEditModalHandler({
             resourceName: "classification",
+        });
+    }
+
+    // Tabel Location
+    if ($("#location-table").length) {
+        initEditModalHandler({
+            resourceName: "location",
         });
     }
 });

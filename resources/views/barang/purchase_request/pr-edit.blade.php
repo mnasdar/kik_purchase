@@ -65,9 +65,9 @@
                             <select id="inputLocation" name="location" class="search-select">
                                 <option value="" disabled selected>Pilih Location</option>
                                 @foreach ($location as $item)
-                                    <option value="{{ $item }}"
-                                        {{ old('location', $data->location ?? '') == $item ? 'selected' : '' }}>
-                                        {{ ucwords($item) }}
+                                    <option value="{{ $item->id }}"
+                                        {{ old('location_id', $data->location_id ?? '') == $item->id ? 'selected' : '' }}>
+                                        {{ ucwords($item->name) }}
                                     </option>
                                 @endforeach
                             </select>

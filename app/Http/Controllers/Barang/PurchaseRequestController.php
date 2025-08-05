@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\Config\Classification;
 use App\Models\Barang\PurchaseRequest;
+use App\Models\Config\Location;
 
 class PurchaseRequestController extends Controller
 {
@@ -17,7 +18,7 @@ class PurchaseRequestController extends Controller
      */
     public function index(string $prefix)
     {
-        $pr = PurchaseRequest::with('status', 'classification')
+        $pr = PurchaseRequest::with('status', 'classification','location')
             ->whereHas('classification', function ($query) use ($prefix) {
                 $query->where('type', $prefix);
             })
@@ -54,7 +55,7 @@ class PurchaseRequestController extends Controller
                 'status' => $statusBadge,
                 'classification' => $item->classification->name,
                 'pr_number' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-primary/25 text-sky-800">' . $item->pr_number . $badge . '</span>',
-                'location' => $item->location,
+                'location' => $item->location->name,
                 'item_desc' => $item->item_desc,
                 'uom' => $item->uom,
                 'approved_date' => $item->approved_date,
@@ -82,12 +83,7 @@ class PurchaseRequestController extends Controller
     {
         $status = Status::where('type', $prefix)->get();
         $classification = Classification::where('type', $prefix)->get();
-        $location = [
-            'Head Office',
-            'Mall MARI',
-            'Mall NIPAH',
-            'Wisma Kalla'
-        ];
+        $location = Location::all();
         return view('barang.purchase_request.pr-create', compact(['prefix', 'status', 'classification', 'location']));
     }
 
@@ -99,9 +95,9 @@ class PurchaseRequestController extends Controller
         // 🔍 Validasi input
         $validated = $request->validate([
             'pr_number' => 'required|string',
-            'status_id' => 'required',
-            'classification_id' => 'required',
-            'location' => 'required|string|max:255',
+            'status_id' => 'required|integer',
+            'classification_id' => 'required|integer',
+            'location_id' => 'required|integer',
             'approved_date' => 'required|date|before_or_equal:today',
             'item_desc' => 'required|string|max:255',
             'uom' => 'required|string|max:20',
@@ -113,6 +109,7 @@ class PurchaseRequestController extends Controller
         // ✅ Konversi id
         $validated['status_id'] = (int) $validated['status_id'];
         $validated['classification_id'] = (int) $validated['classification_id'];
+        $validated['location_id'] = (int) $validated['location_id'];
 
         // dd($validated);
 
@@ -125,7 +122,7 @@ class PurchaseRequestController extends Controller
                 'pr_number' => $validated['pr_number'],
                 'status_id' => $validated['status_id'],
                 'classification_id' => $validated['classification_id'],
-                'location' => $validated['location'],
+                'location_id' => $validated['location_id'],
                 'approved_date' => $validated['approved_date'],
                 'item_desc' => $validated['item_desc'],
                 'uom' => $validated['uom'],
@@ -178,12 +175,7 @@ class PurchaseRequestController extends Controller
         $data->approved_date_formatted = Carbon::parse($data->approved_date)->format('Y-m-d');
         $status = Status::where('type', $prefix)->get();
         $classification = Classification::where('type', $prefix)->get();
-        $location = [
-            'Head Office',
-            'Mall MARI',
-            'Mall NIPAH',
-            'Wisma Kalla'
-        ];
+        $location = Location::all();
         return view('barang.purchase_request.pr-edit', compact(['prefix', 'data', 'status', 'classification', 'location']));
     }
 

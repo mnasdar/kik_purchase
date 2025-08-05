@@ -138,10 +138,24 @@ $(function () {
         },
     });
 
-    // Delete Clasifikasi
+    // Delete Classification
     initDeleteHandler({
         tableSelector: "#classification-table",
         deleteUrl: route("classification.bulkDestroy"),
+        onSuccess: () => {
+            Swal.fire("Sukses!", "Data berhasil dihapus.", "success").then(() =>
+                location.reload()
+            );
+        },
+        onError: () => {
+            Swal.fire("Gagal", "Terjadi kesalahan saat menghapus.", "error");
+        },
+    });
+
+    // Delete Location
+    initDeleteHandler({
+        tableSelector: "#location-table",
+        deleteUrl: route("location.bulkDestroy"),
         onSuccess: () => {
             Swal.fire("Sukses!", "Data berhasil dihapus.", "success").then(() =>
                 location.reload()

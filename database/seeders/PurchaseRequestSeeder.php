@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Config\Status;
+use App\Models\Config\Location;
 use Illuminate\Database\Seeder;
 use App\Models\Config\Classification;
 use App\Models\Barang\PurchaseRequest;
@@ -16,12 +17,12 @@ class PurchaseRequestSeeder extends Seeder
     public function run(): void
     {
         $statusIds = Status::where('type','barang')->pluck('id')->toArray();
-        $classification = Classification::where('name', 'Pengadaan Perlengkapan Kantor')->first();
+        $classificationIds = Classification::where('type', 'barang')->pluck('id')->toArray();
+        $locationIds = Location::all()->pluck('id')->toArray();
 
         $data = [
             [
                 'pr_number' => 'KIK0000004013',
-                'location' => 'Head Office',
                 'item_desc' => 'IC POWER LAPTOP HP',
                 'uom' => 'EA',
                 'approved_date' => '2025-07-12',
@@ -31,7 +32,6 @@ class PurchaseRequestSeeder extends Seeder
             ],
             [
                 'pr_number' => 'KIK0000004055',
-                'location' => 'Head Office',
                 'item_desc' => 'POWER SUPPLY (PA-LGA-450W)',
                 'uom' => 'EA',
                 'approved_date' => '2025-07-22',
@@ -41,7 +41,6 @@ class PurchaseRequestSeeder extends Seeder
             ],
             [
                 'pr_number' => 'KIK0000004055',
-                'location' => 'Head Office',
                 'item_desc' => 'MEMORY RAM 4GB DDR3 MERK COSAIR',
                 'uom' => 'EA',
                 'approved_date' => '2025-07-23',
@@ -51,7 +50,6 @@ class PurchaseRequestSeeder extends Seeder
             ],
             [
                 'pr_number' => 'KIK0000004113',
-                'location' => 'Head Office',
                 'item_desc' => 'Charger Laptop Merk HP14s-cf2',
                 'uom' => 'Unit',
                 'approved_date' => '2025-07-20',
@@ -65,7 +63,6 @@ class PurchaseRequestSeeder extends Seeder
         foreach ($data as $row) {
             PurchaseRequest::create([
                 'pr_number' => $row['pr_number'],
-                'location' => $row['location'],
                 'item_desc' => $row['item_desc'],
                 'uom' => $row['uom'],
                 'approved_date' => $row['approved_date'],
@@ -73,7 +70,8 @@ class PurchaseRequestSeeder extends Seeder
                 'quantity' => $row['quantity'],
                 'amount' => $row['amount'],
                 'status_id' => fake()->randomElement($statusIds),
-                'classification_id' => $classification->id,
+                'classification_id' => fake()->randomElement($classificationIds),
+                'location_id' => fake()->randomElement($locationIds),
             ]);
         }
     }

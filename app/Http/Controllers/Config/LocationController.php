@@ -3,22 +3,18 @@
 namespace App\Http\Controllers\Config;
 
 use Illuminate\Http\Request;
-use App\Models\Config\Status;
+use App\Models\Config\Location;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
-class StatusController extends Controller
+class LocationController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $type = [
-            'barang',
-            'jasa',
-        ];
-        $data = Status::orderby('updated_at', 'desc') // urutkan dari yang terakhir diinput
+        $data = Location::orderby('updated_at', 'desc') // urutkan dari yang terakhir diinput
             ->cursor(); // Menghasilkan LazyCollection
 
         $dataJson = $data->values()->map(function ($item, $index) {
@@ -36,11 +32,10 @@ class StatusController extends Controller
                                 <input type="checkbox" class="form-checkbox rounded text-primary" value="' . $item->id . '">
                             </div>',
                 'number' => ($index + 1),
-                'type' => ucwords($item->type),
                 'name' => $item->name . ' ' . $badge,
             ];
         });
-        return view('config.status', compact(['type','dataJson']));
+        return view('config.location', compact(['dataJson']));
     }
 
     /**
@@ -58,15 +53,13 @@ class StatusController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|min:3|max:255',
-            'type' => 'required|string',
         ]);
         try {
 
             DB::beginTransaction();
 
-            $status = Status::create([
+            $status = Location::create([
                 'name' => $validated['name'],
-                'type' => $validated['type'],
             ]);
             DB::commit();
 
@@ -74,7 +67,7 @@ class StatusController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'message' => 'Produk berhasil disimpan.',
-                    'redirect' => route('status.index'),
+                    'redirect' => route('location.index'),
                 ]);
             }
         } catch (\Exception $e) {
@@ -93,7 +86,7 @@ class StatusController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Status $status)
+    public function show(Location $location)
     {
         //
     }
@@ -101,25 +94,24 @@ class StatusController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Status $status)
+    public function edit(Location $location)
     {
-        return response()->json($status);
+        return response()->json($location);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Status $status)
+    public function update(Request $request, Location $location)
     {
         $validated = $request->validate([
             'name' => 'required|string|min:3|max:255',
-            'type' => 'required|string',
         ]);
         try {
             DB::beginTransaction();
 
             // 🔄 Update data
-            $status->update($validated);
+            $location->update($validated);
 
             DB::commit();
 
@@ -127,7 +119,7 @@ class StatusController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'message' => 'Produk berhasil disimpan.',
-                    'redirect' => route('status.index'),
+                    'redirect' => route('location.index'),
                 ]);
             }
         } catch (\Exception $e) {
@@ -146,7 +138,7 @@ class StatusController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Status $status)
+    public function destroy(Location $location)
     {
         //
     }
@@ -159,10 +151,10 @@ class StatusController extends Controller
                 return response()->json(['message' => 'Tidak ada data yang dikirim.'], 400);
             }
 
-            Status::whereIn('id', $ids)->each(function ($status) {
+            Location::whereIn('id', $ids)->each(function ($location) {
                 // Misal: hapus relasi manual
-                // $status->items()->delete();
-                $status->delete();
+                // $location->items()->delete();
+                $location->delete();
             });
 
             return response()->json(['message' => 'Data berhasil dihapus.']);
