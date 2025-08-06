@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Barang;
+namespace App\Http\Controllers\Purchase;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\Barang\PurchaseTracking;
+use App\Models\Purchase\PurchaseTracking;
 
 class PurchaseTrackingController extends Controller
 {

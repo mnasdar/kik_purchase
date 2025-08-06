@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Barang;
+namespace App\Http\Controllers\Purchase;
 
 use Carbon\Carbon;
 use Illuminate\Support\Str;
@@ -8,9 +8,9 @@ use Illuminate\Http\Request;
 use App\Models\Config\Status;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\Barang\PurchaseOrder;
-use App\Models\Barang\PurchaseRequest;
-use App\Models\Barang\PurchaseOrderOnsite;
+use App\Models\Purchase\PurchaseOrder;
+use App\Models\Purchase\PurchaseRequest;
+use App\Models\Purchase\PurchaseOrderOnsite;
 
 class PurchaseOrderController extends Controller
 {

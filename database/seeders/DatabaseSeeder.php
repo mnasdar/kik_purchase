@@ -7,8 +7,8 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\Barang\PurchaseRequest;
-use App\Models\Barang\PurchaseTracking;
+use App\Models\Purchase\PurchaseRequest;
+use App\Models\Purchase\PurchaseTracking;
 use App\Models\Config\Location;
 use Spatie\Permission\Models\Role;
 

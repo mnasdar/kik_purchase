@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Barang\PurchaseTracking;
+use App\Models\Purchase\PurchaseTracking;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 

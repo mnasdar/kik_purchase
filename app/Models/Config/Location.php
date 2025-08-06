@@ -3,7 +3,7 @@
 namespace App\Models\Config;
 
 use Illuminate\Support\Carbon;
-use App\Models\Barang\PurchaseRequest;
+use App\Models\Purchase\PurchaseRequest;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 

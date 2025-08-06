@@ -2,13 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoutingController;
-use App\Http\Controllers\Barang\OnsiteController;
+use App\Http\Controllers\Purchase\OnsiteController;
 use App\Http\Controllers\Config\StatusController;
 use App\Http\Controllers\Config\LocationController;
-use App\Http\Controllers\Barang\PurchaseOrderController;
+use App\Http\Controllers\Purchase\PurchaseOrderController;
 use App\Http\Controllers\Config\ClassificationController;
-use App\Http\Controllers\Barang\PurchaseRequestController;
-use App\Http\Controllers\Barang\PurchaseTrackingController;
+use App\Http\Controllers\Purchase\PurchaseRequestController;
+use App\Http\Controllers\Purchase\PurchaseTrackingController;
 // use App\Http\Controllers\Jasa\PurchaseOrderController as JasaPOController;
 // use App\Http\Controllers\Jasa\OnsiteController as JasaOnsiteController;
 // use App\Http\Controllers\Jasa\PurchaseRequestController as JasaPRController;

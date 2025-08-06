@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\Barang;
+namespace App\Http\Controllers\Purchase;
 
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use App\Models\Barang\PurchaseOrder;
-use App\Models\Barang\PurchaseOrderOnsite;
+use App\Models\Purchase\PurchaseOrder;
+use App\Models\Purchase\PurchaseOrderOnsite;
 
 class OnsiteController extends Controller
 {

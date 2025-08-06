@@ -6,7 +6,7 @@ use App\Models\Config\Status;
 use App\Models\Config\Location;
 use Illuminate\Database\Seeder;
 use App\Models\Config\Classification;
-use App\Models\Barang\PurchaseRequest;
+use App\Models\Purchase\PurchaseRequest;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class PurchaseRequestSeeder extends Seeder

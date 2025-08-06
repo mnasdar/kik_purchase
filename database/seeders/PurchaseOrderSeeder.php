@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Config\Status;
 use Illuminate\Database\Seeder;
-use App\Models\Barang\PurchaseOrder;
+use App\Models\Purchase\PurchaseOrder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class PurchaseOrderSeeder extends Seeder

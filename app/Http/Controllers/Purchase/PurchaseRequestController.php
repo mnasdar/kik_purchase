@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Barang;
+namespace App\Http\Controllers\Purchase;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -8,7 +8,7 @@ use App\Models\Config\Status;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\Config\Classification;
-use App\Models\Barang\PurchaseRequest;
+use App\Models\Purchase\PurchaseRequest;
 use App\Models\Config\Location;
 
 class PurchaseRequestController extends Controller

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Barang;
+namespace App\Models\Purchase;
 
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
