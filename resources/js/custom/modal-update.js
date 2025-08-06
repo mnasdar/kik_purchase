@@ -241,14 +241,14 @@ $(document).ready(function () {
     // Tabel Classification
     if ($("#classification-table").length) {
         initEditModalHandler({
-            resourceName: "classification",
+            resourceName: "klasifikasi",
         });
     }
 
     // Tabel Location
     if ($("#location-table").length) {
         initEditModalHandler({
-            resourceName: "location",
+            resourceName: "unit-kerja",
         });
     }
 });

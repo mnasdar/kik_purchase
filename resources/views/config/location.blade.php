@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Location', 'sub_title' => 'Menu', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Unit Kerja', 'sub_title' => 'Menu', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
     @vite([
@@ -16,11 +16,11 @@
             <div class="card">
                 <div class="card-header">
                     <div class="flex md:flex-row flex-col justify-between items-start md:items-center">
-                        <h4 class="card-title">Data Location</h4>
+                        <h4 class="card-title">Data Unit Kerja</h4>
                         <div class="flex flex-row gap-2">
                             <div class="inline-flex items-center gap-1">
                                 <span data-fc-target="addModal" data-fc-type="modal">
-                                    <button class="btn bg-primary text-white p-2" title="Buat Location" tabindex="0"
+                                    <button class="btn bg-primary text-white p-2" title="Buat Unit Kerja" tabindex="0"
                                         data-plugin="tippy" data-tippy-animation="scale" data-tippy-inertia="true"
                                         data-tippy-duration="[600, 300]" data-tippy-arrow="true">
                                         <i class="mgc_add_fill text-base"></i>
@@ -45,7 +45,7 @@
                     </div>
                 </div>
                 <div class="p-6">
-                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">Berikut adalah data location. Anda bisa
+                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">Berikut adalah data Unit Kerja. Anda bisa
                         mencari
                         dan mengurutkan data secara naik atau turun. Setiap halaman menampilkan 10 item.
                     </p>
@@ -74,7 +74,7 @@
                     <span class="material-symbols-rounded">close</span>
                 </button>
             </div>
-            <form action="{{ route('location.store') }}" id="addItemForm" method="POST">
+            <form action="{{ route('unit-kerja.store') }}" id="addItemForm" method="POST">
                 @csrf
                 <div class="px-4 py-8">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

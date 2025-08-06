@@ -55,12 +55,12 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::resource('/status', StatusController::class)->except(['create', 'show', 'delete']);
 
         /* ================= Classification ======================== */
-        Route::delete('/classification', [ClassificationController::class, 'bulkDestroy'])->name('classification.bulkDestroy');
-        Route::resource('/classification', ClassificationController::class)->except(['create', 'show', 'delete']);
+        Route::delete('/klasifikasi', [ClassificationController::class, 'bulkDestroy'])->name('klasifikasi.bulkDestroy');
+        Route::resource('/klasifikasi', ClassificationController::class)->except(['create', 'show', 'delete']);
 
         /* ================= Location ======================== */
-        Route::delete('/location', [LocationController::class, 'bulkDestroy'])->name('location.bulkDestroy');
-        Route::resource('/location', LocationController::class)->except(['create', 'show', 'delete']);
+        Route::delete('/unit-kerja', [LocationController::class, 'bulkDestroy'])->name('unit-kerja.bulkDestroy');
+        Route::resource('/unit-kerja', LocationController::class)->except(['create', 'show', 'delete']);
     });
     Route::get('{first}/{second}/{third}', [RoutingController::class, 'thirdLevel'])->name('third');
     Route::get('{first}/{second}', [RoutingController::class, 'secondLevel'])->name('second');

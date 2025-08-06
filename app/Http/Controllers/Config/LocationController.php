@@ -67,7 +67,7 @@ class LocationController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'message' => 'Produk berhasil disimpan.',
-                    'redirect' => route('location.index'),
+                    'redirect' => route('unit-kerja.index'),
                 ]);
             }
         } catch (\Exception $e) {
@@ -86,7 +86,7 @@ class LocationController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Location $location)
+    public function show(Location $unit_kerja)
     {
         //
     }
@@ -94,15 +94,15 @@ class LocationController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Location $location)
+    public function edit(Location $unit_kerja)
     {
-        return response()->json($location);
+        return response()->json($unit_kerja);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Location $location)
+    public function update(Request $request, Location $unit_kerja)
     {
         $validated = $request->validate([
             'name' => 'required|string|min:3|max:255',
@@ -111,7 +111,7 @@ class LocationController extends Controller
             DB::beginTransaction();
 
             // 🔄 Update data
-            $location->update($validated);
+            $unit_kerja->update($validated);
 
             DB::commit();
 
@@ -119,7 +119,7 @@ class LocationController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'message' => 'Produk berhasil disimpan.',
-                    'redirect' => route('location.index'),
+                    'redirect' => route('unit-kerja.index'),
                 ]);
             }
         } catch (\Exception $e) {
@@ -138,7 +138,7 @@ class LocationController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Location $location)
+    public function destroy(Location $unit_kerja)
     {
         //
     }
@@ -151,10 +151,10 @@ class LocationController extends Controller
                 return response()->json(['message' => 'Tidak ada data yang dikirim.'], 400);
             }
 
-            Location::whereIn('id', $ids)->each(function ($location) {
+            Location::whereIn('id', $ids)->each(function ($unit_kerja) {
                 // Misal: hapus relasi manual
-                // $location->items()->delete();
-                $location->delete();
+                // $unit_kerja->items()->delete();
+                $unit_kerja->delete();
             });
 
             return response()->json(['message' => 'Data berhasil dihapus.']);

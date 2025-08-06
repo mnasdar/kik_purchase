@@ -91,12 +91,12 @@
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="{{ route('classification.index') }}" class="menu-link">
+                        <a href="{{ route('klasifikasi.index') }}" class="menu-link">
                             <span class="menu-text">Klasifikasi</span>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="{{ route('location.index') }}" class="menu-link">
+                        <a href="{{ route('unit-kerja.index') }}" class="menu-link">
                             <span class="menu-text">Unit Kerja</span>
                         </a>
                     </li>

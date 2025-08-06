@@ -77,7 +77,7 @@ class ClassificationController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'message' => 'Produk berhasil disimpan.',
-                    'redirect' => route('classification.index'),
+                    'redirect' => route('klasifikasi.index'),
                 ]);
             }
         } catch (\Exception $e) {
@@ -96,7 +96,7 @@ class ClassificationController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Classification $classification)
+    public function show(Classification $klasifikasi)
     {
         //
     }
@@ -104,15 +104,15 @@ class ClassificationController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Classification $classification)
+    public function edit(Classification $klasifikasi)
     {
-         return response()->json($classification);
+         return response()->json($klasifikasi);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Classification $classification)
+    public function update(Request $request, Classification $klasifikasi)
     {
         $validated = $request->validate([
             'name' => 'required|string|min:3|max:255',
@@ -123,7 +123,7 @@ class ClassificationController extends Controller
             DB::beginTransaction();
 
             // 🔄 Update data
-            $classification->update($validated);
+            $klasifikasi->update($validated);
 
             DB::commit();
 
@@ -150,7 +150,7 @@ class ClassificationController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Classification $classification)
+    public function destroy(Classification $klasifikasi)
     {
         //
     }
@@ -164,10 +164,10 @@ class ClassificationController extends Controller
                 return response()->json(['message' => 'Tidak ada data yang dikirim.'], 400);
             }
 
-            Classification::whereIn('id', $ids)->each(function ($classification) {
+            Classification::whereIn('id', $ids)->each(function ($klasifikasi) {
                 // Misal: hapus relasi manual
-                // $classification->items()->delete();
-                $classification->delete();
+                // $klasifikasi->items()->delete();
+                $klasifikasi->delete();
             });
 
             return response()->json(['message' => 'Data berhasil dihapus.']);

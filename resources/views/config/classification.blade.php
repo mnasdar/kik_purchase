@@ -74,7 +74,7 @@
                     <span class="material-symbols-rounded">close</span>
                 </button>
             </div>
-            <form action="{{ route('classification.store') }}" id="addItemForm" method="POST">
+            <form action="{{ route('klasifikasi.store') }}" id="addItemForm" method="POST">
                 @csrf
                 <div class="px-4 py-8">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -48,7 +48,7 @@
                     </div>
                 </div>
                 <div class="p-6">
-                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">Berikut adalah data produk. Anda bisa mencari
+                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">Berikut adalah data purchase order Anda bisa mencari
                         dan mengurutkan data secara naik atau turun. Setiap halaman menampilkan 10 item.
                     </p>
                     <!-- Disini tampilkan data -->
