@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id();
             $table->string('po_number')->index();
-            $table->foreignId('status_id')->references('id')->on('statuses')->onDelete('set null');
+            $table->foreignId('status_id')->nullable()->constrained()->nullOnDelete();
             $table->date('approved_date');
             $table->string('supplier_name');
             $table->integer('quantity');

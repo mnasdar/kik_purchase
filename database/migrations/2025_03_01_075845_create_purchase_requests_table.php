@@ -13,9 +13,9 @@ return new class extends Migration {
         Schema::create('purchase_requests', function (Blueprint $table) {
             $table->id();
             $table->string('pr_number');
-            $table->foreignId('status_id')->references('id')->on('statuses')->onDelete('set null');
-            $table->foreignId('classification_id')->references('id')->on('classifications')->onDelete('set null');
-            $table->foreignId('location_id')->references('id')->on('locations')->onDelete('set null');
+            $table->foreignId('status_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('classification_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('location_id')->nullable()->constrained()->nullOnDelete();
             $table->string('item_desc');
             $table->string('uom');
             $table->date('approved_date');

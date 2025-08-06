@@ -12,8 +12,8 @@ return new class extends Migration {
     {
         Schema::create('purchase_trackings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('purchase_request_id')->constrained()->onDelete('cascade');
-            $table->foreignId('purchase_order_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('purchase_request_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('purchase_order_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }

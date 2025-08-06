@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('purchase_order_onsites', function (Blueprint $table) {
             $table->id();
             $table->string('onsite_number')->index();
-            $table->foreignId('purchase_order_id')->nullable()->constrained()->onDelete('no action');
+            $table->foreignId('purchase_order_id')->nullable()->constrained()->nullOnDelete();
             $table->date('tgl_terima');
             $table->timestamps();
         });

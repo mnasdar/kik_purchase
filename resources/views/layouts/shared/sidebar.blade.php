@@ -111,12 +111,17 @@
                 <ul class="sub-menu hidden">
                     <li class="menu-item">
                         <a href="#" class="menu-link">
+                            <span class="menu-text">Terima Dari Vendor</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link">
                             <span class="menu-text">Pengajuan</span>
                         </a>
                     </li>
                     <li class="menu-item">
                         <a href="#" class="menu-link">
-                            <span class="menu-text">Penerimaan</span>
+                            <span class="menu-text">Pembayaran</span>
                         </a>
                     </li>
                 </ul>
