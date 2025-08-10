@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Tambahkan PR', 'sub_title' => 'Barang', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Tambahkan Produk', 'sub_title' => 'Project', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
     @vite([
@@ -11,13 +11,14 @@
 @endsection
 
 @section('content')
-    <form id="form-create" action="{{ route('purchase-request.store',$prefix) }}" method="POST">
+    <form id="form-update" action="{{ route('purchase-order.update',[$prefix,$data->id]) }}" method="POST">
+        @method('put')
         @csrf
         <div class="grid lg:grid-cols-4 gap-6">
             <div class="col-span-1 flex flex-col gap-6">
                 <div class="card p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <p class="card-title">Select Data</p>
+                        <p class="card-title">Kategori Produk</p>
                         <div
                             class="inline-flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 w-9 h-9">
                             <i class="mgc_compass_line"></i>
@@ -30,7 +31,9 @@
                             <select id="inputStatus" name="status_id" class="search-select">
                                 <option value="" disabled selected>Pilih Status</option>
                                 @foreach ($status as $item)
-                                    <option value="{{ $item->id }}">{{ ucwords($item->name) }}
+                                    <option value="{{ $item->id }}"
+                                        {{ old('status_id', $data->status_id ?? '') == $item->id ? 'selected' : '' }}>
+                                        {{ ucwords($item->name) }}
                                     </option>
                                 @endforeach
                             </select>
@@ -38,43 +41,13 @@
                         <!-- Error Message -->
                         <p id="error-status_id" class="text-red-500 text-sm mt-1"></p>
                     </div>
-
-                    <div class="flex flex-col gap-3">
-                        <div class="form-group">
-                            <label for="inputClassification" class="mb-2 block">Classification</label>
-                            <select id="inputClassification" name="classification_id" class="search-select">
-                                <option value="" disabled selected>Pilih Classification</option>
-                                @foreach ($classification as $item)
-                                    <option value="{{ $item->id }}">{{ ucwords($item->name) }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <!-- Error Message -->
-                        <p id="error-classification_id" class="text-red-500 text-sm mt-1"></p>
-                    </div>
-
-                    <div class="flex flex-col gap-3">
-                        <div class="form-group">
-                            <label for="inputLocation" class="mb-2 block">Location</label>
-                            <select id="inputLocation" name="location_id" class="search-select">
-                                <option value="" disabled selected>Pilih Location</option>
-                                @foreach ($location as $item)
-                                    <option value="{{ $item->id}}">{{ ucwords($item->name) }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <!-- Error Message -->
-                        <p id="error-location_id" class="text-red-500 text-sm mt-1"></p>
-                    </div>
                 </div>
             </div>
 
             <div class="lg:col-span-3 space-y-6">
                 <div class="card p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <p class="card-title">Input Data</p>
+                        <p class="card-title">Data Umum Produk</p>
                         <div
                             class="inline-flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 w-9 h-9">
                             <i class="mgc_transfer_line"></i>
@@ -84,55 +57,48 @@
                     <div class="flex flex-col gap-3">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="form-group">
-                                <label for="inputPRNumber" class="mb-2 block">PR Number</label>
-                                <input type="text" name="pr_number" id="inputPRNumber" class="form-input"
-                                    placeholder="Masukkan PR Number">
+                                <label for="inputPONumber" class="mb-2 block">PO Number</label>
+                                <input type="text" name="po_number" id="inputPONumber" class="form-input"
+                                    placeholder="Masukkan PO Number" value="{{ old('po_number',$data->po_number) }}">
                                 <!-- Error Message -->
-                                <p id="error-pr_number" class="text-red-500 text-sm mt-1"></p>
+                                <p id="error-po_number" class="text-red-500 text-sm mt-1"></p>
                             </div>
 
                             <div class="form-group">
                                 <label for="inputApproveDate" class="mb-2 block">Approved Date</label>
-                                <input type="text" name="approved_date" id="inputApproveDate" class="form-input">
+                                <input type="text" name="approved_date" id="inputApproveDate" class="form-input" value="{{ old('approved_date',$data->approved_date_formatted) }}">
                                 <!-- Error Message -->
                                 <p id="error-ApproveDate" class="text-red-500 text-sm mt-1"></p>
                             </div>
 
                             <div class="form-group">
-                                <label for="inputItemDesc" class="mb-2 block">Item Description</label>
-                                <input type="text" name="item_desc" id="inputItemDesc" class="form-input"
-                                    placeholder="Masukkan Item Description">
+                                <label for="inputSupplierName" class="mb-2 block">Supplier Name</label>
+                                <input type="text" name="supplier_name" id="inputSupplierName" class="form-input"
+                                    placeholder="Masukkan Supplier Name" value="{{ old('supplier_name',$data->supplier_name) }}">
                                 <!-- Error Message -->
-                                <p id="error-item_desc" class="text-red-500 text-sm mt-1"></p>
+                                <p id="error-supplier_name" class="text-red-500 text-sm mt-1"></p>
                             </div>
 
-                            <div class="form-group">
-                                <label for="inputUom" class="mb-2 block">UOM</label>
-                                <input type="text" name="uom" id="inputUom" class="form-input"
-                                    placeholder="Masukkan UOM">
-                                <!-- Error Message -->
-                                <p id="error-uom" class="text-red-500 text-sm mt-1"></p>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="inputUnitPrice" class="mb-2 block">Unit Price</label>
-                                <input type="text" name="unit_price" id="inputUnitPrice" class="form-input"
-                                    placeholder="Masukkan Unit Price" autocomplete="off">
-                                <!-- Error Message -->
-                                <p id="error-unit_price" class="text-red-500 text-sm mt-1"></p>
-                            </div>
-                            
                             <div class="form-group">
                                 <label for="inputQuantity" class="mb-2 block">Quantity</label>
                                 <input type="text" name="quantity" id="inputQuantity" class="form-input"
-                                    placeholder="Masukkan Quantity" autocomplete="off">
+                                    placeholder="Masukkan Quantity" autocomplete="off" value="{{ old('quantity',$data->quantity) }}">
                                 <!-- Error Message -->
                                 <p id="error-quantity" class="text-red-500 text-sm mt-1"></p>
                             </div>
 
                             <div class="form-group">
+                                <label for="inputUnitPrice" class="mb-2 block">Unit Price</label>
+                                <input type="text" name="unit_price" id="inputUnitPrice" class="form-input"
+                                    placeholder="Masukkan Unit Price" autocomplete="off" value="{{ old('unit_price',$data->unit_price) }}">
+                                <!-- Error Message -->
+                                <p id="error-unit_price" class="text-red-500 text-sm mt-1"></p>
+                            </div>
+
+                            <div class="form-group">
                                 <label for="inputAmount" class="mb-2 block">Amount</label>
-                                <input type="text" name="amount" id="inputAmount" class="form-input read-only:bg-slate-200 text-slate-600" readonly>
+                                <input type="text" name="amount" id="inputAmount" class="form-input read-only:bg-slate-200 text-slate-600" readonly
+                                    placeholder="Masukkan Amount" value="{{ old('amount',$data->amount) }}">
                                 <!-- Error Message -->
                                 <p id="error-amount" class="text-red-500 text-sm mt-1"></p>
                             </div>
@@ -140,16 +106,17 @@
                     </div>
                 </div>
                 <div class="lg:col-span-4 mt-5">
-                    <div class="flex justify-end gap-3">
-                        <button type="button" id="btn-cancel" data-url="{{ route('purchase-request.index',$prefix) }}"
+                    <div class="flex justify-start gap-3">
+                        <button type="button" id="btn-cancel" data-url="{{ route('purchase-order.index',$prefix) }}"
                             class="inline-flex items-center rounded-md border border-transparent bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-500 focus:outline-none">
                             Kembali
                         </button>
                         <button type="submit"
-                            class="inline-flex items-center rounded-md border border-transparent bg-green-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-500 focus:outline-none disabled:bg-slate-500">
+                            class="inline-flex items-center rounded-md border border-transparent bg-green-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-500 focus:outline-none disabled:bg-slate-500"
+                            id="btn-update">
                             <span
                                 class="loader hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                            <span>Simpan</span>
+                            <span>Update</span>
                         </button>
                     </div>
                 </div>
@@ -165,7 +132,7 @@
         'resources/js/pages/form-select.js',
         'resources/js/pages/extended-sweetalert.js',
         'resources/js/pages/extended-tippy.js',
+        'resources/js/custom/form-update.js',
         'resources/js/pages/form-flatpickr.js',
-        'resources/js/custom/form-create.js',
     ])
 @endsection

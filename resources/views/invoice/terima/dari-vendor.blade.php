@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'PO Onsite', 'sub_title' => 'Barang', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Terima Dari Vendor', 'sub_title' => 'Invoice', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
     @vite([
@@ -18,8 +18,8 @@
                     <div class="flex md:flex-row flex-col justify-between items-start md:items-center">
                         <h4 class="card-title">Data PO (Purchase Order) Onsite</h4>
                         <div class="flex flex-row gap-2">
-                            <a href="{{ route('po-onsite.create',$prefix) }}" class="btn bg-primary text-white p-2"
-                                title="Tambah Data PO Onsite" tabindex="0" data-plugin="tippy" data-tippy-animation="scale"
+                            <a href="{{ route('terima-dari-vendor.create') }}" class="btn bg-primary text-white p-2"
+                                title="Tambah Data Invoice" tabindex="0" data-plugin="tippy" data-tippy-animation="scale"
                                 data-tippy-inertia="true" data-tippy-duration="[600, 300]" data-tippy-arrow="true">
                                 <i class="mgc_add_fill text-base"></i>
                             </a>
@@ -44,7 +44,7 @@
                         dan mengurutkan data secara naik atau turun. Setiap halaman menampilkan 10 item.
                     </p>
                     <!-- Disini tampilkan data -->
-                    <div id="onsite-table" class="w-full overflow-x-auto"></div>
+                    <div id="terima_dari_vendor-table" class="w-full overflow-x-auto"></div>
                 </div>
             </div>
         </div>

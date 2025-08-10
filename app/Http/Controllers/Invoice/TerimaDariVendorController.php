@@ -1,141 +1,72 @@
 <?php
 
-namespace App\Http\Controllers\Purchase;
+namespace App\Http\Controllers\Invoice;
 
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Models\Invoice\Submission;
 use App\Http\Controllers\Controller;
 use App\Models\Purchase\PurchaseOrder;
-use App\Models\Purchase\PurchaseOrderOnsite;
 
-class OnsiteController extends Controller
+class TerimaDariVendorController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(string $prefix)
+    public function index()
     {
-        $po = PurchaseOrder::with('status', 'onsite')
-            ->whereHas('onsite') // hanya yang punya relasi onsite
-            ->whereHas('status', function ($query) use ($prefix) {
-                $query->where('type', $prefix);
-            })
+        $po = Submission::with('purchase_order')
             ->orderby('updated_at', 'desc') // urutkan dari yang terakhir diinput
             ->cursor(); // Menghasilkan LazyCollection
+
+        // return $po;
 
         $dataJson = $po->values()->map(function ($item, $index) {
             // Badge tambahan (misal: 'New', 'Update')
             $badge = '';
-            if ($item->onsite->is_new) {
+            if ($item->is_new) {
                 $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-success rounded-full">New</span>';
-            } elseif ($item->onsite->is_update) {
+            } elseif ($item->is_update) {
                 $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-warning rounded-full">Update</span>';
             }
-
-            // Status badge berdasarkan status->name
-            $statusName = strtolower($item->status->name);
-            if ($statusName === 'finish') {
-                $statusClass = 'bg-green-500';
-            } elseif ($statusName === 'on proses') {
-                $statusClass = 'bg-yellow-500';
-            } else {
-                $statusClass = 'bg-gray-500';
-            }
-            $statusBadge = '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium text-white ' . $statusClass . '">'
-                . ucwords($item->status->name) .
-                '</span>';
 
             return [
                 'checkbox' => '<div class="form-check">
                                 <input type="checkbox" class="form-checkbox rounded text-primary" value="' . $item->onsite->id . '">
                             </div>',
                 'number' => ($index + 1),
-                'tgl_terima' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-green-100 text-green-800">' . $item->onsite->tgl_terima . $badge . '</span>',
-                'status' => $statusBadge, // gabungkan badge status dan badge tambahan jika perlu
+                'received_at' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-green-100 text-green-800">' . $item->onsite->tgl_terima . $badge . '</span>',
                 // kamu bisa menambahkan 'stok' => $badge_stok jika ingin ditampilkan juga
-                'po_number' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-purple-100 text-purple-800">' . $item->po_number . '</span>',
-                'approved_date' => $item->approved_date,
+                'invoice_number' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-sky-100 text-sky-800">' . $item->po_number . '</span>',
+                'po_number' => '',
                 'supplier_name' => $item->supplier_name,
-                'qty' => '<div class="text-center">' . $item->quantity . '</div>',
-                'unit_price' =>
-                    '<div class="my-1 flex md:flex-row flex-col justify-between items-start md:items-center text-red-600">
-                        <span>Rp.</span><span class="text-right">' . number_format($item->unit_price, 0) . '</span>
-                    </div>',
                 'amount' => '<div class="my-1 flex md:flex-row flex-col justify-between items-start md:items-center text-red-600">
                         <span>Rp.</span><span class="text-right">' . number_format($item->amount, 0) . '</span>
                     </div>',
-                'sla' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium text-white ' . $item->sla_badge . '">'
-                    . ($item->working_days ?? '-') .
-                    '</span>',
             ];
         });
-        return view('purchase.po.onsite', compact(['prefix', 'dataJson']));
+        return view('invoice.terima.dari-vendor', compact(['dataJson']));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create(string $prefix)
+    public function create()
     {
-        return view('purchase.po.onsite-create', compact('prefix'));
+        return view('invoice.terima.dari-vendor-create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(string $prefix, Request $request)
+    public function store(Request $request)
     {
-        // Validasi request
-        $validated = $request->validate([
-            'tgl_terima' => 'required|date',
-            'items' => 'required|array|min:1',
-            'items.*.po_number' => 'required|string|exists:purchase_orders,po_number',
-        ]);
-
-        try {
-            DB::beginTransaction();
-
-            // Generate unique onsite number (contoh: ONSITE-20250726-XXX)
-            $onsiteNumber = 'ONSITE-' . now()->format('Ymd') . '-' . strtoupper(Str::random(5));
-
-            foreach ($validated['items'] as $item) {
-                $po = PurchaseOrder::where('po_number', $item['po_number'])->first();
-
-                // Cek apakah PO sudah punya relasi onsite
-                $existing = PurchaseOrderOnsite::where('purchase_order_id', $po->id)->first();
-                if ($existing) {
-                    continue; // Lewati jika sudah ada
-                }
-                // Simpan data onsite baru
-                PurchaseOrderOnsite::create([
-                    'onsite_number' => $onsiteNumber,
-                    'purchase_order_id' => $po->id,
-                    'tgl_terima' => $validated['tgl_terima'],
-                ]);
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'message' => 'PO Onsite berhasil disimpan.',
-                'redirect' => route('po-onsite.index', $prefix),
-            ]);
-
-        } catch (\Throwable $e) {
-            DB::rollBack();
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Gagal menyimpan data: ' . $e->getMessage(),
-            ], 500);
-        }
+        //
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(PurchaseOrderOnsite $po_onsite)
+    public function show(Submission $submission)
     {
         //
     }
@@ -143,37 +74,27 @@ class OnsiteController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $prefix, PurchaseOrderOnsite $po_onsite)
+    public function edit(Submission $submission)
     {
-        return response()->json($po_onsite);
+        //
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(string $prefix, Request $request, PurchaseOrderOnsite $po_onsite)
+    public function update(Request $request, Submission $submission)
     {
-        $validated = $request->validate([
-            'tgl_terima' => 'required|string|min:3|max:255',
-        ]);
-
-        $po_onsite->update($validated);
-
-        return response()->json([
-            'message' => 'Data berhasil diperbarui.',
-            'data' => $po_onsite
-        ]);
+        //
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request)
+    public function destroy(Submission $submission)
     {
-        //    
+        //
     }
-
-    public function bulkDestroy(string $prefix, Request $request)
+    public function bulkDestroy(Request $request)
     {
         try {
             $ids = $request->input('ids');
@@ -182,7 +103,7 @@ class OnsiteController extends Controller
                 return response()->json(['message' => 'Tidak ada data yang dikirim.'], 400);
             }
 
-            PurchaseOrderOnsite::whereIn('id', $ids)->each(function ($po) {
+            Submission::whereIn('id', $ids)->each(function ($po) {
                 // Misal: hapus relasi manual
                 // $po->items()->delete();
                 $po->delete();
@@ -193,17 +114,13 @@ class OnsiteController extends Controller
             return response()->json(['message' => 'Terjadi kesalahan saat menghapus data.', 'error' => $e->getMessage()], 500);
         }
     }
-    public function search(string $prefix, $keyword)
+    public function search($keyword)
     {
         // Format keyword untuk pencarian LIKE
         $keyword = '%' . $keyword . '%';
 
-        // Ambil PO yang BELUM memiliki relasi Onsite
         $po = PurchaseOrder::with('status')
-            ->whereHas('status', function ($query) use ($prefix) {
-                $query->where('type', $prefix);
-            })
-            ->whereDoesntHave('onsite') // hanya PO yang belum punya data Onsite
+            ->whereHas('onsite') // hanya PO yang belum punya data Onsite
             ->where(function ($query) use ($keyword) {
                 $query->where('po_number', 'like', $keyword)
                     ->orWhere('supplier_name', 'like', $keyword)

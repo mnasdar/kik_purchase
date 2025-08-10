@@ -3,6 +3,7 @@ import {
     route
 } from 'ziggy-js';
 import Swal from 'sweetalert2';
+
 const $table = $("#purchase_order-table");
 const $onsiteBtn = $(".btn-onsite");
 const $form = $("#onsite-form");

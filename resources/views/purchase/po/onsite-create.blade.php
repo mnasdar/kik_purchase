@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'PO Onsite', 'sub_title' => 'Barang', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'PO Onsite', 'sub_title' => ucwords($prefix), 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <!-- Glightbox css -->
     @vite([
@@ -20,7 +20,7 @@
                     </div>
                 </div>
                 <div class="p-6">
-                    <form id="formCariPo" class="grid grid-cols-4 gap-4 mb-6">
+                    <form id="formCari" class="grid grid-cols-4 gap-4 mb-6">
                         <div class="flex justify-between gap-2">
                             <input type="text" class="form-input" name="search" id="inputCari"
                                 placeholder="PO Number/Supplier Name/Amount" autofocus>
@@ -146,7 +146,8 @@
         'resources/js/pages/extended-sweetalert.js',
         'resources/js/pages/extended-tippy.js',
         'resources/js/pages/form-flatpickr.js',
-        'resources/js/custom/po-search.js',
+        'resources/js/custom/po-onsite.js',
+        // 'resources/js/custom/po-search.js',
         'resources/js/custom/po-result.js',
     ])
 @endsection

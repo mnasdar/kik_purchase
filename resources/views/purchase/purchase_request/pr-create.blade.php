@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Tambahkan PO', 'sub_title' => 'Barang', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Tambahkan PR', 'sub_title' => ucwords($prefix), 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
     @vite([
@@ -11,7 +11,7 @@
 @endsection
 
 @section('content')
-    <form id="form-create" action="{{ route('purchase-order.store',$prefix) }}" method="POST">
+    <form id="form-create" action="{{ route('purchase-request.store',$prefix) }}" method="POST">
         @csrf
         <div class="grid lg:grid-cols-4 gap-6">
             <div class="col-span-1 flex flex-col gap-6">
@@ -38,6 +38,36 @@
                         <!-- Error Message -->
                         <p id="error-status_id" class="text-red-500 text-sm mt-1"></p>
                     </div>
+
+                    <div class="flex flex-col gap-3">
+                        <div class="form-group">
+                            <label for="inputClassification" class="mb-2 block">Classification</label>
+                            <select id="inputClassification" name="classification_id" class="search-select">
+                                <option value="" disabled selected>Pilih Classification</option>
+                                @foreach ($classification as $item)
+                                    <option value="{{ $item->id }}">{{ ucwords($item->name) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <!-- Error Message -->
+                        <p id="error-classification_id" class="text-red-500 text-sm mt-1"></p>
+                    </div>
+
+                    <div class="flex flex-col gap-3">
+                        <div class="form-group">
+                            <label for="inputLocation" class="mb-2 block">Location</label>
+                            <select id="inputLocation" name="location_id" class="search-select">
+                                <option value="" disabled selected>Pilih Location</option>
+                                @foreach ($location as $item)
+                                    <option value="{{ $item->id}}">{{ ucwords($item->name) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <!-- Error Message -->
+                        <p id="error-location_id" class="text-red-500 text-sm mt-1"></p>
+                    </div>
                 </div>
             </div>
 
@@ -54,11 +84,11 @@
                     <div class="flex flex-col gap-3">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="form-group">
-                                <label for="inputPONumber" class="mb-2 block">PO Number</label>
-                                <input type="text" name="po_number" id="inputPONumber" class="form-input"
-                                    placeholder="Masukkan PO Number">
+                                <label for="inputPRNumber" class="mb-2 block">PR Number</label>
+                                <input type="text" name="pr_number" id="inputPRNumber" class="form-input"
+                                    placeholder="Masukkan PR Number">
                                 <!-- Error Message -->
-                                <p id="error-po_number" class="text-red-500 text-sm mt-1"></p>
+                                <p id="error-pr_number" class="text-red-500 text-sm mt-1"></p>
                             </div>
 
                             <div class="form-group">
@@ -69,34 +99,40 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="inputSupplierName" class="mb-2 block">Supplier Name</label>
-                                <input type="text" name="supplier_name" id="inputSupplierName" class="form-input"
-                                    placeholder="Masukkan Supplier Name">
+                                <label for="inputItemDesc" class="mb-2 block">Item Description</label>
+                                <input type="text" name="item_desc" id="inputItemDesc" class="form-input"
+                                    placeholder="Masukkan Item Description">
                                 <!-- Error Message -->
-                                <p id="error-supplier_name" class="text-red-500 text-sm mt-1"></p>
+                                <p id="error-item_desc" class="text-red-500 text-sm mt-1"></p>
                             </div>
 
                             <div class="form-group">
-                                <label for="inputQuantity" class="mb-2 block">Quantity</label>
-                                <input type="text" name="quantity" id="inputQuantity" class="form-input"
-                                    placeholder="Masukkan Quantity"  autocomplete="off">
+                                <label for="inputUom" class="mb-2 block">UOM</label>
+                                <input type="text" name="uom" id="inputUom" class="form-input"
+                                    placeholder="Masukkan UOM">
                                 <!-- Error Message -->
-                                <p id="error-quantity" class="text-red-500 text-sm mt-1"></p>
+                                <p id="error-uom" class="text-red-500 text-sm mt-1"></p>
                             </div>
 
                             <div class="form-group">
                                 <label for="inputUnitPrice" class="mb-2 block">Unit Price</label>
                                 <input type="text" name="unit_price" id="inputUnitPrice" class="form-input"
-                                    placeholder="Masukkan Unit Price"  autocomplete="off">
+                                    placeholder="Masukkan Unit Price" autocomplete="off">
                                 <!-- Error Message -->
                                 <p id="error-unit_price" class="text-red-500 text-sm mt-1"></p>
                             </div>
                             
+                            <div class="form-group">
+                                <label for="inputQuantity" class="mb-2 block">Quantity</label>
+                                <input type="text" name="quantity" id="inputQuantity" class="form-input"
+                                    placeholder="Masukkan Quantity" autocomplete="off">
+                                <!-- Error Message -->
+                                <p id="error-quantity" class="text-red-500 text-sm mt-1"></p>
+                            </div>
 
                             <div class="form-group">
                                 <label for="inputAmount" class="mb-2 block">Amount</label>
-                                <input type="text" name="amount" step="1000" id="inputAmount" class="form-input read-only:bg-slate-200 text-slate-600" readonly
-                                    placeholder="Masukkan Amount">
+                                <input type="text" name="amount" id="inputAmount" class="form-input read-only:bg-slate-200 text-slate-600" readonly>
                                 <!-- Error Message -->
                                 <p id="error-amount" class="text-red-500 text-sm mt-1"></p>
                             </div>
@@ -105,7 +141,7 @@
                 </div>
                 <div class="lg:col-span-4 mt-5">
                     <div class="flex justify-end gap-3">
-                        <button type="button" id="btn-cancel" data-url="{{ route('purchase-order.index',$prefix) }}"
+                        <button type="button" id="btn-cancel" data-url="{{ route('purchase-request.index',$prefix) }}"
                             class="inline-flex items-center rounded-md border border-transparent bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-500 focus:outline-none">
                             Kembali
                         </button>

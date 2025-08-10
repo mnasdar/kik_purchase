@@ -7,6 +7,7 @@ use App\Http\Controllers\Config\StatusController;
 use App\Http\Controllers\Config\LocationController;
 use App\Http\Controllers\Purchase\PurchaseOrderController;
 use App\Http\Controllers\Config\ClassificationController;
+use App\Http\Controllers\Invoice\TerimaDariVendorController;
 use App\Http\Controllers\Purchase\PurchaseRequestController;
 use App\Http\Controllers\Purchase\PurchaseTrackingController;
 // use App\Http\Controllers\Jasa\PurchaseOrderController as JasaPOController;
@@ -48,6 +49,12 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/po-onsite/search/{keyword}', [OnsiteController::class, 'search'])->name('po-onsite.search');
         Route::delete('/po-onsite', [OnsiteController::class, 'bulkDestroy'])->name('po-onsite.bulkDestroy');
         Route::resource('/po-onsite', OnsiteController::class)->except(['destroy']);
+    });
+    Route::prefix('invoice')->group(function () {
+        /* ================= Terima Dari Vendor ======================== */
+        Route::delete('/terima-dari-vendor', [TerimaDariVendorController::class, 'bulkDestroy'])->name('status.bulkDestroy');
+        Route::resource('/terima-dari-vendor', TerimaDariVendorController::class)->except(['show', 'delete']);
+        Route::get('/terima-dari-vendor/{keyword}', [TerimaDariVendorController::class, 'search'])->name('terima-dari-vendor.search');
     });
     Route::prefix('config')->group(function () {
         /* ================= Status ======================== */

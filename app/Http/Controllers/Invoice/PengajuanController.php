@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Invoice\Submission;
 use Illuminate\Http\Request;
 
-class SubmissionController extends Controller
+class PengajuanController extends Controller
 {
     /**
      * Display a listing of the resource.

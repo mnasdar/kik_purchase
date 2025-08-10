@@ -141,7 +141,7 @@ $(function () {
     // Delete Classification
     initDeleteHandler({
         tableSelector: "#classification-table",
-        deleteUrl: route("classification.bulkDestroy"),
+        deleteUrl: route("klasifikasi.bulkDestroy"),
         onSuccess: () => {
             Swal.fire("Sukses!", "Data berhasil dihapus.", "success").then(() =>
                 location.reload()
@@ -155,7 +155,7 @@ $(function () {
     // Delete Location
     initDeleteHandler({
         tableSelector: "#location-table",
-        deleteUrl: route("location.bulkDestroy"),
+        deleteUrl: route("unit-kerja.bulkDestroy"),
         onSuccess: () => {
             Swal.fire("Sukses!", "Data berhasil dihapus.", "success").then(() =>
                 location.reload()

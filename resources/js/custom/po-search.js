@@ -47,6 +47,10 @@ function initGridTable({ gridData, columns, limit = 5 }) {
 
 form.on("submit", function (e) {
     e.preventDefault();
+    // Ambil prefix Halaman
+    const path = window.location.pathname; // Ambil path dari URL
+    const segments = path.split("/"); // Pecah berdasarkan slash
+    const prefix = segments[1]; // Cari nilai "prefix" dari segment ke-1 (setelah domain)
 
     const keywords = $("#inputCari").val();
     const url = route("po-onsite.search", [prefix, keywords]);
@@ -154,4 +158,4 @@ form.on("submit", function (e) {
     });
 });
 
-export { prefix ,closeModal };
+export { prefix, closeModal };

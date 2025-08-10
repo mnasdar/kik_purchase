@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('submissions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('purchase_order_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('invoice_number')->unique();
+            $table->string('invoice_number');
+            $table->date('received_at');
             $table->date('invoice_date');
             $table->timestamps();
         });

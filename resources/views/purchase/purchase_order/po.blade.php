@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Purchase Order', 'sub_title' => 'Barang', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Purchase Order', 'sub_title' => ucwords($prefix), 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
     @vite([

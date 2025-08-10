@@ -101,14 +101,14 @@ function initGridTable({
 }
 
 // Fungsi untuk tombol edit: redirect ke halaman edit berdasarkan ID dari checkbox
-function setEditButton({ routeEditName,params }) {
+function setEditButton({ routeEditName, params }) {
     $(document).on("click", ".btn-edit", function () {
         const checked = $(
             `input[type="checkbox"]:not([id^="headerCheck"]):checked`
         );
         if (checked.length === 1) {
             const id = checked.val();
-            const url = route(routeEditName,[params, id]);
+            const url = route(routeEditName, [params, id]);
             window.location.href = url;
         }
     });
@@ -179,7 +179,10 @@ $(function () {
             ],
         });
 
-        setEditButton({ routeEditName: "purchase-request.edit",params : prefix });
+        setEditButton({
+            routeEditName: "purchase-request.edit",
+            params: prefix,
+        });
     }
 
     // TABEL PURCHASE ORDER
@@ -246,7 +249,7 @@ $(function () {
             ],
         });
 
-        setEditButton({ routeEditName: "purchase-order.edit",params : prefix });
+        setEditButton({ routeEditName: "purchase-order.edit", params: prefix });
     }
 
     // TABEL ONSITE
@@ -382,7 +385,7 @@ $(function () {
         });
     }
 
-        // TABEL LOCATION
+    // TABEL LOCATION
     if ($("#location-table").length) {
         initGridTable({
             tableId: "#location-table",
@@ -396,6 +399,55 @@ $(function () {
                 {
                     name: "Name",
                     width: "1200px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+            ],
+            buttonConfig: [
+                { selector: ".btn-edit", when: "one" },
+                { selector: ".btn-delete", when: "any" },
+                { selector: ".btn-onsite", when: "any" },
+            ],
+        });
+    }
+
+    // TABEL ONSITE
+    if ($("#terima_dari_vendor-table").length) {
+        initGridTable({
+            tableId: "#terima_dari_vendor-table",
+            gridData: Data.map((item) => [
+                item.checkbox,
+                item.number,
+                item.received_at,
+                item.invoice_number,
+                item.po_number,
+                item.supplier_name,
+                item.amount,
+            ]),
+            columns: [
+                { name: "#", width: "60px" },
+                {
+                    name: "Tgl Terima Invoice",
+                    width: "180px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "Invoice Number",
+                    width: "200px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "PO Number",
+                    width: "200px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "Supplier Name",
+                    width: "200px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "Amount",
+                    width: "200px",
                     formatter: (cell) => h("div", { innerHTML: cell }),
                 },
             ],

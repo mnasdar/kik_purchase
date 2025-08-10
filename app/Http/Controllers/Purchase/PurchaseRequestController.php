@@ -73,7 +73,7 @@ class PurchaseRequestController extends Controller
             ];
         });
 
-        return view('barang.purchase_request.pr', compact(['prefix', 'dataJson']));
+        return view('purchase.purchase_request.pr', compact(['prefix', 'dataJson']));
     }
 
     /**
@@ -84,7 +84,7 @@ class PurchaseRequestController extends Controller
         $status = Status::where('type', $prefix)->get();
         $classification = Classification::where('type', $prefix)->get();
         $location = Location::all();
-        return view('barang.purchase_request.pr-create', compact(['prefix', 'status', 'classification', 'location']));
+        return view('purchase.purchase_request.pr-create', compact(['prefix', 'status', 'classification', 'location']));
     }
 
     /**
@@ -176,7 +176,7 @@ class PurchaseRequestController extends Controller
         $status = Status::where('type', $prefix)->get();
         $classification = Classification::where('type', $prefix)->get();
         $location = Location::all();
-        return view('barang.purchase_request.pr-edit', compact(['prefix', 'data', 'status', 'classification', 'location']));
+        return view('purchase.purchase_request.pr-edit', compact(['prefix', 'data', 'status', 'classification', 'location']));
     }
 
     /**

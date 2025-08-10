@@ -94,7 +94,7 @@ class PurchaseOrderController extends Controller
             ];
         });
 
-        return view('barang.purchase_order.po', compact(['prefix', 'dataJson']));
+        return view('purchase.purchase_order.po', compact(['prefix', 'dataJson']));
     }
 
     /**
@@ -103,7 +103,7 @@ class PurchaseOrderController extends Controller
     public function create(string $prefix)
     {
         $status = Status::where('type', $prefix)->get();
-        return view('barang.purchase_order.po-create', compact(['prefix', 'status']));
+        return view('purchase.purchase_order.po-create', compact(['prefix', 'status']));
     }
 
     /**
@@ -245,7 +245,7 @@ class PurchaseOrderController extends Controller
         $data->approved_date_formatted = Carbon::parse($data->approved_date)->format('Y-m-d');
         // return $data;
         $status = Status::where('type', $prefix)->get();
-        return view('barang.purchase_order.po-edit', compact(['prefix', 'data', 'status']));
+        return view('purchase.purchase_order.po-edit', compact(['prefix', 'data', 'status']));
     }
 
     /**

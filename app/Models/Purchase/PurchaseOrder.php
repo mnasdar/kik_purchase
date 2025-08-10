@@ -4,6 +4,7 @@ namespace App\Models\Purchase;
 
 use Carbon\CarbonPeriod;
 use App\Models\Config\Status;
+use App\Models\Invoice\Submission;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -21,7 +22,6 @@ class PurchaseOrder extends Model
         'unit_price',
         'amount',
     ];
-    protected $appends = ['working_days', 'sla_badge'];
     public function status()
     {
         return $this->belongsTo(Status::class);
@@ -33,6 +33,10 @@ class PurchaseOrder extends Model
     public function onsite()
     {
         return $this->hasOne(PurchaseOrderOnsite::class);
+    }
+     public function submission()
+    {
+        return $this->belongsTo(Submission::class);
     }
     protected function approvedDate(): Attribute
     {
