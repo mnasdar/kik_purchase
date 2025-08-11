@@ -2,25 +2,25 @@
 
 namespace App\Http\Controllers\Invoice;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\Invoice\Submission;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\Purchase\PurchaseOrder;
 
-class TerimaDariVendorController extends Controller
+class DariVendorController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $po = Submission::with('purchase_order')
+        $purchase_order = Submission::with('purchase_orders')
             ->orderby('updated_at', 'desc') // urutkan dari yang terakhir diinput
             ->cursor(); // Menghasilkan LazyCollection
 
-        // return $po;
-
-        $dataJson = $po->values()->map(function ($item, $index) {
+        $dataJson = $purchase_order->values()->map(function ($item, $index) {
             // Badge tambahan (misal: 'New', 'Update')
             $badge = '';
             if ($item->is_new) {
@@ -31,17 +31,24 @@ class TerimaDariVendorController extends Controller
 
             return [
                 'checkbox' => '<div class="form-check">
-                                <input type="checkbox" class="form-checkbox rounded text-primary" value="' . $item->onsite->id . '">
+                                <input type="checkbox" class="form-checkbox rounded text-primary" value="' . $item->id . '">
                             </div>',
                 'number' => ($index + 1),
-                'received_at' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-green-100 text-green-800">' . $item->onsite->tgl_terima . $badge . '</span>',
-                // kamu bisa menambahkan 'stok' => $badge_stok jika ingin ditampilkan juga
-                'invoice_number' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-sky-100 text-sky-800">' . $item->po_number . '</span>',
-                'po_number' => '',
-                'supplier_name' => $item->supplier_name,
-                'amount' => '<div class="my-1 flex md:flex-row flex-col justify-between items-start md:items-center text-red-600">
-                        <span>Rp.</span><span class="text-right">' . number_format($item->amount, 0) . '</span>
-                    </div>',
+                'received_at' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-green-100 text-green-800">' . $item->received_at . $badge . '</span>',
+                'invoice_number' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">' . $item->invoice_number . '</span>',
+                'invoice_date' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-gray-100 text-gray-800">' . $item->invoice_date . '</span>',
+                'po_numbers' => $item->purchase_orders->map(
+                    fn($po) =>
+                    '<div class="my-2 flex md:flex-row flex-col justify-start items-center md:items-center"><span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-purple-100 text-purple-800">' . e($po->po_number) . '</span></div>'
+                )->join(''),
+                'supplier_name' => $item->purchase_orders->map(
+                    fn($po) =>
+                    '<div class="my-2 flex md:flex-row flex-col justify-start items-center md:items-center"><span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-gray-100 text-gray-800">' . e($po->supplier_name) . '</span></div>'
+                )->join(''),
+                'amount' => '<span class="inline-flex w-full justify-between items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-red-100 text-red-800">'
+                    . '<span>Rp.</span>'
+                    . number_format($item->purchase_orders->sum('amount'), 0) .
+                    '</span>',
             ];
         });
         return view('invoice.terima.dari-vendor', compact(['dataJson']));
@@ -60,13 +67,59 @@ class TerimaDariVendorController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validasi request
+        $validated = $request->validate([
+            'invoice_number' => 'required|string',
+            'invoice_date' => 'required|date',
+            'received_at' => 'required|date',
+            'items' => 'required|array|min:1',
+            'items.*.po_number' => 'required|string|exists:purchase_orders,po_number',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Buat submission hanya sekali (1 invoice = 1 submission)
+            $submission = Submission::create([
+                'invoice_number' => $validated['invoice_number'],
+                'invoice_date' => $validated['invoice_date'],
+                'received_at' => $validated['received_at'],
+            ]);
+
+            // Loop setiap item untuk update PO
+            foreach ($validated['items'] as $item) {
+                $purchase_order = PurchaseOrder::where('po_number', $item['po_number'])->first();
+
+                if ($purchase_order) {
+                    $purchase_order->update([
+                        'submission_id' => $submission->id,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data Invoice berhasil disimpan.',
+                'redirect' => route('dari-vendor.index'),
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal menyimpan data: ' . $e->getMessage(),
+            ], 500);
+        }
     }
+
 
     /**
      * Display the specified resource.
      */
-    public function show(Submission $submission)
+    public function show(Submission $dari_vendor)
     {
         //
     }
@@ -74,23 +127,34 @@ class TerimaDariVendorController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Submission $submission)
+    public function edit(Submission $dari_vendor)
     {
-        //
+        return response()->json($dari_vendor);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Submission $submission)
+    public function update(Request $request, Submission $dari_vendor)
     {
-        //
+        $validated = $request->validate([
+            'invoice_number' => 'required|string',
+            'invoice_date' => 'required|date',
+            'received_at' => 'required|date',
+        ]);
+
+        $dari_vendor->update($validated);
+
+        return response()->json([
+            'message' => 'Data berhasil diperbarui.',
+            'data' => $dari_vendor
+        ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Submission $submission)
+    public function destroy(Submission $dari_vendor)
     {
         //
     }
@@ -103,10 +167,8 @@ class TerimaDariVendorController extends Controller
                 return response()->json(['message' => 'Tidak ada data yang dikirim.'], 400);
             }
 
-            Submission::whereIn('id', $ids)->each(function ($po) {
-                // Misal: hapus relasi manual
-                // $po->items()->delete();
-                $po->delete();
+            Submission::whereIn('id', $ids)->each(function ($submission) {
+                $submission->delete();
             });
 
             return response()->json(['message' => 'Data berhasil dihapus.']);
@@ -119,8 +181,8 @@ class TerimaDariVendorController extends Controller
         // Format keyword untuk pencarian LIKE
         $keyword = '%' . $keyword . '%';
 
-        $po = PurchaseOrder::with('status')
-            ->whereHas('onsite') // hanya PO yang belum punya data Onsite
+        $purchase_order = PurchaseOrder::with('status')
+            ->whereNotNull('received_at') // hanya PO yang belum punya data Onsite
             ->where(function ($query) use ($keyword) {
                 $query->where('po_number', 'like', $keyword)
                     ->orWhere('supplier_name', 'like', $keyword)
@@ -130,7 +192,7 @@ class TerimaDariVendorController extends Controller
             ->cursor(); // Lazy loading untuk efisiensi memori
 
         // Format hasil dalam struktur untuk Grid.js / Frontend Table
-        $dataJson = $po->values()->map(function ($item, $index) {
+        $dataJson = $purchase_order->values()->map(function ($item, $index) {
             // Badge status berdasarkan relasi status
             $statusName = strtolower($item->status->name ?? '');
             $statusClass = match ($statusName) {

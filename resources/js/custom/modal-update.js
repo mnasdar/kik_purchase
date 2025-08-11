@@ -2,7 +2,10 @@ import $ from "jquery";
 import Swal from "sweetalert2";
 import { route } from "ziggy-js";
 import flatpickr from "flatpickr";
-import { prefix } from "./po-search";
+
+const path = window.location.pathname; // Ambil path dari URL
+const segments = path.split("/"); // Pecah berdasarkan slash
+const prefix = segments[1]; // Cari nilai "prefix" dari segment ke-1 (setelah domain)
 
 export default function initEditModalHandler(config) {
     const {
@@ -78,14 +81,24 @@ export default function initEditModalHandler(config) {
                 method: "GET",
                 dataType: "json",
                 success: function (data) {
-                    if (dateId && $(dateId).length) {
-                        flatpickr(dateId, {
-                            defaultDate: new Date(data.tgl_terima),
-                            dateFormat: "Y-m-d", // Format yang dikirim ke server (misalnya untuk form)
-                            altInput: true, // Tampilkan input tambahan yang lebih user-friendly
-                            altFormat: "d-M-Y", // Format yang ditampilkan ke pengguna
+                    // ✅ Loop semua date input yang ada di dateId
+                    if (Array.isArray(dateId)) {
+                        dateId.forEach(function (selector) {
+                            const $dateInput = $(selector);
+                            if ($dateInput.length) {
+                                const key = $dateInput.attr("name");
+                                if (key && data[key]) {
+                                    flatpickr(selector, {
+                                        defaultDate: new Date(data[key]),
+                                        dateFormat: "Y-m-d",
+                                        altInput: true,
+                                        altFormat: "d-M-Y",
+                                    });
+                                }
+                            }
                         });
                     }
+
                     initialFormData = {};
                     $form.find("input change,input, select").each(function () {
                         const input = $(this);
@@ -227,7 +240,15 @@ $(document).ready(function () {
         initEditModalHandler({
             resourceName: "po-onsite",
             params: prefix,
-            dateId: "#tgl_terimaEdit",
+           dateId: ["#editReceivedAt"],
+        });
+    }
+
+    // Tabel Invoice dari Vendor
+    if ($("#dari_vendor-table").length) {
+        initEditModalHandler({
+            resourceName: "dari-vendor",
+            dateId: ["#editInvoiceDate", "#editReceivedAt"],
         });
     }
 
@@ -237,7 +258,7 @@ $(document).ready(function () {
             resourceName: "status",
         });
     }
-    
+
     // Tabel Classification
     if ($("#classification-table").length) {
         initEditModalHandler({

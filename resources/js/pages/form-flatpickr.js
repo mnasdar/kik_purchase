@@ -86,7 +86,13 @@ export const approveDatePicker = flatpickr("#editapprove_date", {
 // ======================================================
 // Inisialisasi date picker untuk input tanggal onsite PO
 // ======================================================
-flatpickr("#datepo-onsite", {
+flatpickr("#inputInvoiceDate", {
+    altInput: true,
+    altFormat: "d-M-Y",
+    dateFormat: "Y-m-d",
+    defaultDate: new Date(),
+});
+flatpickr("#inputReceivedAt", {
     altInput: true,
     altFormat: "d-M-Y",
     dateFormat: "Y-m-d",

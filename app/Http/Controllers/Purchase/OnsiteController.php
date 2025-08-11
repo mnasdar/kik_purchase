@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\Purchase\PurchaseOrder;
-use App\Models\Purchase\PurchaseOrderOnsite;
 
 class OnsiteController extends Controller
 {
@@ -17,7 +16,7 @@ class OnsiteController extends Controller
     public function index(string $prefix)
     {
         $po = PurchaseOrder::with('status', 'onsite')
-            ->whereHas('onsite') // hanya yang punya relasi onsite
+            ->whereNotNull('received_at') // hanya yang punya relasi onsite
             ->whereHas('status', function ($query) use ($prefix) {
                 $query->where('type', $prefix);
             })
@@ -27,9 +26,9 @@ class OnsiteController extends Controller
         $dataJson = $po->values()->map(function ($item, $index) {
             // Badge tambahan (misal: 'New', 'Update')
             $badge = '';
-            if ($item->onsite->is_new) {
+            if ($item->is_new) {
                 $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-success rounded-full">New</span>';
-            } elseif ($item->onsite->is_update) {
+            } elseif ($item->is_update) {
                 $badge = '<span class="inline-block px-2 py-1 text-xs font-semibold text-white bg-warning rounded-full">Update</span>';
             }
 
@@ -48,10 +47,10 @@ class OnsiteController extends Controller
 
             return [
                 'checkbox' => '<div class="form-check">
-                                <input type="checkbox" class="form-checkbox rounded text-primary" value="' . $item->onsite->id . '">
+                                <input type="checkbox" class="form-checkbox rounded text-primary" value="' . $item->id . '">
                             </div>',
                 'number' => ($index + 1),
-                'tgl_terima' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-green-100 text-green-800">' . $item->onsite->tgl_terima . $badge . '</span>',
+                'received_at' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-green-100 text-green-800">' . $item->received_at . $badge . '</span>',
                 'status' => $statusBadge, // gabungkan badge status dan badge tambahan jika perlu
                 // kamu bisa menambahkan 'stok' => $badge_stok jika ingin ditampilkan juga
                 'po_number' => '<span class="inline-flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-purple-100 text-purple-800">' . $item->po_number . '</span>',
@@ -88,7 +87,7 @@ class OnsiteController extends Controller
     {
         // Validasi request
         $validated = $request->validate([
-            'tgl_terima' => 'required|date',
+            'received_at' => 'required|date',
             'items' => 'required|array|min:1',
             'items.*.po_number' => 'required|string|exists:purchase_orders,po_number',
         ]);
@@ -96,22 +95,11 @@ class OnsiteController extends Controller
         try {
             DB::beginTransaction();
 
-            // Generate unique onsite number (contoh: ONSITE-20250726-XXX)
-            $onsiteNumber = 'ONSITE-' . now()->format('Ymd') . '-' . strtoupper(Str::random(5));
-
             foreach ($validated['items'] as $item) {
                 $po = PurchaseOrder::where('po_number', $item['po_number'])->first();
 
-                // Cek apakah PO sudah punya relasi onsite
-                $existing = PurchaseOrderOnsite::where('purchase_order_id', $po->id)->first();
-                if ($existing) {
-                    continue; // Lewati jika sudah ada
-                }
-                // Simpan data onsite baru
-                PurchaseOrderOnsite::create([
-                    'onsite_number' => $onsiteNumber,
-                    'purchase_order_id' => $po->id,
-                    'tgl_terima' => $validated['tgl_terima'],
+                $po->update([
+                    'received_at' => $validated['received_at'],
                 ]);
             }
 
@@ -135,7 +123,7 @@ class OnsiteController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(PurchaseOrderOnsite $po_onsite)
+    public function show(PurchaseOrder $po_onsite)
     {
         //
     }
@@ -143,7 +131,7 @@ class OnsiteController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $prefix, PurchaseOrderOnsite $po_onsite)
+    public function edit(string $prefix, PurchaseOrder $po_onsite)
     {
         return response()->json($po_onsite);
     }
@@ -151,10 +139,10 @@ class OnsiteController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(string $prefix, Request $request, PurchaseOrderOnsite $po_onsite)
+    public function update(string $prefix, Request $request, PurchaseOrder $po_onsite)
     {
         $validated = $request->validate([
-            'tgl_terima' => 'required|string|min:3|max:255',
+            'received_at' => 'required|date',
         ]);
 
         $po_onsite->update($validated);
@@ -181,13 +169,11 @@ class OnsiteController extends Controller
             if (!is_array($ids) || empty($ids)) {
                 return response()->json(['message' => 'Tidak ada data yang dikirim.'], 400);
             }
-
-            PurchaseOrderOnsite::whereIn('id', $ids)->each(function ($po) {
-                // Misal: hapus relasi manual
-                // $po->items()->delete();
-                $po->delete();
+            PurchaseOrder::whereIn('id', $ids)->each(function ($data) {
+                $data->update([
+                    'received_at' => null,
+                ]);
             });
-
             return response()->json(['message' => 'Data berhasil dihapus.']);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Terjadi kesalahan saat menghapus data.', 'error' => $e->getMessage()], 500);
@@ -203,7 +189,7 @@ class OnsiteController extends Controller
             ->whereHas('status', function ($query) use ($prefix) {
                 $query->where('type', $prefix);
             })
-            ->whereDoesntHave('onsite') // hanya PO yang belum punya data Onsite
+            ->whereNull('received_at')
             ->where(function ($query) use ($keyword) {
                 $query->where('po_number', 'like', $keyword)
                     ->orWhere('supplier_name', 'like', $keyword)

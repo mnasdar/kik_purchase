@@ -77,10 +77,13 @@ export default defineConfig({
                 'resources/js/custom/form-delete.js',
                 'resources/js/custom/modal-create.js',
                 'resources/js/custom/modal-update.js',
-                'resources/js/custom/onsite.js',
-                'resources/js/custom/po-result.js',
-                'resources/js/custom/po-search.js',
+                'resources/js/custom/invoice.js',
                 'resources/js/custom/po.js',
+                
+                // Code Js Module
+                'resources/js/modules/gridModalSearch.js',
+                'resources/js/modules/tableResult.js',
+
             ],
             refresh: true
         }),

@@ -103,25 +103,48 @@
                 class="btn bg-info text-white disabled:bg-slate-200 disabled:text-gray-500 btn-proses">Proses</button>
         </div>
         <!-- Button Trigger Modal Tanggal Terima -->
-        <button id="btn-onsite" data-fc-target="onsiteModal" data-fc-type="modal" data-fc-behavior="static"></button>
+        <button id="btnProses" data-fc-target="prosesModal" data-fc-type="modal" data-fc-behavior="static"></button>
         <!-- Modal Tanggal Terima -->
-        <div id="onsiteModal"
+        <div id="prosesModal"
             class="fixed top-0 left-0 z-50 transition-all duration-500 fc-modal hidden w-full h-full min-h-full items-center fc-modal-open:flex">
             <div
                 class="fc-modal-open:opacity-100 duration-500 opacity-0 ease-out transition-[opacity] sm:max-w-lg sm:w-full sm:mx-auto  flex-col bg-white border shadow-sm rounded-md dark:bg-slate-800 dark:border-gray-700">
                 <div class="flex justify-between items-center py-2.5 px-4 border-b dark:border-gray-700">
                     <h3 class="font-medium text-gray-800 dark:text-white text-lg">
-                        Masukkan Tanggal Terima PO
+                        Masukkan Data Invoice
                     </h3>
                     <button class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
                         data-fc-dismiss type="button">
                         <span class="material-symbols-rounded">close</span>
                     </button>
                 </div>
-                <form action="">
+                <form id="form-proses" action="{{ route('dari-vendor.store') }}" method="POST">
+                    @csrf
                     <div class="px-4 py-8 overflow-y-auto">
-                        <!-- Input tanggal terima -->
-                        <input type="text" class="form-input" name="tgl_terima" id="datepo-onsite">
+                        <div class="grid grid-cols-1 gap-6">
+                            <!-- Input Nomor Invoice -->
+                            <div class="form-group">
+                                <label for="inputInvoiceNumber" class="mb-2 block">Invoice Number</label>
+                                <input type="text" name="invoice_number" id="inputInvoiceNumber" class="form-input"
+                                    placeholder="Masukkan Invoice Number">
+                                <!-- Error Message -->
+                                <p id="error-invoice_number" class="text-red-500 text-sm mt-1"></p>
+                            </div>
+                            <!-- Input Tanggal Invoice -->
+                            <div class="form-group">
+                                <label for="inputInvoiceDate" class="mb-2 block">Invoice Date</label>
+                                <input type="text" name="invoice_date" id="inputInvoiceDate" class="form-input">
+                                <!-- Error Message -->
+                                <p id="error-invoice_date" class="text-red-500 text-sm mt-1"></p>
+                            </div>
+                            <!-- Input Tanggal Terima -->
+                            <div class="form-group">
+                                <label for="inputReceivedAt" class="mb-2 block">Tgl Terima Invoice</label>
+                                <input type="text" name="received_at" id="inputReceivedAt" class="form-input">
+                                <!-- Error Message -->
+                                <p id="error-received_at" class="text-red-500 text-sm mt-1"></p>
+                            </div>
+                        </div>
                     </div>
                     <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
                         <!-- Tombol Cancel -->
@@ -129,8 +152,12 @@
                             class="py-2 px-5 inline-flex justify-center items-center gap-2 rounded dark:text-gray-200 border dark:border-slate-700 font-medium hover:bg-slate-100 hover:dark:bg-slate-700 transition-all"
                             data-fc-dismiss type="button">Close</button>
                         <!-- Tombol Save -->
-                        <a class="py-2.5 px-4 inline-flex justify-center items-center gap-2 rounded bg-primary hover:bg-primary-600 text-white btn-save"
-                            href="javascript:void(0)">Save</a>
+                        <button type="submit"
+                            class="inline-flex items-center rounded-md border border-transparent bg-green-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-500 focus:outline-none disabled:bg-slate-500">
+                            <span
+                                class="loader hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span>Save</span>
+                        </button>
                     </div>
                 </form>
             </div>

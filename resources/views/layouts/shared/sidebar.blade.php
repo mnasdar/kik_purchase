@@ -86,8 +86,8 @@
                 </a>
                 <ul class="sub-menu hidden">
                     <li class="menu-item">
-                        <a href="{{ route('terima-dari-vendor.index') }}" class="menu-link">
-                            <span class="menu-text">Terima Dari Vendor</span>
+                        <a href="{{ route('dari-vendor.index') }}" class="menu-link">
+                            <span class="menu-text">Dari Vendor</span>
                         </a>
                     </li>
                     <li class="menu-item">

@@ -7,7 +7,7 @@ use App\Http\Controllers\Config\StatusController;
 use App\Http\Controllers\Config\LocationController;
 use App\Http\Controllers\Purchase\PurchaseOrderController;
 use App\Http\Controllers\Config\ClassificationController;
-use App\Http\Controllers\Invoice\TerimaDariVendorController;
+use App\Http\Controllers\Invoice\DariVendorController;
 use App\Http\Controllers\Purchase\PurchaseRequestController;
 use App\Http\Controllers\Purchase\PurchaseTrackingController;
 // use App\Http\Controllers\Jasa\PurchaseOrderController as JasaPOController;
@@ -52,9 +52,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     });
     Route::prefix('invoice')->group(function () {
         /* ================= Terima Dari Vendor ======================== */
-        Route::delete('/terima-dari-vendor', [TerimaDariVendorController::class, 'bulkDestroy'])->name('status.bulkDestroy');
-        Route::resource('/terima-dari-vendor', TerimaDariVendorController::class)->except(['show', 'delete']);
-        Route::get('/terima-dari-vendor/{keyword}', [TerimaDariVendorController::class, 'search'])->name('terima-dari-vendor.search');
+        Route::delete('/dari-vendor', [DariVendorController::class, 'bulkDestroy'])->name('dari-vendor.bulkDestroy');
+        Route::resource('/dari-vendor', DariVendorController::class)->except(['show', 'delete']);
+        Route::get('/dari-vendor/{keyword}', [DariVendorController::class, 'search'])->name('dari-vendor.search');
     });
     Route::prefix('config')->group(function () {
         /* ================= Status ======================== */

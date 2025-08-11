@@ -18,7 +18,7 @@
                     <div class="flex md:flex-row flex-col justify-between items-start md:items-center">
                         <h4 class="card-title">Data PO (Purchase Order) Onsite</h4>
                         <div class="flex flex-row gap-2">
-                            <a href="{{ route('terima-dari-vendor.create') }}" class="btn bg-primary text-white p-2"
+                            <a href="{{ route('dari-vendor.create') }}" class="btn bg-primary text-white p-2"
                                 title="Tambah Data Invoice" tabindex="0" data-plugin="tippy" data-tippy-animation="scale"
                                 data-tippy-inertia="true" data-tippy-duration="[600, 300]" data-tippy-arrow="true">
                                 <i class="mgc_add_fill text-base"></i>
@@ -40,11 +40,12 @@
                     </div>
                 </div>
                 <div class="p-6">
-                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">Berikut adalah data PO onsite Anda bisa mencari
+                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">Berikut adalah data PO onsite Anda bisa
+                        mencari
                         dan mengurutkan data secara naik atau turun. Setiap halaman menampilkan 10 item.
                     </p>
                     <!-- Disini tampilkan data -->
-                    <div id="terima_dari_vendor-table" class="w-full overflow-x-auto"></div>
+                    <div id="dari_vendor-table" class="w-full overflow-x-auto"></div>
                 </div>
             </div>
         </div>
@@ -110,11 +111,28 @@
                 @csrf
                 @method('put')
                 <div class="px-4 py-8">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="form-group col-span-2">
-                            <!-- Input tanggal terima -->
-                            <input type="text" class="form-input" name="tgl_terima" id="tgl_terimaEdit">
-                            <p id="error-edit-name" class="text-sm text-red-500 mt-1"></p>
+                    <div class="grid grid-cols-1 gap-6">
+                        <!-- Input Nomor Invoice -->
+                        <div class="form-group">
+                            <label for="editInvoiceNumber" class="mb-2 block">Invoice Number</label>
+                            <input type="text" name="invoice_number" id="editInvoiceNumber" class="form-input"
+                                placeholder="Masukkan Invoice Number">
+                            <!-- Error Message -->
+                            <p id="error-invoice_number" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <!-- Input Tanggal Invoice -->
+                        <div class="form-group">
+                            <label for="editInvoiceDate" class="mb-2 block">Invoice Date</label>
+                            <input type="text" name="invoice_date" id="editInvoiceDate" class="form-input">
+                            <!-- Error Message -->
+                            <p id="error-invoice_date" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <!-- Input Tanggal Terima -->
+                        <div class="form-group">
+                            <label for="editReceivedAt" class="mb-2 block">Tgl Terima Invoice</label>
+                            <input type="text" name="received_at" id="editReceivedAt" class="form-input">
+                            <!-- Error Message -->
+                            <p id="error-received_at" class="text-red-500 text-sm mt-1"></p>
                         </div>
                     </div>
                 </div>

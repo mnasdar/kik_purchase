@@ -311,8 +311,6 @@ class PurchaseOrderController extends Controller
             }
 
             PurchaseOrder::whereIn('id', $ids)->each(function ($po) {
-                // Misal: hapus relasi manual
-                // $po->items()->delete();
                 $po->delete();
             });
 
@@ -392,29 +390,5 @@ class PurchaseOrderController extends Controller
         });
 
         return response()->json($showDataPRJson);
-    }
-
-    public function onsite(string $prefix, Request $request)
-    {
-        $request->validate([
-            'ids' => 'required|array',
-            'tgl_terima' => 'required|date',
-        ]);
-
-        $ids = $request->input('ids');
-        $tglTerima = $request->input('tgl_terima');
-
-        // Generate unique onsite number (contoh: ONSITE-20250726-XXX)
-        $onsiteNumber = 'ONSITE-' . now()->format('Ymd') . '-' . strtoupper(Str::random(5));
-
-        foreach ($ids as $poId) {
-            PurchaseOrderOnsite::create([
-                'onsite_number' => $onsiteNumber,
-                'purchase_order_id' => $poId,
-                'tgl_terima' => $tglTerima,
-            ]);
-        }
-
-        return response()->json(['message' => 'Data berhasil disimpan.']);
     }
 }

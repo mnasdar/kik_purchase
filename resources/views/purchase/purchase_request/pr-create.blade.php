@@ -95,7 +95,7 @@
                                 <label for="inputApproveDate" class="mb-2 block">Approved Date</label>
                                 <input type="text" name="approved_date" id="inputApproveDate" class="form-input">
                                 <!-- Error Message -->
-                                <p id="error-ApproveDate" class="text-red-500 text-sm mt-1"></p>
+                                <p id="error-approved_date" class="text-red-500 text-sm mt-1"></p>
                             </div>
 
                             <div class="form-group">

@@ -259,7 +259,7 @@ $(function () {
             gridData: Data.map((item) => [
                 item.checkbox,
                 item.number,
-                item.tgl_terima,
+                item.received_at,
                 item.status,
                 item.po_number,
                 item.approved_date,
@@ -411,38 +411,44 @@ $(function () {
     }
 
     // TABEL ONSITE
-    if ($("#terima_dari_vendor-table").length) {
+    if ($("#dari_vendor-table").length) {
         initGridTable({
-            tableId: "#terima_dari_vendor-table",
+            tableId: "#dari_vendor-table",
             gridData: Data.map((item) => [
                 item.checkbox,
                 item.number,
                 item.received_at,
                 item.invoice_number,
-                item.po_number,
+                item.invoice_date,
+                item.po_numbers,
                 item.supplier_name,
                 item.amount,
             ]),
             columns: [
                 { name: "#", width: "60px" },
                 {
-                    name: "Tgl Terima Invoice",
-                    width: "180px",
+                    name: "Tanggal Terima Invoice",
+                    width: "200px",
                     formatter: (cell) => h("div", { innerHTML: cell }),
                 },
                 {
                     name: "Invoice Number",
-                    width: "200px",
+                    width: "180px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "Invoice Date",
+                    width: "150px",
                     formatter: (cell) => h("div", { innerHTML: cell }),
                 },
                 {
                     name: "PO Number",
-                    width: "200px",
+                    width: "160px",
                     formatter: (cell) => h("div", { innerHTML: cell }),
                 },
                 {
                     name: "Supplier Name",
-                    width: "200px",
+                    width: "300px",
                     formatter: (cell) => h("div", { innerHTML: cell }),
                 },
                 {

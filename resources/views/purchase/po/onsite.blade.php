@@ -18,7 +18,7 @@
                     <div class="flex md:flex-row flex-col justify-between items-start md:items-center">
                         <h4 class="card-title">Data PO (Purchase Order) Onsite</h4>
                         <div class="flex flex-row gap-2">
-                            <a href="{{ route('po-onsite.create',$prefix) }}" class="btn bg-primary text-white p-2"
+                            <a href="{{ route('po-onsite.create', $prefix) }}" class="btn bg-primary text-white p-2"
                                 title="Tambah Data PO Onsite" tabindex="0" data-plugin="tippy" data-tippy-animation="scale"
                                 data-tippy-inertia="true" data-tippy-duration="[600, 300]" data-tippy-arrow="true">
                                 <i class="mgc_add_fill text-base"></i>
@@ -40,7 +40,8 @@
                     </div>
                 </div>
                 <div class="p-6">
-                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">Berikut adalah data PO onsite Anda bisa mencari
+                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">Berikut adalah data PO onsite Anda bisa
+                        mencari
                         dan mengurutkan data secara naik atau turun. Setiap halaman menampilkan 10 item.
                     </p>
                     <!-- Disini tampilkan data -->
@@ -113,22 +114,24 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="form-group col-span-2">
                             <!-- Input tanggal terima -->
-                            <input type="text" class="form-input" name="tgl_terima" id="tgl_terimaEdit">
-                            <p id="error-edit-name" class="text-sm text-red-500 mt-1"></p>
+                            <div class="form-group">
+                                <input type="text" class="form-input" name="received_at" id="editReceivedAt">
+                                <!-- Error Message -->
+                                <p id="error-received_at" class="text-red-500 text-sm mt-1"></p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
-                    <button
-                        class="btn dark:text-gray-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:dark:bg-slate-700 transition-all"
-                        data-fc-dismiss type="button">Close
-                    </button>
-                    <button type="submit" class="btn bg-primary text-white flex items-center gap-2" id="btnUpdate">
-                        <span
-                            class="loader hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                        <span>Update</span>
-                    </button>
-                </div>
+                    <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
+                        <button
+                            class="btn dark:text-gray-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:dark:bg-slate-700 transition-all"
+                            data-fc-dismiss type="button">Close
+                        </button>
+                        <button type="submit" class="btn bg-primary text-white flex items-center gap-2" id="btnUpdate">
+                            <span
+                                class="loader hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span>Update</span>
+                        </button>
+                    </div>
             </form>
         </div>
     </div>

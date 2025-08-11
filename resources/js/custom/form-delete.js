@@ -73,8 +73,20 @@ window.initDeleteHandler = function (options) {
                     data: JSON.stringify({
                         ids,
                     }),
-                    success: onSuccess,
-                    error: onError,
+                    success: function () {
+                        Swal.fire(
+                            "Sukses!",
+                            "Data berhasil dihapus.",
+                            "success"
+                        ).then(() => location.reload());
+                    },
+                    error: function () {
+                        Swal.fire(
+                            "Gagal",
+                            "Terjadi kesalahan saat menghapus.",
+                            "error"
+                        );
+                    },
                 });
             }
         });
@@ -85,84 +97,42 @@ $(function () {
     // Delete Purchase Request
     initDeleteHandler({
         tableSelector: "#purchase_request-table",
-        deleteUrl: route("purchase-request.bulkDestroy",prefix),
-        onSuccess: () => {
-            Swal.fire("Sukses!", "Data berhasil dihapus.", "success").then(() =>
-                location.reload()
-            );
-        },
-        onError: () => {
-            Swal.fire("Gagal", "Terjadi kesalahan saat menghapus.", "error");
-        },
+        deleteUrl: route("purchase-request.bulkDestroy", prefix),
     });
 
     // Delete Purchase Order
     initDeleteHandler({
         tableSelector: "#purchase_order-table",
-        deleteUrl: route("purchase-order.bulkDestroy",prefix),
-        onSuccess: () => {
-            Swal.fire("Sukses!", "Data berhasil dihapus.", "success").then(() =>
-                location.reload()
-            );
-        },
-        onError: () => {
-            Swal.fire("Gagal", "Terjadi kesalahan saat menghapus.", "error");
-        },
+        deleteUrl: route("purchase-order.bulkDestroy", prefix),
     });
 
     // Delete PO Onsite
     initDeleteHandler({
         tableSelector: "#onsite-table",
-        deleteUrl: route("po-onsite.bulkDestroy",prefix),
-        onSuccess: () => {
-            Swal.fire("Sukses!", "Data berhasil dihapus.", "success").then(() =>
-                location.reload()
-            );
-        },
-        onError: () => {
-            Swal.fire("Gagal", "Terjadi kesalahan saat menghapus.", "error");
-        },
+        deleteUrl: route("po-onsite.bulkDestroy", prefix),
+    });
+
+    // Delete Invoice Terima Dari
+    initDeleteHandler({
+        tableSelector: "#dari_vendor-table",
+        deleteUrl: route("dari-vendor.bulkDestroy"),
     });
 
     // Delete Status
     initDeleteHandler({
         tableSelector: "#status-table",
         deleteUrl: route("status.bulkDestroy"),
-        onSuccess: () => {
-            Swal.fire("Sukses!", "Data berhasil dihapus.", "success").then(() =>
-                location.reload()
-            );
-        },
-        onError: () => {
-            Swal.fire("Gagal", "Terjadi kesalahan saat menghapus.", "error");
-        },
     });
 
     // Delete Classification
     initDeleteHandler({
         tableSelector: "#classification-table",
         deleteUrl: route("klasifikasi.bulkDestroy"),
-        onSuccess: () => {
-            Swal.fire("Sukses!", "Data berhasil dihapus.", "success").then(() =>
-                location.reload()
-            );
-        },
-        onError: () => {
-            Swal.fire("Gagal", "Terjadi kesalahan saat menghapus.", "error");
-        },
     });
 
     // Delete Location
     initDeleteHandler({
         tableSelector: "#location-table",
         deleteUrl: route("unit-kerja.bulkDestroy"),
-        onSuccess: () => {
-            Swal.fire("Sukses!", "Data berhasil dihapus.", "success").then(() =>
-                location.reload()
-            );
-        },
-        onError: () => {
-            Swal.fire("Gagal", "Terjadi kesalahan saat menghapus.", "error");
-        },
     });
 });

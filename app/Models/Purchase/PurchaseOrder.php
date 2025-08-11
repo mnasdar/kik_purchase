@@ -21,6 +21,8 @@ class PurchaseOrder extends Model
         'quantity',
         'unit_price',
         'amount',
+        'received_at',
+        'submission_id',
     ];
     public function status()
     {
@@ -29,10 +31,6 @@ class PurchaseOrder extends Model
     public function trackings()
     {
         return $this->hasMany(PurchaseTracking::class);
-    }
-    public function onsite()
-    {
-        return $this->hasOne(PurchaseOrderOnsite::class);
     }
      public function submission()
     {
@@ -44,20 +42,26 @@ class PurchaseOrder extends Model
             get: fn($value) => Carbon::parse($value)->translatedFormat('d-M-y'),
         );
     }
+    protected function receivedAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn($value) => Carbon::parse($value)->translatedFormat('d-M-y'),
+        );
+    }
     public function getWorkingDaysAttribute()
     {
         // Tanggal PO disetujui (dari field model saat ini)
         $poApproved = $this->getRawOriginal('approved_date');
 
         // Ambil tanggal terima dari relasi 'onsite'
-        $tgl_terima = $this->onsite?->getRawOriginal('tgl_terima');
+        $received_at = $this->onsite?->getRawOriginal('received_at');
 
-        if (!$poApproved || !$tgl_terima) {
+        if (!$poApproved || !$received_at) {
             return null;
         }
 
         $start = Carbon::parse($poApproved);
-        $end = Carbon::parse($tgl_terima);
+        $end = Carbon::parse($received_at);
 
         // Hitung jumlah hari kerja (weekday)
         return CarbonPeriod::create($start, $end)

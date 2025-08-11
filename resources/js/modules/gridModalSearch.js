@@ -34,7 +34,8 @@ function initGridModalSearch({
         const container = document.querySelector(tableId);
         if (!container) return;
 
-        while (container.firstChild) container.removeChild(container.firstChild);
+        while (container.firstChild)
+            container.removeChild(container.firstChild);
 
         const newGridWrapper = document.createElement("div");
         container.appendChild(newGridWrapper);
@@ -51,14 +52,13 @@ function initGridModalSearch({
     $form.on("submit", function (e) {
         e.preventDefault();
 
-        const keywords = $input.val();
+        const keyword = $input.val();
         let url = "";
-        if (!prefix){
-            url = route(routeName, keywords);
-        }else{
-            url = route(routeName, [prefix, keywords]);
+        if (!prefix) {
+            url = route(routeName, keyword);
+        } else {
+            url = route(routeName, [prefix, keyword]);
         }
-        
 
         const formData = {};
         $form.find("[name]").each(function () {
@@ -80,9 +80,11 @@ function initGridModalSearch({
             method: "GET",
             data: formData,
             beforeSend: function () {
-                $table.empty().append(
-                    '<p class="text-center py-4 text-gray-500">Memuat data...</p>'
-                );
+                $table
+                    .empty()
+                    .append(
+                        '<p class="text-center py-4 text-gray-500">Memuat data...</p>'
+                    );
             },
             success: function (data) {
                 if (!data.length) {

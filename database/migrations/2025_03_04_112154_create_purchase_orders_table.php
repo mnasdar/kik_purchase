@@ -19,6 +19,8 @@ return new class extends Migration {
             $table->integer('quantity');
             $table->decimal('unit_price', 15, 2);
             $table->decimal('amount', 15, 2);
+            $table->date('received_at')->nullable();
+            $table->foreignId('submission_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }
