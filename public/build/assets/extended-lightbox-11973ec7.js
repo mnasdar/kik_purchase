@@ -1,0 +1,1 @@
+import{G as e}from"./glightbox.min-3fffbd26.js";import"./_commonjsHelpers-725317a4.js";e({selector:".image-popup",title:!1});e({selector:".image-popup-desc"});e({selector:".image-popup-video-button",title:!1});e({selector:".image-popup-video",title:!1});e({selector:".image-iframe-elements",title:!1});
