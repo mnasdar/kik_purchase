@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Dari Vendor', 'sub_title' => 'Invoice', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Pengajuan', 'sub_title' => 'Invoice', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <!-- Glightbox css -->
     @vite([
@@ -23,7 +23,7 @@
                     <form id="formCari" class="grid grid-cols-4 gap-4 mb-6">
                         <div class="flex justify-between gap-2">
                             <input type="text" class="form-input" name="search" id="inputCari"
-                                placeholder="PO Number/Supplier Name/Amount" autofocus>
+                                placeholder="Invoice Number" autofocus>
                             <div class="flex items-center">
                                 <button type="submit" class="btn bg-primary text-white"><i
                                         class="mgc_search_3_line"></i></button>
@@ -52,7 +52,7 @@
         <div class="lg:col-span-12">
             <div class="card">
                 <div class="card-header">
-                    <h4 class="card-title">Daftar Invoice Diterima dari Vendor</h4>
+                    <h4 class="card-title">Daftar Invoice Yang Akan Diajukan</h4>
                 </div>
 
                 <div class="p-6">
@@ -66,22 +66,16 @@
                                         No.</th>
                                     <th scope="col"
                                         class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                                        Status</th>
+                                        Invoice Number</th>
+                                    <th scope="col"
+                                        class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200 w-20">
+                                        Tgl Terima Inovice</th>
                                     <th scope="col"
                                         class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
                                         PO Number</th>
                                     <th scope="col"
-                                        class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200 w-20">
-                                        Date</th>
-                                    <th scope="col"
-                                        class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                                        class="pe-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
                                         Supplier Number</th>
-                                    <th scope="col"
-                                        class="pe-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                                        Unit Price</th>
-                                    <th scope="col"
-                                        class="pe-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                                        Qty</th>
                                     <th scope="col"
                                         class="pe-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
                                         Amount</th>
@@ -111,38 +105,22 @@
                 class="fc-modal-open:opacity-100 duration-500 opacity-0 ease-out transition-[opacity] sm:max-w-lg sm:w-full sm:mx-auto  flex-col bg-white border shadow-sm rounded-md dark:bg-slate-800 dark:border-gray-700">
                 <div class="flex justify-between items-center py-2.5 px-4 border-b dark:border-gray-700">
                     <h3 class="font-medium text-gray-800 dark:text-white text-lg">
-                        Masukkan Data Invoice
+                        Masukkan Tanggal Pengajuan
                     </h3>
                     <button class="inline-flex flex-shrink-0 justify-center items-center h-8 w-8 dark:text-gray-200"
                         data-fc-dismiss type="button">
                         <span class="material-symbols-rounded">close</span>
                     </button>
                 </div>
-                <form id="form-proses" action="{{ route('dari-vendor.store') }}" method="POST">
+                <form id="form-proses" action="{{ route('pengajuan.store') }}" method="POST">
                     @csrf
                     <div class="px-4 py-8 overflow-y-auto">
                         <div class="grid grid-cols-1 gap-6">
-                            <!-- Input Nomor Invoice -->
-                            <div class="form-group">
-                                <label for="inputInvoiceNumber" class="mb-2 block">Invoice Number</label>
-                                <input type="text" name="invoice_number" id="inputInvoiceNumber" class="form-input"
-                                    placeholder="Masukkan Invoice Number">
-                                <!-- Error Message -->
-                                <p id="error-invoice_number" class="text-red-500 text-sm mt-1"></p>
-                            </div>
                             <!-- Input Tanggal Invoice -->
                             <div class="form-group">
-                                <label for="inputInvoiceDate" class="mb-2 block">Invoice Date</label>
-                                <input type="text" name="invoice_date" id="inputInvoiceDate" class="form-input">
+                                <input type="text" name="request_date" id="inputInvoiceDate" class="form-input">
                                 <!-- Error Message -->
-                                <p id="error-invoice_date" class="text-red-500 text-sm mt-1"></p>
-                            </div>
-                            <!-- Input Tanggal Terima -->
-                            <div class="form-group">
-                                <label for="inputReceivedAt" class="mb-2 block">Tgl Terima Invoice</label>
-                                <input type="text" name="received_at" id="inputReceivedAt" class="form-input">
-                                <!-- Error Message -->
-                                <p id="error-received_at" class="text-red-500 text-sm mt-1"></p>
+                                <p id="error-request_date" class="text-red-500 text-sm mt-1"></p>
                             </div>
                         </div>
                     </div>
@@ -173,6 +151,6 @@
         'resources/js/pages/extended-sweetalert.js',
         'resources/js/pages/extended-tippy.js',
         'resources/js/pages/form-flatpickr.js',
-        'resources/js/custom/invoice.js',
+        'resources/js/custom/pengajuan.js',
     ])
 @endsection

@@ -81,7 +81,7 @@
             <li class="menu-item">
                 <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
                     <span class="menu-icon"><i class="mgc_bill_line"></i></span>
-                    <span class="menu-text"> Invoice (Coming)</span>
+                    <span class="menu-text"> Invoice</span>
                     <span class="menu-arrow"></span>
                 </a>
                 <ul class="sub-menu hidden">
@@ -91,12 +91,12 @@
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="#" class="menu-link">
+                        <a href="{{ route('pengajuan.index') }}" class="menu-link">
                             <span class="menu-text">Pengajuan</span>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="#" class="menu-link">
+                        <a href="{{ route('pembayaran.index') }}" class="menu-link">
                             <span class="menu-text">Pembayaran</span>
                         </a>
                     </li>

@@ -2,6 +2,7 @@ import $ from "jquery";
 import Swal from "sweetalert2";
 import { route } from "ziggy-js";
 import flatpickr from "flatpickr";
+import AutoNumeric from "autonumeric";
 
 const path = window.location.pathname; // Ambil path dari URL
 const segments = path.split("/"); // Pecah berdasarkan slash
@@ -23,6 +24,20 @@ export default function initEditModalHandler(config) {
     const $submitBtn = $("#btnUpdate");
     const $loader = $submitBtn.find(".loader");
     const $loaderOverlay = $("#loaderOverlay");
+
+    // Inisialisasi AutoNumeric di field amount
+    const amountAutoNumeric = new AutoNumeric("#editAmount", {
+        digitGroupSeparator: ",", // pemisah ribuan
+        decimalCharacter: ".", // karakter desimal
+        decimalPlaces: 0, // jumlah angka di belakang koma
+        currencySymbol: "Rp. ",
+        currencySymbolPlacement: "p", // prefix
+        unformatOnSubmit: true, // supaya form kirim value asli (angka mentah)
+        modifyValueOnWheel: false,
+        negativeSignAllowed: false, // ⛔ Tidak izinkan tanda minus
+        minimumValue: "0", // ✅ Angka minimal 0 (tanpa minus)
+        
+    });
 
     let initialFormData = {}; // ✅ Track nilai awal
 
@@ -113,6 +128,7 @@ export default function initEditModalHandler(config) {
                         ) {
                             const value = data[key];
                             if (input.is("select")) {
+                                // ✅ Handling untuk select
                                 input.val(value);
                                 input.find("option").prop("selected", false);
                                 input
@@ -120,6 +136,7 @@ export default function initEditModalHandler(config) {
                                     .prop("selected", true);
                                 input.trigger("change");
 
+                                // Kalau pakai nice-select
                                 const $niceSelect = input.next(".nice-select");
                                 const $niceSelected =
                                     $niceSelect.find(`.option`);
@@ -131,8 +148,20 @@ export default function initEditModalHandler(config) {
                                 $niceSelect
                                     .find(".current")
                                     .text($targetOption.text());
+                            } else if (input.is(":radio")) {
+                                // ✅ Handling untuk radio button
+                                if (input.val() === value) {
+                                    input.prop("checked", true);
+                                } else {
+                                    input.prop("checked", false);
+                                }
                             } else {
-                                input.val(value);
+                                if (key === "amount") {
+                                    // set nilai menggunakan AutoNumeric
+                                    amountAutoNumeric.set(value);
+                                } else {
+                                    input.val(value);
+                                }
                             }
                         }
                     });
@@ -240,7 +269,7 @@ $(document).ready(function () {
         initEditModalHandler({
             resourceName: "po-onsite",
             params: prefix,
-           dateId: ["#editReceivedAt"],
+            dateId: ["#editReceivedAt"],
         });
     }
 
@@ -249,6 +278,22 @@ $(document).ready(function () {
         initEditModalHandler({
             resourceName: "dari-vendor",
             dateId: ["#editInvoiceDate", "#editReceivedAt"],
+        });
+    }
+
+    // Tabel Pengajuan
+    if ($("#pengajuan-table").length) {
+        initEditModalHandler({
+            resourceName: "pengajuan",
+            dateId: ["#editRequestDate"],
+        });
+    }
+
+    // Tabel Pembayaran
+    if ($("#pembayaran-table").length) {
+        initEditModalHandler({
+            resourceName: "pembayaran",
+            dateId: ["#editPaymentDate", "#editReceivedAt"],
         });
     }
 

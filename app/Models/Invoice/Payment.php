@@ -11,11 +11,15 @@ class Payment extends Model
     use HasFactory;
         protected $fillable = [
         'submission_id',
+        'payment_number',
         'type',
         'payment_date',
         'amount',
     ];
-    
+    public function submission()
+    {
+        return $this->belongsTo(Submission::class);
+    }
     public function getIsNewAttribute()
     {
         return $this->created_at && Carbon::parse($this->created_at)->greaterThan(Carbon::now()->subMinutes(5));

@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('submissions', function (Blueprint $table) {
             $table->id();
-            $table->string('invoice_number');
+            $table->string('invoice_number')->unique();
             $table->date('received_at');
             $table->date('invoice_date');
+            $table->date('request_date')->nullable();
             $table->timestamps();
         });
     }

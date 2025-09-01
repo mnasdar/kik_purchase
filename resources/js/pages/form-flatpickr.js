@@ -98,3 +98,9 @@ flatpickr("#inputReceivedAt", {
     dateFormat: "Y-m-d",
     defaultDate: new Date(),
 });
+flatpickr("#inputPaymentDate", {
+    altInput: true,
+    altFormat: "d-M-Y",
+    dateFormat: "Y-m-d",
+    defaultDate: new Date(),
+});

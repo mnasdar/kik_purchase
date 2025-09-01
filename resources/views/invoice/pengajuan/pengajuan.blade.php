@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Dari Vendor', 'sub_title' => 'Invoice', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Pengajuan', 'sub_title' => 'Invoice', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
     @vite([
@@ -16,9 +16,9 @@
             <div class="card">
                 <div class="card-header">
                     <div class="flex md:flex-row flex-col justify-between items-start md:items-center">
-                        <h4 class="card-title">Data Invoice Dari Vendor</h4>
+                        <h4 class="card-title">Data Pengajuan Invoice ke Finance</h4>
                         <div class="flex flex-row gap-2">
-                            <a href="{{ route('dari-vendor.create') }}" class="btn bg-primary text-white p-2"
+                            <a href="{{ route('pengajuan.create') }}" class="btn bg-primary text-white p-2"
                                 title="Tambah Data" tabindex="0" data-plugin="tippy" data-tippy-animation="scale"
                                 data-tippy-inertia="true" data-tippy-duration="[600, 300]" data-tippy-arrow="true">
                                 <i class="mgc_add_fill text-base"></i>
@@ -40,12 +40,12 @@
                     </div>
                 </div>
                 <div class="p-6">
-                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">Berikut adalah data Invoice yang telah
-                        diterima dari Vendor. Anda bisa mencari dan mengurutkan data secara naik atau turun. Setiap halaman
+                    <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">Berikut adalah data Invoice yang akan
+                        diajukan ke Finance. Anda bisa mencari dan mengurutkan data secara naik atau turun. Setiap halaman
                         menampilkan 10 item.
                     </p>
                     <!-- Disini tampilkan data -->
-                    <div id="dari_vendor-table" class="w-full overflow-x-auto"></div>
+                    <div id="pengajuan-table" class="w-full overflow-x-auto"></div>
                 </div>
             </div>
         </div>
@@ -111,42 +111,27 @@
                 @csrf
                 @method('put')
                 <div class="px-4 py-8">
-                    <div class="grid grid-cols-1 gap-6">
-                        <!-- Input Nomor Invoice -->
-                        <div class="form-group">
-                            <label for="editInvoiceNumber" class="mb-2 block">Invoice Number</label>
-                            <input type="text" name="invoice_number" id="editInvoiceNumber" class="form-input"
-                                placeholder="Masukkan Invoice Number">
-                            <!-- Error Message -->
-                            <p id="error-invoice_number" class="text-red-500 text-sm mt-1"></p>
-                        </div>
-                        <!-- Input Tanggal Invoice -->
-                        <div class="form-group">
-                            <label for="editInvoiceDate" class="mb-2 block">Invoice Date</label>
-                            <input type="text" name="invoice_date" id="editInvoiceDate" class="form-input">
-                            <!-- Error Message -->
-                            <p id="error-invoice_date" class="text-red-500 text-sm mt-1"></p>
-                        </div>
-                        <!-- Input Tanggal Terima -->
-                        <div class="form-group">
-                            <label for="editReceivedAt" class="mb-2 block">Tgl Terima Invoice</label>
-                            <input type="text" name="received_at" id="editReceivedAt" class="form-input">
-                            <!-- Error Message -->
-                            <p id="error-received_at" class="text-red-500 text-sm mt-1"></p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-group col-span-2">
+                            <!-- Input tanggal terima -->
+                            <div class="form-group">
+                                <input type="text" class="form-input" name="request_date" id="editRequestDate">
+                                <!-- Error Message -->
+                                <p id="error-request_date" class="text-red-500 text-sm mt-1"></p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
-                    <button
-                        class="btn dark:text-gray-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:dark:bg-slate-700 transition-all"
-                        data-fc-dismiss type="button">Close
-                    </button>
-                    <button type="submit" class="btn bg-primary text-white flex items-center gap-2" id="btnUpdate">
-                        <span
-                            class="loader hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                        <span>Update</span>
-                    </button>
-                </div>
+                    <div class="flex justify-end items-center gap-4 p-4 border-t dark:border-slate-700">
+                        <button
+                            class="btn dark:text-gray-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 hover:dark:bg-slate-700 transition-all"
+                            data-fc-dismiss type="button">Close
+                        </button>
+                        <button type="submit" class="btn bg-primary text-white flex items-center gap-2" id="btnUpdate">
+                            <span
+                                class="loader hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span>Update</span>
+                        </button>
+                    </div>
             </form>
         </div>
     </div>

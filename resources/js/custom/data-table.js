@@ -410,7 +410,7 @@ $(function () {
         });
     }
 
-    // TABEL ONSITE
+    // TABEL DARI VENDOR
     if ($("#dari_vendor-table").length) {
         initGridTable({
             tableId: "#dari_vendor-table",
@@ -453,6 +453,127 @@ $(function () {
                 },
                 {
                     name: "Amount",
+                    width: "200px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+            ],
+            buttonConfig: [
+                { selector: ".btn-edit", when: "one" },
+                { selector: ".btn-delete", when: "any" },
+                { selector: ".btn-onsite", when: "any" },
+            ],
+        });
+    }
+    // TABEL PENGAJUAN
+    if ($("#pengajuan-table").length) {
+        initGridTable({
+            tableId: "#pengajuan-table",
+            gridData: Data.map((item) => [
+                item.checkbox,
+                item.number,
+                item.request_date,
+                item.invoice_number,
+                item.received_at,
+                item.po_numbers,
+                item.supplier_name,
+                item.amount,
+            ]),
+            columns: [
+                { name: "#", width: "60px" },
+                {
+                    name: "Tanggal Pengajuan",
+                    width: "200px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "Invoice Number",
+                    width: "180px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "Tanggal Terima Invoice",
+                    width: "150px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "PO Number",
+                    width: "160px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "Supplier Name",
+                    width: "300px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "Amount",
+                    width: "200px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+            ],
+            buttonConfig: [
+                { selector: ".btn-edit", when: "one" },
+                { selector: ".btn-delete", when: "any" },
+                { selector: ".btn-onsite", when: "any" },
+            ],
+        });
+    }
+
+    // TABEL PEMBAYARAN
+    if ($("#pembayaran-table").length) {
+        initGridTable({
+            tableId: "#pembayaran-table",
+            gridData: Data.map((item) => [
+                item.checkbox,
+                item.number,
+                item.payment_number,
+                item.type,
+                item.payment_date,
+                item.invoice_numbers,
+                item.po_numbers,
+                item.supplier_name,
+                item.amount,
+                item.total_paid,
+            ]),
+            columns: [
+                { name: "#", width: "60px" },
+                {
+                    name: "Invoice Number",
+                    width: "180px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "Type",
+                    width: "100px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "Payment Date",
+                    width: "150px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "INV Number",
+                    width: "160px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "PO Number",
+                    width: "160px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "Supplier Name",
+                    width: "300px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "Amount",
+                    width: "200px",
+                    formatter: (cell) => h("div", { innerHTML: cell }),
+                },
+                {
+                    name: "Total Paid",
                     width: "200px",
                     formatter: (cell) => h("div", { innerHTML: cell }),
                 },

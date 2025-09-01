@@ -15,10 +15,15 @@ class Submission extends Model
         'invoice_number',
         'received_at',
         'invoice_date',
+        'request_date',
     ];
     public function purchase_orders()
     {
         return $this->hasMany(PurchaseOrder::class);
+    }
+        public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
     protected function receivedAt(): Attribute
     {

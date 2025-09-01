@@ -18,9 +18,10 @@ export default function initSaveModule({ formId, data_id }) {
 
         // Tambahkan data items dari tabel
         $("#poTableBody tr").each(function (index) {
-            const po_number = $(this).data(data_id);
-            if (po_number) {
-                formData.append(`items[${index}][po_number]`, po_number);
+            const data_number = $(this).data(data_id);
+            
+            if (data_number) {
+                formData.append(`items[${index}][${data_id}]`, data_number);
             }
         });
 

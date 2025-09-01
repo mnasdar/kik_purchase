@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Dari Vendor', 'sub_title' => 'Invoice', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Pembayaran', 'sub_title' => 'Invoice', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
     @vite([
@@ -16,9 +16,9 @@
             <div class="card">
                 <div class="card-header">
                     <div class="flex md:flex-row flex-col justify-between items-start md:items-center">
-                        <h4 class="card-title">Data Invoice Dari Vendor</h4>
+                        <h4 class="card-title">Data Pembayaran</h4>
                         <div class="flex flex-row gap-2">
-                            <a href="{{ route('dari-vendor.create') }}" class="btn bg-primary text-white p-2"
+                            <a href="{{ route('pembayaran.create') }}" class="btn bg-primary text-white p-2"
                                 title="Tambah Data" tabindex="0" data-plugin="tippy" data-tippy-animation="scale"
                                 data-tippy-inertia="true" data-tippy-duration="[600, 300]" data-tippy-arrow="true">
                                 <i class="mgc_add_fill text-base"></i>
@@ -41,11 +41,11 @@
                 </div>
                 <div class="p-6">
                     <p class="text-sm text-slate-700 dark:text-slate-400 mb-4">Berikut adalah data Invoice yang telah
-                        diterima dari Vendor. Anda bisa mencari dan mengurutkan data secara naik atau turun. Setiap halaman
+                        diBayar dari Finance. Anda bisa mencari dan mengurutkan data secara naik atau turun. Setiap halaman
                         menampilkan 10 item.
                     </p>
                     <!-- Disini tampilkan data -->
-                    <div id="dari_vendor-table" class="w-full overflow-x-auto"></div>
+                    <div id="pembayaran-table" class="w-full overflow-x-auto"></div>
                 </div>
             </div>
         </div>
@@ -112,27 +112,46 @@
                 @method('put')
                 <div class="px-4 py-8">
                     <div class="grid grid-cols-1 gap-6">
-                        <!-- Input Nomor Invoice -->
+                        <!-- Radio Type -->
                         <div class="form-group">
-                            <label for="editInvoiceNumber" class="mb-2 block">Invoice Number</label>
-                            <input type="text" name="invoice_number" id="editInvoiceNumber" class="form-input"
-                                placeholder="Masukkan Invoice Number">
+                            <div class="flex flex-col gap-2">
+                                <h6 class="text-sm mb-2">Default</h6>
+                                <div class="flex flex-col md:flex-row gap-2">
+                                    <div class="form-check flex items-center mr-6">
+                                        <input type="radio" class="form-radio text-primary" name="type" id="editTypeFull"
+                                            value="full">
+                                        <label class="ml-2" for="typeFull">Full</label>
+                                    </div>
+                                    <div class="form-check flex items-center">
+                                        <input type="radio" class="form-radio text-primary" name="type"
+                                            id="typePartial" value="partial">
+                                        <label class="ml-2" for="EditTypePartial">Partial</label>
+                                    </div>
+                                </div>
+                            </div>
                             <!-- Error Message -->
-                            <p id="error-invoice_number" class="text-red-500 text-sm mt-1"></p>
+                            <p id="error-type" class="text-red-500 text-sm mt-1"></p>
                         </div>
-                        <!-- Input Tanggal Invoice -->
+                        <!-- Input Payment Number -->
                         <div class="form-group">
-                            <label for="editInvoiceDate" class="mb-2 block">Invoice Date</label>
-                            <input type="text" name="invoice_date" id="editInvoiceDate" class="form-input">
+                            <label for="editPaymentNumber" class="mb-2 block">Payment Number</label>
+                            <input type="text" name="payment_number" id="editPaymentNumber" class="form-input"
+                                placeholder="Masukkan Payment Number">
                             <!-- Error Message -->
-                            <p id="error-invoice_date" class="text-red-500 text-sm mt-1"></p>
+                            <p id="error-payment_number" class="text-red-500 text-sm mt-1"></p>
                         </div>
-                        <!-- Input Tanggal Terima -->
+                        <!-- Input Tanggal Payment -->
                         <div class="form-group">
-                            <label for="editReceivedAt" class="mb-2 block">Tgl Terima Invoice</label>
-                            <input type="text" name="received_at" id="editReceivedAt" class="form-input">
+                            <label for="editPaymentDate" class="mb-2 block">Payment Date</label>
+                            <input type="text" name="payment_date" id="editPaymentDate" class="form-input">
                             <!-- Error Message -->
-                            <p id="error-received_at" class="text-red-500 text-sm mt-1"></p>
+                            <p id="error-payment_date" class="text-red-500 text-sm mt-1"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="editAmount" class="mb-2 block">Amount</label>
+                            <input type="text" name="amount" id="editAmount" class="form-input" autocomplete="off">
+                            <!-- Error Message -->
+                            <p id="error-amount" class="text-red-500 text-sm mt-1"></p>
                         </div>
                     </div>
                 </div>

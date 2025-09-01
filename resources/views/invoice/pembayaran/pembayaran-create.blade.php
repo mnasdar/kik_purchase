@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Dari Vendor', 'sub_title' => 'Invoice', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
+@extends('layouts.vertical', ['title' => 'Pembayaran', 'sub_title' => 'Invoice', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 @section('css')
     <!-- Glightbox css -->
     @vite([
@@ -52,7 +52,7 @@
         <div class="lg:col-span-12">
             <div class="card">
                 <div class="card-header">
-                    <h4 class="card-title">Daftar Invoice Diterima dari Vendor</h4>
+                    <h4 class="card-title">Daftar Invoice Yang akan Dibayar</h4>
                 </div>
 
                 <div class="p-6">
@@ -66,22 +66,16 @@
                                         No.</th>
                                     <th scope="col"
                                         class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                                        Status</th>
+                                        Invoice Number</th>
+                                    <th scope="col"
+                                        class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200 w-20">
+                                        Tgl Pengajuan Inovice</th>
                                     <th scope="col"
                                         class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
                                         PO Number</th>
                                     <th scope="col"
-                                        class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200 w-20">
-                                        Date</th>
-                                    <th scope="col"
-                                        class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                                        class="pe-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
                                         Supplier Number</th>
-                                    <th scope="col"
-                                        class="pe-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                                        Unit Price</th>
-                                    <th scope="col"
-                                        class="pe-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                                        Qty</th>
                                     <th scope="col"
                                         class="pe-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
                                         Amount</th>
@@ -118,31 +112,51 @@
                         <span class="material-symbols-rounded">close</span>
                     </button>
                 </div>
-                <form id="form-proses" action="{{ route('dari-vendor.store') }}" method="POST">
+                <form id="form-proses" action="{{ route('pembayaran.store') }}" method="POST">
                     @csrf
                     <div class="px-4 py-8 overflow-y-auto">
                         <div class="grid grid-cols-1 gap-6">
-                            <!-- Input Nomor Invoice -->
+                            <!-- Radio Type -->
                             <div class="form-group">
-                                <label for="inputInvoiceNumber" class="mb-2 block">Invoice Number</label>
-                                <input type="text" name="invoice_number" id="inputInvoiceNumber" class="form-input"
-                                    placeholder="Masukkan Invoice Number">
+                                <div class="flex flex-col gap-2">
+                                    <h6 class="text-sm mb-2">Default</h6>
+                                    <div class="flex flex-col md:flex-row gap-2">
+                                        <div class="form-check flex items-center mr-6">
+                                            <input type="radio" class="form-radio text-primary" name="type"
+                                                id="typeFull" value="full">
+                                            <label class="ml-2" for="typeFull">Full</label>
+                                        </div>
+                                        <div class="form-check flex items-center">
+                                            <input type="radio" class="form-radio text-primary" name="type"
+                                                id="typePartial" value="partial">
+                                            <label class="ml-2" for="typePartial">Partial</label>
+                                        </div>
+                                    </div>
+                                </div>
                                 <!-- Error Message -->
-                                <p id="error-invoice_number" class="text-red-500 text-sm mt-1"></p>
+                                <p id="error-payment_number" class="text-red-500 text-sm mt-1"></p>
                             </div>
-                            <!-- Input Tanggal Invoice -->
+                             <!-- Input Payment Number -->
                             <div class="form-group">
-                                <label for="inputInvoiceDate" class="mb-2 block">Invoice Date</label>
-                                <input type="text" name="invoice_date" id="inputInvoiceDate" class="form-input">
+                                <label for="inputPaymentNumber" class="mb-2 block">Payment Number</label>
+                                <input type="text" name="payment_number" id="inputPaymentNumber" class="form-input"
+                                    placeholder="Masukkan Payment Number">
                                 <!-- Error Message -->
-                                <p id="error-invoice_date" class="text-red-500 text-sm mt-1"></p>
+                                <p id="error-payment_number" class="text-red-500 text-sm mt-1"></p>
                             </div>
-                            <!-- Input Tanggal Terima -->
+                            <!-- Input Tanggal Payment -->
                             <div class="form-group">
-                                <label for="inputReceivedAt" class="mb-2 block">Tgl Terima Invoice</label>
-                                <input type="text" name="received_at" id="inputReceivedAt" class="form-input">
+                                <label for="inputPaymentDate" class="mb-2 block">Payment Date</label>
+                                <input type="text" name="payment_date" id="inputPaymentDate" class="form-input">
                                 <!-- Error Message -->
-                                <p id="error-received_at" class="text-red-500 text-sm mt-1"></p>
+                                <p id="error-payment_date" class="text-red-500 text-sm mt-1"></p>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputAmount" class="mb-2 block">Amount</label>
+                                <input type="text" name="amount" id="inputAmount" class="form-input"
+                                    placeholder="Masukkan Amount" autocomplete="off">
+                                <!-- Error Message -->
+                                <p id="error-amount" class="text-red-500 text-sm mt-1"></p>
                             </div>
                         </div>
                     </div>
@@ -173,6 +187,6 @@
         'resources/js/pages/extended-sweetalert.js',
         'resources/js/pages/extended-tippy.js',
         'resources/js/pages/form-flatpickr.js',
-        'resources/js/custom/invoice.js',
+        'resources/js/custom/pembayaran.js',
     ])
 @endsection

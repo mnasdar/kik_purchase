@@ -16,11 +16,11 @@ class DariVendorController extends Controller
      */
     public function index()
     {
-        $purchase_order = Submission::with('purchase_orders')
+        $dari_vendor = Submission::with('purchase_orders')
             ->orderby('updated_at', 'desc') // urutkan dari yang terakhir diinput
             ->cursor(); // Menghasilkan LazyCollection
 
-        $dataJson = $purchase_order->values()->map(function ($item, $index) {
+        $dataJson = $dari_vendor->values()->map(function ($item, $index) {
             // Badge tambahan (misal: 'New', 'Update')
             $badge = '';
             if ($item->is_new) {
@@ -80,7 +80,7 @@ class DariVendorController extends Controller
             DB::beginTransaction();
 
             // Buat submission hanya sekali (1 invoice = 1 submission)
-            $submission = Submission::create([
+            $dari_vendor = Submission::create([
                 'invoice_number' => $validated['invoice_number'],
                 'invoice_date' => $validated['invoice_date'],
                 'received_at' => $validated['received_at'],
@@ -92,7 +92,7 @@ class DariVendorController extends Controller
 
                 if ($purchase_order) {
                     $purchase_order->update([
-                        'submission_id' => $submission->id,
+                        'submission_id' => $dari_vendor->id,
                     ]);
                 }
             }
@@ -167,8 +167,8 @@ class DariVendorController extends Controller
                 return response()->json(['message' => 'Tidak ada data yang dikirim.'], 400);
             }
 
-            Submission::whereIn('id', $ids)->each(function ($submission) {
-                $submission->delete();
+            Submission::whereIn('id', $ids)->each(function ($dari_vendor) {
+                $dari_vendor->delete();
             });
 
             return response()->json(['message' => 'Data berhasil dihapus.']);
@@ -181,8 +181,9 @@ class DariVendorController extends Controller
         // Format keyword untuk pencarian LIKE
         $keyword = '%' . $keyword . '%';
 
-        $purchase_order = PurchaseOrder::with('status')
-            ->whereNotNull('received_at') // hanya PO yang belum punya data Onsite
+        $purchase_order = PurchaseOrder::with('status','submission')
+        ->whereNotNull('received_at') // hanya PO yang belum punya data Onsite
+        ->whereDoesntHave('submission')
             ->where(function ($query) use ($keyword) {
                 $query->where('po_number', 'like', $keyword)
                     ->orWhere('supplier_name', 'like', $keyword)

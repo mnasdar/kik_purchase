@@ -118,6 +118,18 @@ $(function () {
         deleteUrl: route("dari-vendor.bulkDestroy"),
     });
 
+    // Delete Pengajuan
+    initDeleteHandler({
+        tableSelector: "#pengajuan-table",
+        deleteUrl: route("pengajuan.bulkDestroy"),
+    });
+
+    // Delete Invoice Terima Dari
+    initDeleteHandler({
+        tableSelector: "#pembayaran-table",
+        deleteUrl: route("pembayaran.bulkDestroy"),
+    });
+
     // Delete Status
     initDeleteHandler({
         tableSelector: "#status-table",

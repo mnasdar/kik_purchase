@@ -13,6 +13,7 @@ return new class extends Migration {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('submission_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('payment_number');
             $table->enum('type', ['full', 'partial']);
             $table->date('payment_date');
             $table->decimal('amount', 12, 2);
