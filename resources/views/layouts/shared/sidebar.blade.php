@@ -128,7 +128,7 @@
                 </ul>
             </li>
             
-            <li class="menu-title">Menu</li>
+            {{-- <li class="menu-title">Menu</li>
 
             <li class="menu-item">
                 <a href="{{ route('any', 'index') }}" class="menu-link">
@@ -632,7 +632,7 @@
                         </a>
                     </li>
                 </ul>
-            </li>
+            </li> --}}
         </ul>
     </div>
 </div>
