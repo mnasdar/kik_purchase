@@ -2,26 +2,74 @@
 
 namespace App\Models\Config;
 
-use Illuminate\Support\Carbon;
+use App\Models\User;
 use App\Models\Purchase\PurchaseRequest;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * Class Location
+ * Model untuk mengelola data lokasi/cabang perusahaan
+ * 
+ * @package App\Models\Config
+ */
 class Location extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
+
+    /**
+     * Tabel yang terhubung dengan model ini
+     * 
+     * @var string
+     */
+    protected $table = 'locations';
+
+    /**
+     * Kolom yang dapat diisi secara massal
+     * 
+     * @var array
+     */
     protected $fillable = ['name'];
-    public function purchaseRequests()
+
+    /**
+     * Kolom yang disembunyikan dari output
+     * 
+     * @var array
+     */
+    protected $hidden = ['deleted_at'];
+
+    /**
+     * Kolom yang perlu di-cast ke tipe data tertentu
+     * 
+     * @var array
+     */
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
+    ];
+
+    /**
+     * Relasi one-to-many dengan User
+     * Satu lokasi dapat memiliki banyak user
+     * 
+     * @return HasMany
+     */
+    public function users(): HasMany
     {
-        return $this->hasMany(PurchaseRequest::class);
-    }
-    public function getIsNewAttribute()
-    {
-        return $this->created_at && Carbon::parse($this->created_at)->greaterThan(Carbon::now()->subMinutes(5));
+        return $this->hasMany(User::class, 'location_id');
     }
 
-    public function getIsUpdateAttribute()
+    /**
+     * Relasi one-to-many dengan PurchaseRequest
+     * Satu lokasi dapat memiliki banyak purchase request
+     * 
+     * @return HasMany
+     */
+    public function purchaseRequests(): HasMany
     {
-        return $this->updated_at && Carbon::parse($this->updated_at)->greaterThan(Carbon::now()->subMinutes(5));
+        return $this->hasMany(PurchaseRequest::class, 'location_id');
     }
 }

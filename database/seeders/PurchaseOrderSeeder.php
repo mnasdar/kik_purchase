@@ -2,50 +2,62 @@
 
 namespace Database\Seeders;
 
-use App\Models\Config\Status;
-use Illuminate\Database\Seeder;
 use App\Models\Purchase\PurchaseOrder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Config\Supplier;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 
+/**
+ * Class PurchaseOrderSeeder
+ * Seeder untuk membuat data purchase order
+ * 
+ * @package Database\Seeders
+ */
 class PurchaseOrderSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Jalankan seeder untuk membuat data purchase order
+     * 
+     * @return void
      */
     public function run(): void
     {
-        $statusIds = Status::where('type','barang')->pluck('id')->toArray();
+        $user = User::first();
+        $suppliers = Supplier::all();
 
-        $data = [
+        $purchaseOrders = [
             [
-                'po_number' => 'KIK3600002066',
-                'approved_date' => '2025-07-24',
-                'supplier_name' => 'PT.KAWAUSO TEKNOLOGI INDONESIA',
-                'unit_price' => 1250000,
-                'quantity' => 1,
-                'amount' => 1250000,
+                'po_number' => 'PO-2025-001',
+                'approved_date' => now()->subDays(8)->toDateString(),
+                'supplier_id' => $suppliers->random()->id,
+                'notes' => 'Purchase order untuk office supplies',
+                'created_by' => $user?->id,
             ],
             [
-                'po_number' => 'KIK3600002077',
-                'approved_date' => '2025-07-27',
-                'supplier_name' => 'PT.KAWAUSO TEKNOLOGI INDONESIA',
-                'unit_price' => 590909,
-                'quantity' => 1,
-                'amount' => 590909,
+                'po_number' => 'PO-2025-002',
+                'approved_date' => now()->subDays(3)->toDateString(),
+                'supplier_id' => $suppliers->random()->id,
+                'notes' => 'Purchase order untuk peralatan kantor',
+                'created_by' => $user?->id,
             ],
-            // Tambahkan baris lainnya dari tabel Excel yang kamu upload
+            [
+                'po_number' => 'PO-2025-003',
+                'approved_date' => now()->subDays(1)->toDateString(),
+                'supplier_id' => $suppliers->random()->id,
+                'notes' => 'Purchase order untuk konsultasi',
+                'created_by' => $user?->id,
+            ],
+            [
+                'po_number' => 'PO-2025-004',
+                'approved_date' => now()->subHours(12)->toDateString(),
+                'supplier_id' => $suppliers->random()->id,
+                'notes' => 'Purchase order untuk hardware',
+                'created_by' => $user?->id,
+            ],
         ];
 
-        foreach ($data as $row) {
-            PurchaseOrder::create([
-                'po_number' => $row['po_number'],
-                'approved_date' => $row['approved_date'],
-                'supplier_name' => $row['supplier_name'],
-                'unit_price' => $row['unit_price'],
-                'quantity' => $row['quantity'],
-                'amount' => $row['amount'],
-                'status_id' => fake()->randomElement($statusIds),
-            ]);
+        foreach ($purchaseOrders as $po) {
+            PurchaseOrder::create($po);
         }
     }
 }

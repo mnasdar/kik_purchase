@@ -12,17 +12,15 @@ return new class extends Migration {
     {
         Schema::create('purchase_requests', function (Blueprint $table) {
             $table->id();
-            $table->string('pr_number');
-            $table->foreignId('status_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('classification_id')->nullable()->constrained()->nullOnDelete();
+            $table->enum('request_type', ['barang', 'jasa']);
+            $table->string('pr_number')->unique();
             $table->foreignId('location_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('item_desc');
-            $table->string('uom');
             $table->date('approved_date');
-            $table->decimal('unit_price', 15, 2);
-            $table->integer('quantity');
-            $table->decimal('amount', 15, 2);
+            $table->text('notes')->nullable();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->integer('current_stage')->default(1)->comment('1=PR Created, 2=PO Created, 3=PO Linked to PR, 4=PO Onsite, 5=Invoice Received, 7=Invoice Submitted, 8=Payment, 9=Completed');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

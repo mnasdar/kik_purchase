@@ -1,0 +1,275 @@
+/**
+ * Modul Log Detail - Handler untuk modal detail
+ * Mengelola tampilan detail aktivitas dengan berbagai format data
+ */
+
+import $ from "jquery";
+
+/**
+ * Fungsi untuk membuat card detail yang menarik
+ */
+function createDetailCard(title, content, type = 'info') {
+    const colors = {
+        info: 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800',
+        success: 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800',
+        warning: 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800',
+        danger: 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800',
+    };
+
+    return `
+        <div class="${colors[type]} border rounded-lg p-4 mb-4">
+            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+                <i class="mgc_information_line"></i>
+                ${title}
+            </h3>
+            ${content}
+        </div>
+    `;
+}
+
+/**
+ * Fungsi untuk membuat tabel responsive
+ */
+function createResponsiveTable(headers, rows) {
+    if (!rows || rows.length === 0) {
+        return '<p class="text-sm text-gray-500">Tidak ada data</p>';
+    }
+
+    let html = '<div class="overflow-x-auto -mx-4 px-4"><table class="w-full text-sm">';
+    
+    // Header
+    html += '<thead class="bg-gray-100 dark:bg-gray-800"><tr>';
+    headers.forEach(header => {
+        html += `<th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">${header}</th>`;
+    });
+    html += '</tr></thead>';
+    
+    // Body
+    html += '<tbody>';
+    rows.forEach((row, index) => {
+        const bgClass = index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800/50';
+        html += `<tr class="${bgClass} hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">`;
+        row.forEach(cell => {
+            html += `<td class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">${cell || '-'}</td>`;
+        });
+        html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    
+    return html;
+}
+
+/**
+ * Fungsi untuk membuat comparison card (old vs new)
+ */
+function createComparisonCard(field, oldValue, newValue) {
+    return `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-1 font-medium">Sebelum</p>
+                <p class="text-sm font-semibold text-gray-800 dark:text-white">${field}</p>
+                <p class="text-sm text-gray-700 dark:text-gray-300 mt-2">${oldValue || '-'}</p>
+            </div>
+            <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-1 font-medium">Sesudah</p>
+                <p class="text-sm font-semibold text-gray-800 dark:text-white">${field}</p>
+                <p class="text-sm text-gray-700 dark:text-gray-300 mt-2">${newValue || '-'}</p>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Fungsi untuk format JSON
+ */
+function formatJSON(obj) {
+    if (typeof obj === 'object' && obj !== null) {
+        return `<pre class="bg-gray-800 text-green-400 p-3 rounded text-xs overflow-x-auto">${JSON.stringify(obj, null, 2)}</pre>`;
+    }
+    return obj;
+}
+
+/**
+ * Event handler untuk tombol detail
+ */
+$(document).on("click", ".btn-log-detail", function () {
+    const rawData = $(this).attr("data-detail");
+    let data;
+
+    try {
+        data = JSON.parse(rawData);
+        console.log("📊 Data parsed:", data);
+    } catch (e) {
+        console.error("❌ Gagal parse JSON:", e);
+        $("#logDetailContent").html(
+            createDetailCard('Error', '<p class="text-sm text-red-600">Data tidak valid atau rusak.</p>', 'danger')
+        );
+        showModal();
+        return;
+    }
+
+    // Handle berbagai format data
+    let html = '';
+
+    // 1. Handle data dengan format array produk/kategori yang dihapus
+    if (Array.isArray(data) && data.length > 0 && data[0].name && data[0].id) {
+        const rows = data.map((item, i) => [
+            i + 1,
+            item.name || '-',
+            item.sku || '-',
+            item.kode || '-'
+        ]);
+        html = createDetailCard(
+            '📦 Item yang Dihapus',
+            createResponsiveTable(['#', 'Nama', 'SKU/Kode', 'ID'], rows),
+            'danger'
+        );
+    }
+    
+    // 2. Handle data perubahan (old vs new)
+    else if (data.old && data.new) {
+        html = createDetailCard('🔄 Perubahan Data', '', 'warning');
+        
+        const oldData = data.old;
+        const newData = data.new;
+        const allKeys = [...new Set([...Object.keys(oldData), ...Object.keys(newData)])];
+        
+        const excludedKeys = ['id', 'created_at', 'updated_at', 'is_new', 'is_update'];
+        const filteredKeys = allKeys.filter(key => !excludedKeys.includes(key));
+        
+        filteredKeys.forEach(key => {
+            if (JSON.stringify(oldData[key]) !== JSON.stringify(newData[key])) {
+                html += createComparisonCard(
+                    key.replace(/_/g, ' ').toUpperCase(),
+                    typeof oldData[key] === 'object' ? JSON.stringify(oldData[key]) : oldData[key],
+                    typeof newData[key] === 'object' ? JSON.stringify(newData[key]) : newData[key]
+                );
+            }
+        });
+    }
+    
+    // 3. Handle cleared_products (kosongkan barcode)
+    else if (data.cleared_products && Array.isArray(data.cleared_products)) {
+        data.cleared_products.forEach((produk, i) => {
+            const rows = (produk.old_barcodes || []).map((b, idx) => [
+                idx + 1,
+                b.level || '-',
+                b.barcode || '-'
+            ]);
+            
+            html += createDetailCard(
+                `📦 ${i + 1}. ${produk.name || '-'} (${produk.sku || '-'})`,
+                createResponsiveTable(['#', 'Level Unit', 'Barcode Lama'], rows),
+                'warning'
+            );
+        });
+    }
+    
+    // 4. Handle changes (perubahan barcode)
+    else if (Array.isArray(data) && data[0] && data[0].changes) {
+        data.forEach((entry, i) => {
+            const produk = entry.produk || {};
+            const rows = entry.changes.map((c, idx) => [
+                idx + 1,
+                c.level || '-',
+                c.old_barcode || '-',
+                c.new_barcode || '-'
+            ]);
+            
+            html += createDetailCard(
+                `📝 ${i + 1}. ${produk.name || '-'} (${produk.sku || '-'})`,
+                createResponsiveTable(['#', 'Level', 'Barcode Lama', 'Barcode Baru'], rows),
+                'info'
+            );
+        });
+    }
+    
+    // 5. Handle produk_ids (assign/remove multiple)
+    else if (data.produk_ids && Array.isArray(data.produk_ids)) {
+        const rows = data.produk_ids.map((id, i) => [i + 1, id]);
+        html = createDetailCard(
+            '📦 Produk yang Diproses',
+            createResponsiveTable(['#', 'Produk ID'], rows) +
+            (data.count ? `<p class="mt-3 text-sm font-medium">Total: ${data.count} produk</p>` : ''),
+            'info'
+        );
+    }
+    
+    // 6. Handle single produk assignment/removal
+    else if (data.produk_id && data.produk_name) {
+        html = createDetailCard(
+            '📦 Detail Produk',
+            `
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                        <p class="text-gray-600 dark:text-gray-400 font-medium">Produk ID:</p>
+                        <p class="text-gray-800 dark:text-white">${data.produk_id}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600 dark:text-gray-400 font-medium">Nama Produk:</p>
+                        <p class="text-gray-800 dark:text-white">${data.produk_name}</p>
+                    </div>
+                </div>
+            `,
+            'info'
+        );
+    }
+    
+    // 7. Fallback - tampilkan semua properties
+    else {
+        html = createDetailCard(
+            '📄 Detail Data',
+            formatJSON(data),
+            'info'
+        );
+    }
+
+    if (!html) {
+        html = createDetailCard(
+            'Informasi',
+            '<p class="text-sm text-gray-500">Tidak ada detail khusus untuk ditampilkan.</p>',
+            'info'
+        );
+    }
+
+    $("#logDetailContent").html(html);
+    showModal();
+});
+
+/**
+ * Show modal
+ */
+function showModal() {
+    $("#logDetailModal").removeClass("hidden");
+    // Prevent body scroll
+    $("body").addClass("overflow-hidden");
+}
+
+/**
+ * Hide modal
+ */
+function hideModal() {
+    $("#logDetailModal").addClass("hidden");
+    $("body").removeClass("overflow-hidden");
+}
+
+/**
+ * Close modal handlers
+ */
+$("#closeLogDetailModal, #closeLogDetailModalBtn").on("click", function () {
+    hideModal();
+});
+
+// Close on overlay click
+$("#logDetailModal").on("click", function (e) {
+    if ($(e.target).is("#logDetailModal")) {
+        hideModal();
+    }
+});
+
+// Close on ESC key
+$(document).on("keydown", function (e) {
+    if (e.key === "Escape" && !$("#logDetailModal").hasClass("hidden")) {
+        hideModal();
+    }
+});

@@ -2,12 +2,15 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoutingController;
-use App\Http\Controllers\Config\StatusController;
+use App\Http\Controllers\User\RolesController;
 use App\Http\Controllers\Config\LocationController;
+use App\Http\Controllers\Config\SupplierController;
 use App\Http\Controllers\Purchase\OnsiteController;
 use App\Http\Controllers\Invoice\PengajuanController;
 use App\Http\Controllers\Invoice\DariVendorController;
 use App\Http\Controllers\Invoice\PembayaranController;
+use App\Http\Controllers\User\ManajemenUserController;
+use App\Http\Controllers\User\RolePermissionController;
 use App\Http\Controllers\Config\ClassificationController;
 use App\Http\Controllers\Purchase\PurchaseOrderController;
 use App\Http\Controllers\Purchase\PurchaseRequestController;
@@ -31,10 +34,12 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/home', fn() => view('index'))->name('home');
     Route::prefix('{prefix}')->group(function () {
         /* ================= Purchase Request ======================== */
+        Route::get('/purchase-request/data', [PurchaseRequestController::class, 'getData'])->name('purchase-request.data');
         Route::resource('/purchase-request', PurchaseRequestController::class)->except(['show', 'destroy']);
         Route::delete('/purchase-request', [PurchaseRequestController::class, 'bulkDestroy'])->name('purchase-request.bulkDestroy');
 
         /* ================= Purchase Order ======================== */
+        Route::get('/purchase-order/data', [PurchaseOrderController::class, 'getData'])->name('purchase-order.data');
         Route::get('/purchase-order/showpr', [PurchaseOrderController::class, 'showpr'])->name('purchase-order.showpr');
         Route::resource('/purchase-order', PurchaseOrderController::class)->except(['destroy']);
         Route::delete('/purchase-order', [PurchaseOrderController::class, 'bulkDestroy'])->name('purchase-order.bulkDestroy');
@@ -63,10 +68,6 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::resource('/pembayaran', PembayaranController::class)->except(['show','destroy']);
     });
     Route::prefix('config')->group(function () {
-        /* ================= Status ======================== */
-        Route::delete('/status', [StatusController::class, 'bulkDestroy'])->name('status.bulkDestroy');
-        Route::resource('/status', StatusController::class)->except(['create', 'show', 'destroy']);
-
         /* ================= Classification ======================== */
         Route::delete('/klasifikasi', [ClassificationController::class, 'bulkDestroy'])->name('klasifikasi.bulkDestroy');
         Route::resource('/klasifikasi', ClassificationController::class)->except(['create', 'show', 'destroy']);
@@ -74,6 +75,24 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         /* ================= Location ======================== */
         Route::delete('/unit-kerja', [LocationController::class, 'bulkDestroy'])->name('unit-kerja.bulkDestroy');
         Route::resource('/unit-kerja', LocationController::class)->except(['create', 'show', 'destroy']);
+
+        /* ================= Supplier ======================== */
+        Route::delete('/supplier', [SupplierController::class, 'bulkDestroy'])->name('supplier.bulkDestroy');
+        Route::resource('/supplier', SupplierController::class)->except(['create', 'show']);
+    });
+
+    Route::prefix('access')->group(function () {
+        /* ================= Roles Management ======================== */
+        Route::get('/roles/data', [RolesController::class, 'dataRoles'])->name('roles.data');
+        Route::get('/roles/api/permissions', [RolesController::class, 'apiPermissions'])->name('roles.apiPermissions');
+        Route::get('/roles/{role}/permissions', [RolesController::class, 'getPermissions'])->name('roles.permissions');
+        Route::resource('/roles', RolesController::class)->only(['index', 'store', 'update', 'destroy']);
+
+        /* ================= Users Management ======================== */
+        Route::get('/users/data', [ManajemenUserController::class, 'dataUsers'])->name('users.data');
+        Route::get('/users/{user}/permissions', [ManajemenUserController::class, 'getUserPermissions'])->name('users.permissions');
+        Route::post('/users/{user}/permissions', [ManajemenUserController::class, 'updateUserPermissions'])->name('users.updatePermissions');
+        Route::resource('/users', ManajemenUserController::class)->only(['index', 'store','show','update', 'destroy']);
     });
     Route::get('{first}/{second}/{third}', [RoutingController::class, 'thirdLevel'])->name('third');
     Route::get('{first}/{second}', [RoutingController::class, 'secondLevel'])->name('second');

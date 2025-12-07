@@ -111,11 +111,6 @@
                 </a>
                 <ul class="sub-menu hidden">
                     <li class="menu-item">
-                        <a href="{{ route('status.index') }}" class="menu-link">
-                            <span class="menu-text">Status</span>
-                        </a>
-                    </li>
-                    <li class="menu-item">
                         <a href="{{ route('klasifikasi.index') }}" class="menu-link">
                             <span class="menu-text">Klasifikasi</span>
                         </a>
@@ -125,7 +120,28 @@
                             <span class="menu-text">Unit Kerja</span>
                         </a>
                     </li>
+                    <li class="menu-item">
+                        <a href="{{ route('supplier.index') }}" class="menu-link">
+                            <span class="menu-text">Supplier</span>
+                        </a>
+                    </li>
                 </ul>
+            </li>
+
+            <li class="menu-title">Manajemen Akses</li>
+
+            <li class="menu-item">
+                <a href="{{ route('roles.index') }}" class="menu-link">
+                    <span class="menu-icon"><i class="mgc_shield_line"></i></span>
+                    <span class="menu-text"> Roles </span>
+                </a>
+            </li>
+
+            <li class="menu-item">
+                <a href="{{ route('users.index') }}" class="menu-link">
+                    <span class="menu-icon"><i class="mgc_user_3_line"></i></span>
+                    <span class="menu-text"> Users </span>
+                </a>
             </li>
             
             {{-- <li class="menu-title">Menu</li>

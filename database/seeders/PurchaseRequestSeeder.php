@@ -2,77 +2,61 @@
 
 namespace Database\Seeders;
 
-use App\Models\Config\Status;
-use App\Models\Config\Location;
-use Illuminate\Database\Seeder;
-use App\Models\Config\Classification;
 use App\Models\Purchase\PurchaseRequest;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Config\Location;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 
+/**
+ * Class PurchaseRequestSeeder
+ * Seeder untuk membuat data purchase request
+ * 
+ * @package Database\Seeders
+ */
 class PurchaseRequestSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Jalankan seeder untuk membuat data purchase request
+     * 
+     * @return void
      */
     public function run(): void
     {
-        $statusIds = Status::where('type','barang')->pluck('id')->toArray();
-        $classificationIds = Classification::where('type', 'barang')->pluck('id')->toArray();
-        $locationIds = Location::all()->pluck('id')->toArray();
+        $user = User::first();
+        $location = Location::first();
 
-        $data = [
+        $purchaseRequests = [
             [
-                'pr_number' => 'KIK0000004013',
-                'item_desc' => 'IC POWER LAPTOP HP',
-                'uom' => 'EA',
-                'approved_date' => '2025-07-12',
-                'unit_price' => 1300000,
-                'quantity' => 1,
-                'amount' => 1300000,
+                'request_type' => 'barang',
+                'pr_number' => 'PR-2025-001',
+                'location_id' => $location?->id,
+                'approved_date' => now()->subDays(10)->toDateString(),
+                'notes' => 'Pembelian office supplies untuk kantor pusat',
+                'created_by' => $user?->id,
+                'current_stage' => 1,
             ],
             [
-                'pr_number' => 'KIK0000004055',
-                'item_desc' => 'POWER SUPPLY (PA-LGA-450W)',
-                'uom' => 'EA',
-                'approved_date' => '2025-07-22',
-                'unit_price' => 927273,
-                'quantity' => 1,
-                'amount' => 927273,
+                'request_type' => 'jasa',
+                'pr_number' => 'PR-2025-002',
+                'location_id' => $location?->id,
+                'approved_date' => now()->subDays(5)->toDateString(),
+                'notes' => 'Layanan konsultasi dan audit',
+                'created_by' => $user?->id,
+                'current_stage' => 2,
             ],
             [
-                'pr_number' => 'KIK0000004055',
-                'item_desc' => 'MEMORY RAM 4GB DDR3 MERK COSAIR',
-                'uom' => 'EA',
-                'approved_date' => '2025-07-23',
-                'unit_price' => 363636,
-                'quantity' => 1,
-                'amount' => 363636,
+                'request_type' => 'barang',
+                'pr_number' => 'PR-2025-003',
+                'location_id' => $location?->id,
+                'approved_date' => now()->subDays(2)->toDateString(),
+                'notes' => 'Pembelian peralatan kantor dan furniture',
+                'created_by' => $user?->id,
+                'current_stage' => 3,
             ],
-            [
-                'pr_number' => 'KIK0000004113',
-                'item_desc' => 'Charger Laptop Merk HP14s-cf2',
-                'uom' => 'Unit',
-                'approved_date' => '2025-07-20',
-                'unit_price' => 850000,
-                'quantity' => 1,
-                'amount' => 850000,
-            ],
-            // Tambahkan baris lainnya sesuai file
         ];
 
-        foreach ($data as $row) {
-            PurchaseRequest::create([
-                'pr_number' => $row['pr_number'],
-                'item_desc' => $row['item_desc'],
-                'uom' => $row['uom'],
-                'approved_date' => $row['approved_date'],
-                'unit_price' => $row['unit_price'],
-                'quantity' => $row['quantity'],
-                'amount' => $row['amount'],
-                'status_id' => fake()->randomElement($statusIds),
-                'classification_id' => fake()->randomElement($classificationIds),
-                'location_id' => fake()->randomElement($locationIds),
-            ]);
+        foreach ($purchaseRequests as $pr) {
+            PurchaseRequest::create($pr);
         }
     }
 }

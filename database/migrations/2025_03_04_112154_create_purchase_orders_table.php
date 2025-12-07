@@ -12,16 +12,13 @@ return new class extends Migration {
     {
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id();
-            $table->string('po_number')->index();
-            $table->foreignId('status_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('po_number')->unique();
             $table->date('approved_date');
-            $table->string('supplier_name');
-            $table->integer('quantity');
-            $table->decimal('unit_price', 15, 2);
-            $table->decimal('amount', 15, 2);
-            $table->date('received_at')->nullable();
-            $table->foreignId('submission_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('supplier_id')->nullable()->constrained()->nullOnDelete();
+            $table->text('notes')->nullable();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -12,47 +12,58 @@ use App\Models\Purchase\PurchaseTracking;
 use App\Models\Config\Location;
 use Spatie\Permission\Models\Role;
 
+/**
+ * Class DatabaseSeeder
+ * Seeder utama untuk menjalankan semua seeder aplikasi
+ * 
+ * @package Database\Seeders
+ */
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Jalankan seeder untuk database
+     * Urutan penting: Config data terlebih dahulu, baru Purchase dan Invoice
+     * 
+     * @return void
      */
     public function run(): void
     {
-        // Buat role "Super Admin"
-        $role1 = Role::create(['name' => 'Super Admin']);
-        $role2 = Role::create(['name' => 'Admin']);
-
-        // Buat user dan langsung assign role
-        $user = User::factory()->create([
-            'name' => 'Konrix',
-            'email' => 'konrix@coderthemes.com',
-            'email_verified_at' => now(),
-            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-            'remember_token' => Str::random(10),
-        ]);
-
-        $user2 = User::factory()->create([
-            'name' => 'M.Nasdar',
-            'email' => 'mnasdar@gmail.com',
-            'email_verified_at' => now(),
-            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
-            'remember_token' => Str::random(10),
-        ]);
-
-
-        // Assign role ke user
-        $user->assignRole($role1);
-        $user2->assignRole($role2);
-
-
+        // 1. Buat data klasifikasi dan lokasi terlebih dahulu
         $this->call([
-            StatusSeeder::class,
             ClassificationSeeder::class,
             LocationSeeder::class,
+        ]);
+
+        // 2. Seed permissions dan roles dengan users
+        $this->call([
+            PermissionSeeder::class,
+            RoleSeeder::class, // Sudah include user creation
+        ]);
+
+        // 3. Buat supplier, purchase request, dan purchase order
+        $this->call([
+            SupplierSeeder::class,
             PurchaseRequestSeeder::class,
             PurchaseOrderSeeder::class,
+        ]);
+
+        // 4. Buat item dari purchase request dan purchase order
+        $this->call([
+            PurchaseRequestItemSeeder::class,
+            PurchaseOrderItemSeeder::class,
+        ]);
+
+        // 5. Buat purchase tracking dan onsite
+        $this->call([
             PurchaseTrackingSeeder::class,
+            PurchaseOrderOnsiteSeeder::class,
+        ]);
+
+        // 6. Buat invoice dan payment
+        $this->call([
+            InvoiceSeeder::class,
+            PaymentSeeder::class,
         ]);
     }
 }
+

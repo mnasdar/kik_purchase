@@ -2,27 +2,62 @@
 
 namespace App\Models\Config;
 
-use Illuminate\Support\Carbon;
-use App\Models\Purchase\PurchaseRequest;
+use App\Models\Purchase\PurchaseRequestItem;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * Class Classification
+ * Model untuk mengelola data klasifikasi barang/jasa
+ * 
+ * @package App\Models\Config
+ */
 class Classification extends Model
 {
-    use HasFactory;
-    protected $fillable = ['type','name','sla'];
+    use HasFactory, SoftDeletes;
 
-    public function purchaseRequests()
-    {
-        return $this->hasMany(PurchaseRequest::class);
-    }
-        public function getIsNewAttribute()
-    {
-        return $this->created_at && Carbon::parse($this->created_at)->greaterThan(Carbon::now()->subMinutes(5));
-    }
+    /**
+     * Tabel yang terhubung dengan model ini
+     * 
+     * @var string
+     */
+    protected $table = 'classifications';
 
-    public function getIsUpdateAttribute()
+    /**
+     * Kolom yang dapat diisi secara massal
+     * 
+     * @var array
+     */
+    protected $fillable = ['type', 'name', 'sla'];
+
+    /**
+     * Kolom yang disembunyikan dari output
+     * 
+     * @var array
+     */
+    protected $hidden = ['deleted_at'];
+
+    /**
+     * Kolom yang perlu di-cast ke tipe data tertentu
+     * 
+     * @var array
+     */
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
+    ];
+
+    /**
+     * Relasi one-to-many dengan PurchaseRequestItem
+     * Satu klasifikasi dapat memiliki banyak item purchase request
+     * 
+     * @return HasMany
+     */
+    public function purchaseRequestItems(): HasMany
     {
-        return $this->updated_at && Carbon::parse($this->updated_at)->greaterThan(Carbon::now()->subMinutes(5));
+        return $this->hasMany(PurchaseRequestItem::class, 'classification_id');
     }
 }

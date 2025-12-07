@@ -6,10 +6,18 @@ use Illuminate\Database\Seeder;
 use App\Models\Config\Classification;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
+/**
+ * Class ClassificationSeeder
+ * Seeder untuk membuat data klasifikasi barang/jasa
+ * 
+ * @package Database\Seeders
+ */
 class ClassificationSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Jalankan seeder untuk membuat data klasifikasi
+     * 
+     * @return void
      */
     public function run(): void
     {
@@ -51,7 +59,7 @@ class ClassificationSeeder extends Seeder
             ],
             [
                 'name' => 'Pengadaan Pek. Jasa',
-                'type' => 'barang',
+                'type' => 'jasa',
                 'sla' => 7
             ],
             [
@@ -90,6 +98,7 @@ class ClassificationSeeder extends Seeder
                 'sla' => 7
             ],
         ];
+        
         foreach ($data as $row) {
             Classification::create([
                 'name' => $row['name'],
@@ -99,3 +108,4 @@ class ClassificationSeeder extends Seeder
         }
     }
 }
+

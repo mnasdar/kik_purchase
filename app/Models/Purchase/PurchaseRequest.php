@@ -2,96 +2,106 @@
 
 namespace App\Models\Purchase;
 
-use Carbon\Carbon;
-use Carbon\CarbonPeriod;
-use App\Models\Config\Status;
-use App\Models\Config\Classification;
+use App\Models\User;
 use App\Models\Config\Location;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * Class PurchaseRequest
+ * Model untuk mengelola data purchase request (permintaan pembelian)
+ * 
+ * @package App\Models\Purchase
+ */
 class PurchaseRequest extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
+    /**
+     * Tabel yang terhubung dengan model ini
+     * 
+     * @var string
+     */
+    protected $table = 'purchase_requests';
+
+    /**
+     * Kolom yang dapat diisi secara massal
+     * 
+     * @var array
+     */
     protected $fillable = [
-        'status_id',
-        'classification_id',
-        'location_id',
+        'request_type',
         'pr_number',
-        'item_desc',
-        'uom',
+        'location_id',
         'approved_date',
-        'unit_price',
-        'quantity',
-        'amount',
+        'notes',
+        'created_by',
+        'current_stage',
     ];
 
-    protected $appends = ['working_days', 'sla_badge'];
+    /**
+     * Kolom yang disembunyikan dari output
+     * 
+     * @var array
+     */
+    protected $hidden = ['deleted_at'];
 
-    public function classification()
+    /**
+     * Kolom yang perlu di-cast ke tipe data tertentu
+     * 
+     * @var array
+     */
+    protected $casts = [
+        'approved_date' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
+    ];
+
+    /**
+     * Relasi many-to-one dengan Location
+     * Purchase request dibuat untuk satu lokasi
+     * 
+     * @return BelongsTo
+     */
+    public function location(): BelongsTo
     {
-        return $this->belongsTo(Classification::class);
+        return $this->belongsTo(Location::class, 'location_id');
     }
 
-    public function status()
+    /**
+     * Relasi many-to-one dengan User
+     * Purchase request dibuat oleh satu user
+     * 
+     * @return BelongsTo
+     */
+    public function creator(): BelongsTo
     {
-        return $this->belongsTo(Status::class);
-    }
-    public function location()
-    {
-        return $this->belongsTo(Location::class);
-    }
-    public function tracking()
-    {
-        return $this->hasMany(PurchaseTracking::class);
+        return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function getWorkingDaysAttribute()
+    /**
+     * Relasi one-to-many dengan PurchaseRequestItem
+     * Satu purchase request dapat memiliki banyak item
+     * 
+     * @return HasMany
+     */
+    public function items(): HasMany
     {
-        $prApproved = $this->getRawOriginal('approved_date'); // tanggal dari DB
-        // Ambil tanggal approved_date dari tracking pertama yang memiliki purchase_request valid
-        $poApproved = $this->tracking
-            ->filter(fn($tracking) => $tracking->purchase_order?->approved_date)
-            ->first()?->purchase_order?->getRawOriginal('approved_date');
-
-        if (!$prApproved || !$poApproved) {
-            return null;
-        }
-
-        $start = Carbon::parse($prApproved);
-        $end = Carbon::parse($poApproved);
-
-        return CarbonPeriod::create($start, $end)
-            ->filter(fn($date) => $date->isWeekday())
-            ->count();
+        return $this->hasMany(PurchaseRequestItem::class, 'purchase_request_id');
     }
 
-
-    public function getSlaBadgeAttribute(): string
+    /**
+     * Relasi one-to-many dengan PurchaseTracking
+     * Satu purchase request dapat memiliki banyak tracking
+     * 
+     * @return HasMany
+     */
+    public function trackings(): HasMany
     {
-        $days = $this->working_days;
-
-        if (is_null($days)) {
-            return 'bg-gray-400';
-        }
-
-        return $days > 7 ? 'bg-red-500' : 'bg-green-500';
-    }
-    protected function approvedDate(): Attribute
-    {
-        return Attribute::make(
-            get: fn($value) => Carbon::parse($value)->translatedFormat('d-M-y'),
-        );
-    }
-        public function getIsNewAttribute()
-    {
-        return $this->created_at && Carbon::parse($this->created_at)->greaterThan(Carbon::now()->subMinutes(5));
-    }
-
-    public function getIsUpdateAttribute()
-    {
-        return $this->updated_at && Carbon::parse($this->updated_at)->greaterThan(Carbon::now()->subMinutes(5));
+        return $this->hasMany(PurchaseTracking::class, 'purchase_request_id');
     }
 }

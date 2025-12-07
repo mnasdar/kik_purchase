@@ -2,89 +2,116 @@
 
 namespace App\Models\Purchase;
 
-use Carbon\CarbonPeriod;
-use App\Models\Config\Status;
-use App\Models\Invoice\Submission;
-use Illuminate\Support\Carbon;
+use App\Models\User;
+use App\Models\Config\Supplier;
+use App\Models\Invoice\Invoice;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * Class PurchaseOrder
+ * Model untuk mengelola data purchase order (pesanan pembelian)
+ * 
+ * @package App\Models\Purchase
+ */
 class PurchaseOrder extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
+
+    /**
+     * Tabel yang terhubung dengan model ini
+     * 
+     * @var string
+     */
+    protected $table = 'purchase_orders';
+
+    /**
+     * Kolom yang dapat diisi secara massal
+     * 
+     * @var array
+     */
     protected $fillable = [
         'po_number',
-        'status_id',
         'approved_date',
-        'supplier_name',
-        'quantity',
-        'unit_price',
-        'amount',
-        'received_at',
-        'submission_id',
+        'supplier_id',
+        'notes',
+        'created_by',
     ];
-    public function status()
-    {
-        return $this->belongsTo(Status::class);
-    }
-    public function trackings()
-    {
-        return $this->hasMany(PurchaseTracking::class);
-    }
-     public function submission()
-    {
-        return $this->belongsTo(Submission::class);
-    }
-    protected function approvedDate(): Attribute
-    {
-        return Attribute::make(
-            get: fn($value) => Carbon::parse($value)->translatedFormat('d-M-y'),
-        );
-    }
-    protected function receivedAt(): Attribute
-    {
-        return Attribute::make(
-            get: fn($value) => Carbon::parse($value)->translatedFormat('d-M-y'),
-        );
-    }
-    public function getWorkingDaysAttribute()
-    {
-        // Tanggal PO disetujui (dari field model saat ini)
-        $poApproved = $this->getRawOriginal('approved_date');
 
-        // Ambil tanggal terima dari relasi 'onsite'
-        $received_at = $this->onsite?->getRawOriginal('received_at');
+    /**
+     * Kolom yang disembunyikan dari output
+     * 
+     * @var array
+     */
+    protected $hidden = ['deleted_at'];
 
-        if (!$poApproved || !$received_at) {
-            return null;
-        }
+    /**
+     * Kolom yang perlu di-cast ke tipe data tertentu
+     * 
+     * @var array
+     */
+    protected $casts = [
+        'approved_date' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
+    ];
 
-        $start = Carbon::parse($poApproved);
-        $end = Carbon::parse($received_at);
-
-        // Hitung jumlah hari kerja (weekday)
-        return CarbonPeriod::create($start, $end)
-            ->filter(fn($date) => $date->isWeekday())
-            ->count();
-    }
-    public function getSlaBadgeAttribute(): string
+    /**
+     * Relasi many-to-one dengan Supplier
+     * Satu purchase order untuk satu supplier
+     * 
+     * @return BelongsTo
+     */
+    public function supplier(): BelongsTo
     {
-        $days = $this->working_days;
-
-        if (is_null($days)) {
-            return 'bg-gray-400';
-        }
-
-        return $days > 7 ? 'bg-red-500' : 'bg-green-500';
-    }
-    public function getIsNewAttribute()
-    {
-        return $this->created_at && Carbon::parse($this->created_at)->greaterThan(Carbon::now()->subMinutes(5));
+        return $this->belongsTo(Supplier::class, 'supplier_id');
     }
 
-    public function getIsUpdateAttribute()
+    /**
+     * Relasi many-to-one dengan User
+     * Purchase order dibuat oleh satu user
+     * 
+     * @return BelongsTo
+     */
+    public function creator(): BelongsTo
     {
-        return $this->updated_at && Carbon::parse($this->updated_at)->greaterThan(Carbon::now()->subMinutes(5));
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Relasi one-to-many dengan PurchaseOrderItem
+     * Satu purchase order dapat memiliki banyak item
+     * 
+     * @return HasMany
+     */
+    public function items(): HasMany
+    {
+        return $this->hasMany(PurchaseOrderItem::class, 'purchase_order_id');
+    }
+
+    /**
+     * Relasi one-to-many dengan Invoice
+     * Satu purchase order dapat memiliki banyak invoice
+     * 
+     * @return HasMany
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class, 'purchase_order_id');
+    }
+
+    /**
+     * Relasi one-to-many dengan PurchaseTracking
+     * Satu purchase order dapat memiliki banyak tracking
+     * 
+     * @return HasMany
+     */
+    public function trackings(): HasMany
+    {
+        return $this->hasMany(PurchaseTracking::class, 'purchase_order_id');
     }
 }
