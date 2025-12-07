@@ -37,14 +37,12 @@ function createResponsiveTable(headers, rows) {
 
     let html = '<div class="overflow-x-auto -mx-4 px-4"><table class="w-full text-sm">';
     
-    // Header
     html += '<thead class="bg-gray-100 dark:bg-gray-800"><tr>';
     headers.forEach(header => {
         html += `<th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">${header}</th>`;
     });
     html += '</tr></thead>';
     
-    // Body
     html += '<tbody>';
     rows.forEach((row, index) => {
         const bgClass = index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800/50';
@@ -98,9 +96,9 @@ $(document).on("click", ".btn-log-detail", function () {
 
     try {
         data = JSON.parse(rawData);
-        console.log("📊 Data parsed:", data);
+        console.log("\ud83d\udcc8 Data parsed:", data);
     } catch (e) {
-        console.error("❌ Gagal parse JSON:", e);
+        console.error("\u274c Gagal parse JSON:", e);
         $("#logDetailContent").html(
             createDetailCard('Error', '<p class="text-sm text-red-600">Data tidak valid atau rusak.</p>', 'danger')
         );
@@ -108,10 +106,8 @@ $(document).on("click", ".btn-log-detail", function () {
         return;
     }
 
-    // Handle berbagai format data
     let html = '';
 
-    // 1. Handle data dengan format array produk/kategori yang dihapus
     if (Array.isArray(data) && data.length > 0 && data[0].name && data[0].id) {
         const rows = data.map((item, i) => [
             i + 1,
@@ -120,15 +116,14 @@ $(document).on("click", ".btn-log-detail", function () {
             item.kode || '-'
         ]);
         html = createDetailCard(
-            '📦 Item yang Dihapus',
+            '\ud83d\udce6 Item yang Dihapus',
             createResponsiveTable(['#', 'Nama', 'SKU/Kode', 'ID'], rows),
             'danger'
         );
     }
     
-    // 2. Handle data perubahan (old vs new)
     else if (data.old && data.new) {
-        html = createDetailCard('🔄 Perubahan Data', '', 'warning');
+        html = createDetailCard('\ud83d\udd04 Perubahan Data', '', 'warning');
         
         const oldData = data.old;
         const newData = data.new;
@@ -148,7 +143,6 @@ $(document).on("click", ".btn-log-detail", function () {
         });
     }
     
-    // 3. Handle cleared_products (kosongkan barcode)
     else if (data.cleared_products && Array.isArray(data.cleared_products)) {
         data.cleared_products.forEach((produk, i) => {
             const rows = (produk.old_barcodes || []).map((b, idx) => [
@@ -158,14 +152,13 @@ $(document).on("click", ".btn-log-detail", function () {
             ]);
             
             html += createDetailCard(
-                `📦 ${i + 1}. ${produk.name || '-'} (${produk.sku || '-'})`,
+                `\ud83d\udce6 ${i + 1}. ${produk.name || '-'} (${produk.sku || '-'})`,
                 createResponsiveTable(['#', 'Level Unit', 'Barcode Lama'], rows),
                 'warning'
             );
         });
     }
     
-    // 4. Handle changes (perubahan barcode)
     else if (Array.isArray(data) && data[0] && data[0].changes) {
         data.forEach((entry, i) => {
             const produk = entry.produk || {};
@@ -177,28 +170,26 @@ $(document).on("click", ".btn-log-detail", function () {
             ]);
             
             html += createDetailCard(
-                `📝 ${i + 1}. ${produk.name || '-'} (${produk.sku || '-'})`,
+                `\ud83d\udcdd ${i + 1}. ${produk.name || '-'} (${produk.sku || '-'})`,
                 createResponsiveTable(['#', 'Level', 'Barcode Lama', 'Barcode Baru'], rows),
                 'info'
             );
         });
     }
     
-    // 5. Handle produk_ids (assign/remove multiple)
     else if (data.produk_ids && Array.isArray(data.produk_ids)) {
         const rows = data.produk_ids.map((id, i) => [i + 1, id]);
         html = createDetailCard(
-            '📦 Produk yang Diproses',
+            '\ud83d\udce6 Produk yang Diproses',
             createResponsiveTable(['#', 'Produk ID'], rows) +
             (data.count ? `<p class="mt-3 text-sm font-medium">Total: ${data.count} produk</p>` : ''),
             'info'
         );
     }
     
-    // 6. Handle single produk assignment/removal
     else if (data.produk_id && data.produk_name) {
         html = createDetailCard(
-            '📦 Detail Produk',
+            '\ud83d\udce6 Detail Produk',
             `
                 <div class="grid grid-cols-2 gap-3 text-sm">
                     <div>
@@ -215,10 +206,9 @@ $(document).on("click", ".btn-log-detail", function () {
         );
     }
     
-    // 7. Fallback - tampilkan semua properties
     else {
         html = createDetailCard(
-            '📄 Detail Data',
+            ' Detail Data',
             formatJSON(data),
             'info'
         );
@@ -241,7 +231,6 @@ $(document).on("click", ".btn-log-detail", function () {
  */
 function showModal() {
     $("#logDetailModal").removeClass("hidden");
-    // Prevent body scroll
     $("body").addClass("overflow-hidden");
 }
 
@@ -260,14 +249,12 @@ $("#closeLogDetailModal, #closeLogDetailModalBtn").on("click", function () {
     hideModal();
 });
 
-// Close on overlay click
 $("#logDetailModal").on("click", function (e) {
     if ($(e.target).is("#logDetailModal")) {
         hideModal();
     }
 });
 
-// Close on ESC key
 $(document).on("keydown", function (e) {
     if (e.key === "Escape" && !$("#logDetailModal").hasClass("hidden")) {
         hideModal();

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\User;
+namespace App\Http\Controllers\Access;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -8,30 +8,32 @@ use Spatie\Activitylog\Models\Activity;
 
 class LogAktivitasController extends Controller
 {
+     /**
+     * Tampilkan halaman log aktivitas beserta statistik ringkas.
+     */
     public function index()
     {
-        // Hitung statistik
         $totalLogs = Activity::count();
-        
-        $createLogs = Activity::where(function($query) {
+
+        $createLogs = Activity::where(function ($query) {
             $query->where('description', 'like', '%Menambahkan%')
-                  ->orWhere('description', 'like', '%Membuat%')
-                  ->orWhere('description', 'like', '%create%');
+                ->orWhere('description', 'like', '%Membuat%')
+                ->orWhere('description', 'like', '%create%');
         })->count();
-        
-        $updateLogs = Activity::where(function($query) {
+
+        $updateLogs = Activity::where(function ($query) {
             $query->where('description', 'like', '%Mengedit%')
-                  ->orWhere('description', 'like', '%Mengupdate%')
-                  ->orWhere('description', 'like', '%Update%')
-                  ->orWhere('description', 'like', '%Memperbarui%');
+                ->orWhere('description', 'like', '%Mengupdate%')
+                ->orWhere('description', 'like', '%Update%')
+                ->orWhere('description', 'like', '%Memperbarui%');
         })->count();
-        
-        $deleteLogs = Activity::where(function($query) {
+
+        $deleteLogs = Activity::where(function ($query) {
             $query->where('description', 'like', '%menghapus%')
-                  ->orWhere('description', 'like', '%delete%');
+                ->orWhere('description', 'like', '%delete%');
         })->count();
-        
-        return view('menu.user.log-aktivitas', compact(
+
+        return view('menu.access.log-aktivitas.index', compact(
             'totalLogs',
             'createLogs',
             'updateLogs',
@@ -39,12 +41,14 @@ class LogAktivitasController extends Controller
         ));
     }
 
+    /**
+     * Ambil data log aktivitas untuk tabel frontend.
+     */
     public function data()
     {
         $logs = Activity::with('causer')->orderBy('created_at', 'desc')->get();
 
         $logsJson = $logs->map(function ($log, $index) {
-            // Tentukan badge berdasarkan deskripsi
             $badge = '';
             $descLower = strtolower($log->description);
 
@@ -76,55 +80,38 @@ class LogAktivitasController extends Controller
                         </div>
                         ' . $badge . '
                      </div>';
-            
-            $right = '';
 
-            // Ambil semua properties
+            $right = '';
             $properties = $log->properties ?? [];
-            
-            // Tentukan detail data yang akan ditampilkan
             $detailData = null;
-            
-            // 1. Jika ada old dan new (perubahan data)
+
             if (isset($properties['old']) && isset($properties['new'])) {
                 $detailData = [
                     'old' => $properties['old'],
-                    'new' => $properties['new']
+                    'new' => $properties['new'],
                 ];
-            }
-            // 2. Jika ada cleared_products
-            elseif (isset($properties['cleared_products'])) {
+            } elseif (isset($properties['cleared_products'])) {
                 $detailData = [
-                    'cleared_products' => $properties['cleared_products']
+                    'cleared_products' => $properties['cleared_products'],
                 ];
-            }
-            // 3. Jika ada deleted_categories
-            elseif (isset($properties['deleted_categories'])) {
+            } elseif (isset($properties['deleted_categories'])) {
                 $detailData = $properties['deleted_categories'];
-            }
-            // 4. Jika ada changes (perubahan barcode)
-            elseif (isset($properties['produk']) && isset($properties['changes'])) {
+            } elseif (isset($properties['produk']) && isset($properties['changes'])) {
                 $detailData = [[
                     'produk' => $properties['produk'],
-                    'changes' => $properties['changes']
+                    'changes' => $properties['changes'],
                 ]];
-            }
-            // 5. Jika ada produk_ids (bulk action)
-            elseif (isset($properties['produk_ids'])) {
+            } elseif (isset($properties['produk_ids'])) {
                 $detailData = [
                     'produk_ids' => $properties['produk_ids'],
-                    'count' => $properties['count'] ?? count($properties['produk_ids'])
+                    'count' => $properties['count'] ?? count($properties['produk_ids']),
                 ];
-            }
-            // 6. Jika ada single produk
-            elseif (isset($properties['produk_id']) && isset($properties['produk_name'])) {
+            } elseif (isset($properties['produk_id']) && isset($properties['produk_name'])) {
                 $detailData = [
                     'produk_id' => $properties['produk_id'],
-                    'produk_name' => $properties['produk_name']
+                    'produk_name' => $properties['produk_name'],
                 ];
-            }
-            // 7. Fallback - ambil semua properties yang bukan metadata
-            elseif (!empty($properties)) {
+            } elseif (!empty($properties)) {
                 $filteredProperties = [];
                 foreach ($properties as $key => $value) {
                     if (!in_array($key, ['attributes', 'old', 'new']) && is_array($value)) {
@@ -137,7 +124,6 @@ class LogAktivitasController extends Controller
                 }
             }
 
-            // Jika ada detail data, buat tombol
             if ($detailData !== null) {
                 $jsonData = htmlspecialchars(json_encode($detailData), ENT_QUOTES, 'UTF-8');
                 $right = '<button 
@@ -156,7 +142,6 @@ class LogAktivitasController extends Controller
             ';
 
             return [
-                'checkbox' => '',
                 'number' => $index + 1,
                 'causer' => $log->causer?->name ?? '-',
                 'description' => $description,
@@ -166,5 +151,4 @@ class LogAktivitasController extends Controller
 
         return response()->json($logsJson);
     }
-
 }

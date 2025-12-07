@@ -1,8 +1,6 @@
 /**
- * Modul log - Table
+ * Modul log akses - Tabel
  * Mengelola tabel log dengan Grid.js dan statistik
- *
- * @module modules/log/log-table
  */
 
 import { initGridTable } from "../../../core/data-table.js";
@@ -63,16 +61,10 @@ function animateValue(id, start, end, duration) {
  * Inisialisasi tabel log
  */
 function initlogTable() {
-    // Cek apakah element table ada
     if (!$("#table-log").length) return;
 
-    // Konfigurasi kolom tabel
     const columns = [
-        {
-            id: "number",
-            name: "#",
-            width: "60px",
-        },
+        { id: "number", name: "#", width: "60px" },
         {
             id: "causer",
             name: "User",
@@ -112,10 +104,8 @@ function initlogTable() {
         },
     ];
 
-    // Konfigurasi tombol yang akan di-enable/disable berdasarkan checkbox
     const buttonConfig = [];
 
-    // Inisialisasi Grid.js table
     initGridTable({
         tableId: "#table-log",
         dataUrl: route("log.data"),
@@ -125,7 +115,6 @@ function initlogTable() {
         enableFilter: false,
         enableCheckbox: false,
         onDataLoaded: (data) => {
-            // Update statistik setelah data loaded
             updateStatistics(data);
         }
     });
@@ -138,11 +127,9 @@ $("#btn-refresh").on("click", function() {
     const btn = $(this);
     const icon = btn.find("i");
     
-    // Disable button dan animate icon
     btn.prop("disabled", true);
     icon.addClass("animate-spin");
     
-    // Reload page after short delay
     setTimeout(() => {
         location.reload();
     }, 500);

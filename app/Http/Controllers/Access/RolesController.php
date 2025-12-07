@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\User;
+namespace App\Http\Controllers\Access;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

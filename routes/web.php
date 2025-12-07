@@ -2,16 +2,16 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoutingController;
-use App\Http\Controllers\User\RolesController;
+use App\Http\Controllers\Access\RolesController;
+use App\Http\Controllers\Access\ManajemenUserController;
+use App\Http\Controllers\Access\LogAktivitasController;
 use App\Http\Controllers\Config\LocationController;
 use App\Http\Controllers\Config\SupplierController;
+use App\Http\Controllers\Config\ClassificationController;
 use App\Http\Controllers\Purchase\OnsiteController;
 use App\Http\Controllers\Invoice\PengajuanController;
 use App\Http\Controllers\Invoice\DariVendorController;
 use App\Http\Controllers\Invoice\PembayaranController;
-use App\Http\Controllers\User\ManajemenUserController;
-use App\Http\Controllers\User\RolePermissionController;
-use App\Http\Controllers\Config\ClassificationController;
 use App\Http\Controllers\Purchase\PurchaseOrderController;
 use App\Http\Controllers\Purchase\PurchaseRequestController;
 use App\Http\Controllers\Purchase\PurchaseTrackingController;
@@ -58,14 +58,14 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::delete('/dari-vendor', [DariVendorController::class, 'bulkDestroy'])->name('dari-vendor.bulkDestroy');
         Route::resource('/dari-vendor', DariVendorController::class)->except(['show', 'destroy']);
         Route::get('/dari-vendor/{keyword}', [DariVendorController::class, 'search'])->name('dari-vendor.search');
-         /* ================= Pengajuan ke Finance ======================== */
+        /* ================= Pengajuan ke Finance ======================== */
         Route::get('/pengajuan/search/{keyword}', [PengajuanController::class, 'search'])->name('pengajuan.search');
         Route::delete('/pengajuan', [PengajuanController::class, 'bulkDestroy'])->name('pengajuan.bulkDestroy');
-        Route::resource('/pengajuan', PengajuanController::class)->except(['show','destroy']);
-         /* ================= Pembayaran Oleh Finance ======================== */
+        Route::resource('/pengajuan', PengajuanController::class)->except(['show', 'destroy']);
+        /* ================= Pembayaran Oleh Finance ======================== */
         Route::get('/pembayaran/search/{keyword}', [PembayaranController::class, 'search'])->name('pembayaran.search');
         Route::delete('/pembayaran', [PembayaranController::class, 'bulkDestroy'])->name('pembayaran.bulkDestroy');
-        Route::resource('/pembayaran', PembayaranController::class)->except(['show','destroy']);
+        Route::resource('/pembayaran', PembayaranController::class)->except(['show', 'destroy']);
     });
     Route::prefix('config')->group(function () {
         /* ================= Classification ======================== */
@@ -92,7 +92,11 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         Route::get('/users/data', [ManajemenUserController::class, 'dataUsers'])->name('users.data');
         Route::get('/users/{user}/permissions', [ManajemenUserController::class, 'getUserPermissions'])->name('users.permissions');
         Route::post('/users/{user}/permissions', [ManajemenUserController::class, 'updateUserPermissions'])->name('users.updatePermissions');
-        Route::resource('/users', ManajemenUserController::class)->only(['index', 'store','show','update', 'destroy']);
+        Route::resource('/users', ManajemenUserController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+
+        /* ================= Activity Log ======================== */
+        Route::get('/log-aktivitas', [LogAktivitasController::class, 'index'])->name('log.index');
+        Route::get('/log-aktivitas/data', [LogAktivitasController::class, 'data'])->name('log.data');
     });
     Route::get('{first}/{second}/{third}', [RoutingController::class, 'thirdLevel'])->name('third');
     Route::get('{first}/{second}', [RoutingController::class, 'secondLevel'])->name('second');
