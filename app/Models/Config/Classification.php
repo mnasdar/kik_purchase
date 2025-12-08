@@ -30,7 +30,7 @@ class Classification extends Model
      * 
      * @var array
      */
-    protected $fillable = ['type', 'name', 'sla'];
+    protected $fillable = ['type', 'name'];
 
     /**
      * Kolom yang disembunyikan dari output

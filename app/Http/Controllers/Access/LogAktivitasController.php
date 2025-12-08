@@ -90,6 +90,35 @@ class LogAktivitasController extends Controller
                     'old' => $properties['old'],
                     'new' => $properties['new'],
                 ];
+            } elseif (isset($properties['deleted_suppliers'])) {
+                $detailData = [
+                    'deleted_suppliers' => $properties['deleted_suppliers'],
+                    'count' => $properties['count'] ?? count($properties['deleted_suppliers']),
+                ];
+            } elseif (isset($properties['deleted_locations'])) {
+                $detailData = [
+                    'deleted_locations' => $properties['deleted_locations'],
+                    'count' => $properties['count'] ?? count($properties['deleted_locations']),
+                ];
+            } elseif (isset($properties['deleted_classifications'])) {
+                $detailData = [
+                    'deleted_classifications' => $properties['deleted_classifications'],
+                    'count' => $properties['count'] ?? count($properties['deleted_classifications']),
+                ];
+            } elseif (isset($properties['deleted_supplier'])) {
+                $detailData = [
+                    'deleted_supplier' => $properties['deleted_supplier'],
+                ];
+            } elseif (isset($properties['deleted_location'])) {
+                $detailData = [
+                    'deleted_location' => $properties['deleted_location'],
+                ];
+            } elseif (isset($properties['deleted_classification'])) {
+                $detailData = [
+                    'deleted_classification' => $properties['deleted_classification'],
+                ];
+            } elseif (isset($properties['attributes'])) {
+                $detailData = $properties['attributes'];
             } elseif (isset($properties['cleared_products'])) {
                 $detailData = [
                     'cleared_products' => $properties['cleared_products'],

@@ -62,17 +62,11 @@ function initUsersTable() {
         },
     ];
 
-    const buttonConfig = [
-        { selector: ".btn-edit", when: "one" },
-        { selector: ".btn-delete", when: "one" },
-    ];
-
     initGridTable({
         tableId: "#table-users",
         dataUrl: route("users.data"),
         columns: columns,
         enableCheckbox: false,
-        buttonConfig: buttonConfig,
         limit: 10,
         enableFilter: false,
         onDataLoaded: () => {

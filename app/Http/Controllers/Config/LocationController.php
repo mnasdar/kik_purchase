@@ -10,12 +10,69 @@ use Illuminate\Support\Facades\DB;
 class LocationController extends Controller
 {
     /**
-     * Tampilkan daftar lokasi.
+     * Tampilkan halaman unit kerja dengan statistik.
      */
     public function index()
     {
-        $locations = Location::latest()->get();
-        return response()->json($locations);
+        $totalLocations = Location::count();
+        $withUsers = Location::whereHas('users')->count();
+        $withPurchaseRequests = Location::whereHas('purchaseRequests')->count();
+        $recentLocations = Location::where('created_at', '>=', now()->subDays(30))->count();
+
+        return view('menu.config.location.index', compact(
+            'totalLocations',
+            'withUsers',
+            'withPurchaseRequests',
+            'recentLocations'
+        ));
+    }
+
+    /**
+     * Ambil data unit kerja untuk tabel.
+     */
+    public function getData()
+    {
+        $locations = Location::withCount(['users', 'purchaseRequests'])->latest()->get();
+
+        $locationsJson = $locations->map(function ($location, $index) {
+            return [
+                'number' => $index + 1,
+                'name' => '<span class="font-medium text-gray-900 dark:text-white">' . e($location->name) . '</span>',
+                'users_count' => '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                    <i class="mgc_user_3_line"></i>
+                                    ' . $location->users_count . ' Users
+                                  </span>',
+                'purchase_requests_count' => '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                                <i class="mgc_file_line"></i>
+                                                ' . $location->purchase_requests_count . ' PR
+                                              </span>',
+                'created_at' => '<span class="text-sm text-gray-600 dark:text-gray-400">' . $location->created_at->format('d M Y') . '</span>',
+                'actions' => '
+                    <div class="flex gap-2">
+                        <button class="btn-edit-location inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors" 
+                            data-id="' . $location->id . '"
+                            data-plugin="tippy" 
+                            data-tippy-content="Edit Unit Kerja">
+                            <i class="mgc_edit_line text-base"></i>
+                        </button>
+                        <button class="btn-delete-location inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors" 
+                            data-id="' . $location->id . '"
+                            data-name="' . e($location->name) . '"
+                            data-plugin="tippy" 
+                            data-tippy-content="Hapus Unit Kerja">
+                            <i class="mgc_delete_2_line text-base"></i>
+                        </button>
+                    </div>
+                ',
+                'checkbox' => '<div class="form-check">
+                                <input type="checkbox" 
+                                    class="form-checkbox rounded text-primary" 
+                                    value="' . $location->id . '">
+                               </div>',
+            ];
+        });
+
+        return response()->json($locationsJson);
     }
 
     /**
@@ -30,6 +87,13 @@ class LocationController extends Controller
         DB::beginTransaction();
         try {
             $location = Location::create($validated);
+
+            activity()
+                ->causedBy($request->user())
+                ->performedOn($location)
+                ->withProperties(['attributes' => $location->toArray()])
+                ->log('Menambahkan unit kerja: ' . $location->name);
+
             DB::commit();
             return response()->json(['message' => 'Lokasi berhasil dibuat', 'data' => $location], 201);
         } catch (\Throwable $e) {
@@ -57,7 +121,19 @@ class LocationController extends Controller
 
         DB::beginTransaction();
         try {
+            $oldData = $unit_kerja->toArray();
             $unit_kerja->update($validated);
+            $newData = $unit_kerja->fresh()->toArray();
+
+            activity()
+                ->causedBy($request->user())
+                ->performedOn($unit_kerja)
+                ->withProperties([
+                    'old' => $oldData,
+                    'new' => $newData
+                ])
+                ->log('Mengupdate unit kerja: ' . $unit_kerja->name);
+
             DB::commit();
             return response()->json(['message' => 'Lokasi berhasil diupdate', 'data' => $unit_kerja]);
         } catch (\Throwable $e) {
@@ -71,7 +147,14 @@ class LocationController extends Controller
      */
     public function destroy(Location $unit_kerja)
     {
+        $locationName = $unit_kerja->name;
         $unit_kerja->delete();
+
+        activity()
+            ->causedBy(auth()->user())
+            ->withProperties(['deleted_location' => $locationName])
+            ->log('Menghapus unit kerja: ' . $locationName);
+
         return response()->json(['message' => 'Lokasi berhasil dihapus']);
     }
 
@@ -85,7 +168,19 @@ class LocationController extends Controller
             return response()->json(['message' => 'Tidak ada data yang dikirim'], 400);
         }
 
+        $locations = Location::whereIn('id', $ids)->get();
+        $locationNames = $locations->pluck('name')->toArray();
+        
         Location::whereIn('id', $ids)->delete();
+
+        activity()
+            ->causedBy($request->user())
+            ->withProperties([
+                'deleted_locations' => $locationNames,
+                'count' => count($locationNames)
+            ])
+            ->log('Menghapus ' . count($locationNames) . ' unit kerja secara bulk');
+
         return response()->json(['message' => 'Lokasi berhasil dihapus']);
     }
 }

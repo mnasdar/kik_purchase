@@ -108,7 +108,88 @@ $(document).on("click", ".btn-log-detail", function () {
 
     let html = '';
 
-    if (Array.isArray(data) && data.length > 0 && data[0].name && data[0].id) {
+    // Handle bulk delete suppliers
+    if (data.deleted_suppliers && Array.isArray(data.deleted_suppliers)) {
+        const rows = data.deleted_suppliers.map((name, i) => [i + 1, name]);
+        html = createDetailCard(
+            '🏢 Supplier yang Dihapus',
+            createResponsiveTable(['#', 'Nama Supplier'], rows) +
+            (data.count ? `<p class="mt-3 text-sm font-medium text-red-600 dark:text-red-400">Total: ${data.count} supplier dihapus</p>` : ''),
+            'danger'
+        );
+    }
+    
+    // Handle bulk delete locations
+    else if (data.deleted_locations && Array.isArray(data.deleted_locations)) {
+        const rows = data.deleted_locations.map((name, i) => [i + 1, name]);
+        html = createDetailCard(
+            '📍 Unit Kerja yang Dihapus',
+            createResponsiveTable(['#', 'Nama Unit Kerja'], rows) +
+            (data.count ? `<p class="mt-3 text-sm font-medium text-red-600 dark:text-red-400">Total: ${data.count} unit kerja dihapus</p>` : ''),
+            'danger'
+        );
+    }
+    
+    // Handle single delete supplier
+    else if (data.deleted_supplier) {
+        html = createDetailCard(
+            '🏢 Supplier yang Dihapus',
+            `<p class="text-sm text-gray-800 dark:text-white font-medium">${data.deleted_supplier}</p>`,
+            'danger'
+        );
+    }
+    
+    // Handle single delete location
+    else if (data.deleted_location) {
+        html = createDetailCard(
+            '📍 Unit Kerja yang Dihapus',
+            `<p class="text-sm text-gray-800 dark:text-white font-medium">${data.deleted_location}</p>`,
+            'danger'
+        );
+    }
+    
+    // Handle bulk delete classifications
+    else if (data.deleted_classifications && Array.isArray(data.deleted_classifications)) {
+        const rows = data.deleted_classifications.map((name, i) => [i + 1, name]);
+        html = createDetailCard(
+            '📋 Klasifikasi yang Dihapus',
+            createResponsiveTable(['#', 'Nama Klasifikasi'], rows) +
+            (data.count ? `<p class="mt-3 text-sm font-medium text-red-600 dark:text-red-400">Total: ${data.count} klasifikasi dihapus</p>` : ''),
+            'danger'
+        );
+    }
+    
+    // Handle single delete classification
+    else if (data.deleted_classification) {
+        html = createDetailCard(
+            '📋 Klasifikasi yang Dihapus',
+            `<p class="text-sm text-gray-800 dark:text-white font-medium">${data.deleted_classification}</p>`,
+            'danger'
+        );
+    }
+    
+    // Handle create with attributes (untuk supplier/location/classification baru)
+    else if (data.name && (data.supplier_type || data.location_id !== undefined || data.type || data.sla !== undefined)) {
+        let content = '<div class="space-y-2 text-sm">';
+        
+        Object.entries(data).forEach(([key, value]) => {
+            if (key !== 'id' && key !== 'created_at' && key !== 'updated_at' && key !== 'deleted_at' && value !== null) {
+                const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                content += `
+                    <div class="flex justify-between border-b border-gray-200 dark:border-gray-700 py-2">
+                        <span class="font-medium text-gray-600 dark:text-gray-400">${label}:</span>
+                        <span class="text-gray-800 dark:text-white">${value}</span>
+                    </div>
+                `;
+            }
+        });
+        
+        content += '</div>';
+        html = createDetailCard('✨ Data yang Ditambahkan', content, 'success');
+    }
+    
+    // Handle deleted items array (existing)
+    else if (Array.isArray(data) && data.length > 0 && data[0].name && data[0].id) {
         const rows = data.map((item, i) => [
             i + 1,
             item.name || '-',
@@ -129,7 +210,7 @@ $(document).on("click", ".btn-log-detail", function () {
         const newData = data.new;
         const allKeys = [...new Set([...Object.keys(oldData), ...Object.keys(newData)])];
         
-        const excludedKeys = ['id', 'created_at', 'updated_at', 'is_new', 'is_update'];
+        const excludedKeys = ['id', 'created_at', 'updated_at', 'is_new', 'is_update', 'deleted_at', 'created_by'];
         const filteredKeys = allKeys.filter(key => !excludedKeys.includes(key));
         
         filteredKeys.forEach(key => {

@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->enum('type',['barang','jasa']);
-            $table->integer('sla');
             $table->timestamps();
             $table->softDeletes();
         });

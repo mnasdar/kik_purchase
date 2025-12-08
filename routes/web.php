@@ -69,16 +69,19 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     });
     Route::prefix('config')->group(function () {
         /* ================= Classification ======================== */
+        Route::get('/klasifikasi/data', [ClassificationController::class, 'getData'])->name('klasifikasi.data');
         Route::delete('/klasifikasi', [ClassificationController::class, 'bulkDestroy'])->name('klasifikasi.bulkDestroy');
-        Route::resource('/klasifikasi', ClassificationController::class)->except(['create', 'show', 'destroy']);
+        Route::resource('/klasifikasi', ClassificationController::class)->except(['create']);
 
         /* ================= Location ======================== */
+        Route::get('/unit-kerja/data', [LocationController::class, 'getData'])->name('unit-kerja.data');
         Route::delete('/unit-kerja', [LocationController::class, 'bulkDestroy'])->name('unit-kerja.bulkDestroy');
-        Route::resource('/unit-kerja', LocationController::class)->except(['create', 'show', 'destroy']);
+        Route::resource('/unit-kerja', LocationController::class)->except(['create']);
 
         /* ================= Supplier ======================== */
+        Route::get('/supplier/data', [SupplierController::class, 'getData'])->name('supplier.data');
         Route::delete('/supplier', [SupplierController::class, 'bulkDestroy'])->name('supplier.bulkDestroy');
-        Route::resource('/supplier', SupplierController::class)->except(['create', 'show']);
+        Route::resource('/supplier', SupplierController::class)->except(['create']);
     });
 
     Route::prefix('access')->group(function () {
