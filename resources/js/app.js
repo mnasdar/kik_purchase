@@ -10,6 +10,46 @@ import "@frostui/tailwindcss"
 
 import feather from 'feather-icons';
 
+function initNumberOnlyInputs() {
+    const allowedKeys = new Set(['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Home', 'End']);
+
+    document.addEventListener('keydown', (e) => {
+        const el = e.target;
+        if (!(el instanceof HTMLInputElement) || el.type !== 'number') return;
+
+        const key = e.key;
+        if (allowedKeys.has(key)) return;
+        if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x'].includes(key.toLowerCase())) return;
+        if (/^[0-9]$/.test(key)) return;
+
+        e.preventDefault();
+    });
+
+    document.addEventListener('paste', (e) => {
+        const el = e.target;
+        if (!(el instanceof HTMLInputElement) || el.type !== 'number') return;
+
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+        const cleaned = text.replace(/[^0-9]/g, '');
+        const start = el.selectionStart ?? el.value.length;
+        const end = el.selectionEnd ?? el.value.length;
+        el.value = `${el.value.slice(0, start)}${cleaned}${el.value.slice(end)}`;
+        const caret = start + cleaned.length;
+        requestAnimationFrame(() => {
+            el.setSelectionRange(caret, caret);
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+    });
+
+    document.addEventListener('input', (e) => {
+        const el = e.target;
+        if (!(el instanceof HTMLInputElement) || el.type !== 'number') return;
+        const cleaned = el.value.replace(/[^0-9]/g, '');
+        if (cleaned !== el.value) el.value = cleaned;
+    });
+}
+
 class App {
 
     // Components
@@ -414,3 +454,4 @@ class ThemeCustomizer {
 
 new App().init();
 new ThemeCustomizer().init();
+initNumberOnlyInputs();

@@ -161,13 +161,17 @@
 
                         <!-- Supplier Type -->
                         <div>
-                            <label for="supplier_type" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                            <label for="supplier_type"
+                                class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                                 Tipe Supplier <span class="text-red-500">*</span>
                             </label>
                             <div class="grid grid-cols-2 gap-3">
-                                <label class="relative flex items-center gap-3 p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 transition-colors">
-                                    <input type="radio" name="supplier_type" value="Company" class="peer sr-only" required>
-                                    <div class="w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-500 peer-checked:border-blue-600 peer-checked:bg-blue-600 flex items-center justify-center">
+                                <label
+                                    class="relative flex items-center gap-3 p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 transition-colors">
+                                    <input type="radio" name="supplier_type" value="Company" class="peer sr-only"
+                                        required>
+                                    <div
+                                        class="w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-500 peer-checked:border-blue-600 peer-checked:bg-blue-600 flex items-center justify-center">
                                         <div class="w-2 h-2 rounded-full bg-white opacity-0 peer-checked:opacity-100"></div>
                                     </div>
                                     <div class="flex-1">
@@ -175,14 +179,19 @@
                                         <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Perusahaan</span>
                                     </div>
                                 </label>
-                                <label class="relative flex items-center gap-3 p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 transition-colors">
-                                    <input type="radio" name="supplier_type" value="Individual" class="peer sr-only" required>
-                                    <div class="w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-500 peer-checked:border-blue-600 peer-checked:bg-blue-600 flex items-center justify-center">
-                                        <div class="w-2 h-2 rounded-full bg-white opacity-0 peer-checked:opacity-100"></div>
+                                <label
+                                    class="relative flex items-center gap-3 p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 transition-colors">
+                                    <input type="radio" name="supplier_type" value="Individual" class="peer sr-only"
+                                        required>
+                                    <div
+                                        class="w-5 h-5 rounded-full border-2 border-gray-300 dark:border-gray-500 peer-checked:border-blue-600 peer-checked:bg-blue-600 flex items-center justify-center">
+                                        <div class="w-2 h-2 rounded-full bg-white opacity-0 peer-checked:opacity-100">
+                                        </div>
                                     </div>
                                     <div class="flex-1">
                                         <i class="mgc_user_3_line text-xl text-gray-600 dark:text-gray-400 mr-2"></i>
-                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Perorangan</span>
+                                        <span
+                                            class="text-sm font-medium text-gray-700 dark:text-gray-200">Perorangan</span>
                                     </div>
                                 </label>
                             </div>
@@ -191,7 +200,8 @@
 
                         <!-- Nama -->
                         <div>
-                            <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                            <label for="name"
+                                class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                                 Nama Supplier <span class="text-red-500">*</span>
                             </label>
                             <input type="text" id="name" name="name"
@@ -202,7 +212,8 @@
 
                         <!-- Contact Person -->
                         <div>
-                            <label for="contact_person" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                            <label for="contact_person"
+                                class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                                 Contact Person
                             </label>
                             <input type="text" id="contact_person" name="contact_person"
@@ -214,7 +225,8 @@
                         <!-- Phone & Email Row -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="phone" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                                <label for="phone"
+                                    class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                                     No. Telepon
                                 </label>
                                 <input type="text" id="phone" name="phone"
@@ -223,7 +235,8 @@
                                 <div class="text-red-500 text-sm mt-1 hidden" id="error-phone"></div>
                             </div>
                             <div>
-                                <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                                <label for="email"
+                                    class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                                     Email
                                 </label>
                                 <input type="email" id="email" name="email"
@@ -235,7 +248,8 @@
 
                         <!-- Address -->
                         <div>
-                            <label for="address" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                            <label for="address"
+                                class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                                 Alamat
                             </label>
                             <textarea id="address" name="address" rows="3"
@@ -246,7 +260,8 @@
 
                         <!-- Tax ID -->
                         <div>
-                            <label for="tax_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                            <label for="tax_id"
+                                class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
                                 NPWP
                             </label>
                             <input type="text" id="tax_id" name="tax_id"
@@ -287,7 +302,8 @@
                 class="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-xl shadow-2xl transition-all duration-300 ease-out transform"
                 style="transform: scale(0.95); opacity: 0;">
                 <div class="p-6">
-                    <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
+                    <div
+                        class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
                         <i class="mgc_delete_2_line text-2xl text-red-600 dark:text-red-400"></i>
                     </div>
                     <h3 class="text-lg font-bold text-center text-gray-900 dark:text-white mb-2">Konfirmasi Hapus</h3>
@@ -311,5 +327,10 @@
 @endsection
 
 @section('script')
-    @vite(['resources/js/pages/highlight.js', 'resources/js/pages/extended-tippy.js', 'resources/js/custom/config/supplier/supplier.js'])
+    @vite([
+        // Panggil JS untuk halaman ini
+        'resources/js/pages/highlight.js',
+        'resources/js/pages/extended-tippy.js',
+        'resources/js/custom/config/supplier/index.js',
+    ])
 @endsection

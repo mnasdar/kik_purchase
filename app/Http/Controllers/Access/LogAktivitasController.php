@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Access;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Activitylog\Models\Activity;
 
 class LogAktivitasController extends Controller
@@ -46,7 +47,9 @@ class LogAktivitasController extends Controller
      */
     public function data()
     {
-        $logs = Activity::with('causer')->orderBy('created_at', 'desc')->get();
+        $logs = Cache::remember('activity_logs.data', 3600, function () {
+            return Activity::with('causer')->orderBy('created_at', 'desc')->get();
+        });
 
         $logsJson = $logs->map(function ($log, $index) {
             $badge = '';

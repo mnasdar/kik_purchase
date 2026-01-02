@@ -7,6 +7,7 @@ import { initGridTable } from "../../../core/data-table.js";
 import { h } from "gridjs";
 import $ from "jquery";
 import { route } from "ziggy-js";
+import { showToast } from "../../../core/notification.js";
 
 /**
  * Update statistik di cards
@@ -121,18 +122,47 @@ function initlogTable() {
 }
 
 /**
+ * Refresh table data
+ */
+function refreshTable() {
+    const grid = $("#table-log").data('grid');
+    if (!grid) return;
+
+    showToast('Memuat data...', 'info', 1000);
+
+    $.ajax({
+        url: route("log.data"),
+        method: "GET",
+        success: function (data) {
+            updateStatistics(data);
+
+            const gridData = data.map((item) => [
+                item.number,
+                item.causer,
+                item.description,
+                item.created_at,
+            ]);
+
+            grid.updateConfig({
+                data: gridData,
+            }).forceRender();
+
+            showToast('Data berhasil direfresh', 'success', 1500);
+        },
+        error: function (xhr) {
+            console.error("Error loading data:", xhr);
+            showToast('Gagal memuat data', 'error', 2000);
+        },
+    });
+}
+
+/**
  * Refresh button handler
  */
-$("#btn-refresh").on("click", function() {
-    const btn = $(this);
-    const icon = btn.find("i");
-    
-    btn.prop("disabled", true);
-    icon.addClass("animate-spin");
-    
-    setTimeout(() => {
-        location.reload();
-    }, 500);
+$("#btn-refresh").off("click").on("click", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    refreshTable();
 });
 
 // Inisialisasi

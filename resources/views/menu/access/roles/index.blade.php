@@ -1,11 +1,7 @@
 @extends('layouts.vertical', ['title' => 'Roles', 'sub_title' => 'Access Control', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
-    @vite([
-        'node_modules/nice-select2/dist/css/nice-select2.css',
-        'node_modules/gridjs/dist/theme/mermaid.min.css',
-        'node_modules/tippy.js/dist/tippy.css',
-    ])
+    @vite(['node_modules/nice-select2/dist/css/nice-select2.css', 'node_modules/gridjs/dist/theme/mermaid.min.css', 'node_modules/tippy.js/dist/tippy.css'])
 @endsection
 
 @section('content')
@@ -98,11 +94,11 @@
                     </p>
                 </div>
                 <div class="flex gap-2">
-                    <button id="btn-refresh" 
+                    <button id="btn-refresh"
                         class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors">
                         <i class="mgc_refresh_2_line"></i>
                     </button>
-                    <button id="btn-create-role" 
+                    <button id="btn-create-role"
                         class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors">
                         <i class="mgc_add_line mr-2"></i>
                         Tambah Role
@@ -222,6 +218,7 @@
 
 @section('script')
     @vite([
+        // Panggil JS untuk halaman ini
         'resources/js/pages/form-select.js',
         'resources/js/pages/highlight.js',
         'resources/js/pages/extended-tippy.js',

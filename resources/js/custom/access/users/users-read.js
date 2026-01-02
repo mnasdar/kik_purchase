@@ -8,7 +8,7 @@ import { h } from "gridjs";
 import $ from "jquery";
 import { route } from "ziggy-js";
 import tippy from "tippy.js";
-import { showSuccess, showError } from "../../../core/notification.js";
+import { showSuccess, showError, showToast } from "../../../core/notification.js";
 
 let actionTippyInstances = [];
 
@@ -422,18 +422,52 @@ $(document).on("click", "#toggleRolePermissions", function () {
 });
 
 /**
+ * Refresh table data
+ */
+function refreshTable() {
+    const grid = $("#table-users").data('grid');
+    if (!grid) return;
+
+    showToast('Memuat data...', 'info', 1000);
+
+    $.ajax({
+        url: route("users.data"),
+        method: "GET",
+        success: function (data) {
+            const gridData = data.map((item) => [
+                item.number,
+                item.name,
+                item.email,
+                item.role,
+                item.verify,
+                item.status,
+                item.actions,
+            ]);
+
+            grid.updateConfig({
+                data: gridData,
+            }).forceRender();
+
+            setTimeout(() => {
+                initActionTooltips();
+            }, 300);
+
+            showToast('Data berhasil direfresh', 'success', 1500);
+        },
+        error: function (xhr) {
+            console.error("Error loading data:", xhr);
+            showToast('Gagal memuat data', 'error', 2000);
+        },
+    });
+}
+
+/**
  * Refresh button
  */
-$("#btn-refresh").on("click", function () {
-    const btn = $(this);
-    const icon = btn.find("i");
-
-    btn.prop("disabled", true);
-    icon.addClass("animate-spin");
-
-    setTimeout(() => {
-        location.reload();
-    }, 500);
+$("#btn-refresh").off("click").on("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    refreshTable();
 });
 
 // Initialize

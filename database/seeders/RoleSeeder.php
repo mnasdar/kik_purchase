@@ -4,9 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class RoleSeeder extends Seeder
 {
@@ -16,7 +17,7 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         // Clear cache
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // Get all permissions
         $allPermissions = Permission::all();
@@ -36,17 +37,9 @@ class RoleSeeder extends Seeder
             ['guard_name' => 'web']
         );
 
-        // Kasir permissions: invoice, payment, view purchase orders
+        // Kasir permissions: view purchase orders and suppliers
         $kasirPermissions = [
             'dashboard.view',
-            'invoices.view',
-            'invoices.create',
-            'invoices.edit',
-            'invoices.delete',
-            'payments.view',
-            'payments.create',
-            'payments.edit',
-            'payments.delete',
             'purchase-orders.view',
             'suppliers.view',
             'reports.view',
@@ -59,7 +52,7 @@ class RoleSeeder extends Seeder
             ['guard_name' => 'web']
         );
 
-        // Gudang permissions: manage all purchases, tracking, onsite
+        // Gudang permissions: manage all purchases
         $gudangPermissions = [
             'dashboard.view',
             'purchase-requests.view',
@@ -70,12 +63,6 @@ class RoleSeeder extends Seeder
             'purchase-orders.create',
             'purchase-orders.edit',
             'purchase-orders.delete',
-            'purchase-tracking.view',
-            'purchase-tracking.update',
-            'po-onsite.view',
-            'po-onsite.create',
-            'po-onsite.edit',
-            'po-onsite.delete',
             'suppliers.view',
             'classifications.view',
             'reports.view',
@@ -94,8 +81,6 @@ class RoleSeeder extends Seeder
             'purchase-requests.view',
             'purchase-requests.approve',
             'purchase-orders.view',
-            'invoices.view',
-            'payments.view',
             'reports.view',
             'reports.export',
             'users.view',

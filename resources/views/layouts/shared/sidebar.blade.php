@@ -27,51 +27,32 @@
             <li class="menu-title">Menu</li>
 
             <li class="menu-item">
-                <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_building_2_line"></i></span>
-                    <span class="menu-text"> Barang </span>
-                    <span class="menu-arrow"></span>
+                <a href="{{ route('dashboard') }}" class="menu-link">
+                    <span class="menu-icon"><i class="mgc_home_3_line"></i></span>
+                    <span class="menu-text"> Dashboard </span>
                 </a>
-
-                <ul class="sub-menu hidden">
-                    <li class="menu-item">
-                        <a href="{{ route('purchase-request.index','barang') }}" class="menu-link">
-                            <span class="menu-text">PR (Purchase Request)</span>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="{{ route('purchase-order.index','barang') }}" class="menu-link">
-                            <span class="menu-text">PO (Purchase Order)</span>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="{{ route('po-onsite.index','barang') }}" class="menu-link">
-                            <span class="menu-text">PO On Site</span>
-                        </a>
-                    </li>
-                </ul>
             </li>
 
             <li class="menu-item">
                 <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_contacts_line"></i></span>
-                    <span class="menu-text"> Jasa </span>
+                    <span class="menu-icon"><i class="mgc_shopping_cart_2_line"></i></span>
+                    <span class="menu-text"> Purchase </span>
                     <span class="menu-arrow"></span>
                 </a>
 
                 <ul class="sub-menu hidden">
                     <li class="menu-item">
-                        <a href="{{ route('purchase-request.index','jasa') }}" class="menu-link">
+                        <a href="{{ route('purchase-request.index') }}" class="menu-link">
                             <span class="menu-text">PR (Purchase Request)</span>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="{{ route('purchase-order.index','jasa') }}" class="menu-link">
+                        <a href="{{ route('purchase-order.index') }}" class="menu-link">
                             <span class="menu-text">PO (Purchase Order)</span>
                         </a>
                     </li>
                     <li class="menu-item">
-                        <a href="{{ route('po-onsite.index','jasa') }}" class="menu-link">
+                        <a href="{{ route('po-onsite.index') }}" class="menu-link">
                             <span class="menu-text">PO On Site</span>
                         </a>
                     </li>

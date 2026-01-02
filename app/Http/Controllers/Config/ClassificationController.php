@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Config;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
 use App\Models\Config\Classification;
 
@@ -15,14 +16,10 @@ class ClassificationController extends Controller
     public function index()
     {
         $totalClassifications = Classification::count();
-        $barangClassifications = Classification::where('type', 'barang')->count();
-        $jasaClassifications = Classification::where('type', 'jasa')->count();
         $recentClassifications = Classification::where('created_at', '>=', now()->subDays(30))->count();
 
         return view('menu.config.classification.index', compact(
             'totalClassifications',
-            'barangClassifications',
-            'jasaClassifications',
             'recentClassifications'
         ));
     }
@@ -32,21 +29,13 @@ class ClassificationController extends Controller
      */
     public function getData()
     {
-        $classifications = Classification::withCount(['purchaseRequestItems'])->latest()->get();
+        $classifications = Cache::remember('classifications.data', 3600, function () {
+            return Classification::withCount(['purchaseRequestItems'])->latest()->get();
+        });
 
         $classificationsJson = $classifications->map(function ($classification, $index) {
-            // Badge untuk tipe
-            $typeIcon = $classification->type === 'barang' ? 'mgc_box_3_line' : 'mgc_service_line';
-            $typeColor = $classification->type === 'barang'
-                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
-                : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400';
-
             return [
                 'number' => $index + 1,
-                'type' => '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ' . $typeColor . '">
-                            <i class="' . $typeIcon . '"></i>
-                            ' . ucfirst($classification->type) . '
-                          </span>',
                 'name' => '<span class="font-medium text-gray-900 dark:text-white">' . e($classification->name) . '</span>',
                 'purchase_request_items_count' => '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400">
                                                     <i class="mgc_file_line"></i>
@@ -93,6 +82,63 @@ class ClassificationController extends Controller
 
         DB::beginTransaction();
         try {
+            $existing = Classification::withTrashed()
+                ->whereRaw('LOWER(name) = ?', [strtolower($validated['name'])])
+                ->first();
+
+            // Reactivate soft-deleted data when user confirms
+            if ($request->boolean('reactivate') && $request->filled('reactivate_id')) {
+                $toRestore = Classification::withTrashed()->find($request->input('reactivate_id'));
+
+                if ($toRestore && $toRestore->trashed()) {
+                    $oldData = $toRestore->toArray();
+                    $toRestore->restore();
+                    $toRestore->update($validated);
+                    $newData = $toRestore->fresh()->toArray();
+
+                    activity()
+                        ->causedBy($request->user())
+                        ->performedOn($toRestore)
+                        ->withProperties([
+                            'old' => $oldData,
+                            'new' => $newData,
+                            'action' => 'reactivate'
+                        ])
+                        ->log('Mengaktifkan kembali klasifikasi: ' . $toRestore->name);
+
+                    Cache::forget('classifications.data');
+                    DB::commit();
+                    return response()->json([
+                        'message' => 'Klasifikasi diaktifkan kembali dan diperbarui',
+                        'data' => $toRestore,
+                        'reactivated' => true,
+                    ]);
+                }
+
+                return response()->json([
+                    'message' => 'Data yang akan diaktifkan tidak ditemukan',
+                ], 404);
+            }
+
+            // If there is a soft-deleted match and user has not chosen force_create, ask for confirmation
+            if ($existing && $existing->trashed() && !$request->boolean('force_create')) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => 'soft-deleted',
+                    'message' => 'Data ini sudah pernah ditambahkan. Aktifkan kembali?',
+                    'id' => $existing->id,
+                ], 409);
+            }
+
+            // If active duplicate exists (case-insensitive), block creation
+            if ($existing && !$existing->trashed()) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Nama klasifikasi sudah digunakan.',
+                    'errors' => ['name' => ['Nama klasifikasi sudah digunakan.']]
+                ], 422);
+            }
+
             $classification = Classification::create($validated);
 
             activity()
@@ -101,6 +147,7 @@ class ClassificationController extends Controller
                 ->withProperties(['attributes' => $classification->toArray()])
                 ->log('Menambahkan klasifikasi: ' . $classification->name);
 
+            Cache::forget('classifications.data');
             DB::commit();
             return response()->json(['message' => 'Klasifikasi berhasil dibuat', 'data' => $classification], 201);
         } catch (\Throwable $e) {
@@ -124,7 +171,6 @@ class ClassificationController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|min:3|max:255',
-            'type' => 'required|in:barang,jasa',
         ]);
 
         DB::beginTransaction();
@@ -142,6 +188,7 @@ class ClassificationController extends Controller
                 ])
                 ->log('Mengupdate klasifikasi: ' . $klasifikasi->name);
 
+            Cache::forget('classifications.data');
             DB::commit();
             return response()->json(['message' => 'Klasifikasi berhasil diupdate', 'data' => $klasifikasi]);
         } catch (\Throwable $e) {
@@ -163,6 +210,7 @@ class ClassificationController extends Controller
             ->withProperties(['deleted_classification' => $classificationName])
             ->log('Menghapus klasifikasi: ' . $classificationName);
 
+        Cache::forget('classifications.data');
         return response()->json(['message' => 'Klasifikasi berhasil dihapus']);
     }
 
@@ -189,6 +237,7 @@ class ClassificationController extends Controller
             ])
             ->log('Menghapus ' . count($classificationNames) . ' klasifikasi secara bulk');
 
+        Cache::forget('classifications.data');
         return response()->json(['message' => 'Klasifikasi berhasil dihapus']);
     }
 }

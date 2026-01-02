@@ -3,14 +3,7 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use App\Models\User;
-use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use App\Models\Purchase\PurchaseRequest;
-use App\Models\Purchase\PurchaseTracking;
-use App\Models\Config\Location;
-use Spatie\Permission\Models\Role;
 
 /**
  * Class DatabaseSeeder
@@ -22,16 +15,17 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Jalankan seeder untuk database
-     * Urutan penting: Config data terlebih dahulu, baru Purchase dan Invoice
+     * Urutan penting: Config data terlebih dahulu, baru Purchase
      * 
      * @return void
      */
     public function run(): void
     {
-        // 1. Buat data klasifikasi dan lokasi terlebih dahulu
+        // 1. Seed data konfigurasi dasar
         $this->call([
             ClassificationSeeder::class,
             LocationSeeder::class,
+            SupplierSeeder::class,
         ]);
 
         // 2. Seed permissions dan roles dengan users
@@ -39,30 +33,9 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             RoleSeeder::class, // Sudah include user creation
         ]);
-
-        // 3. Buat supplier, purchase request, dan purchase order
+        // 3. Import dataset dari CSV
         $this->call([
-            SupplierSeeder::class,
-            PurchaseRequestSeeder::class,
-            PurchaseOrderSeeder::class,
-        ]);
-
-        // 4. Buat item dari purchase request dan purchase order
-        $this->call([
-            PurchaseRequestItemSeeder::class,
-            PurchaseOrderItemSeeder::class,
-        ]);
-
-        // 5. Buat purchase tracking dan onsite
-        $this->call([
-            PurchaseTrackingSeeder::class,
-            PurchaseOrderOnsiteSeeder::class,
-        ]);
-
-        // 6. Buat invoice dan payment
-        $this->call([
-            InvoiceSeeder::class,
-            PaymentSeeder::class,
+            PurchasingDataImportSeeder::class,
         ]);
     }
 }

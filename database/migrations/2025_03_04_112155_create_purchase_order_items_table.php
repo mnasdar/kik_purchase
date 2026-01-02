@@ -13,12 +13,13 @@ return new class extends Migration {
         Schema::create('purchase_order_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('purchase_order_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('purchase_request_item_id')->nullable()->constrained()->nullOnDelete();
             $table->decimal('unit_price', 15, 0);
             $table->integer('quantity');
             $table->decimal('amount', 15, 0);
             $table->decimal('cost_saving', 15, 0)->nullable()->comment('PR amount - PO amount');
-            $table->integer('sla_target')->nullable();
-            $table->integer('sla_realization')->nullable();
+            $table->integer('sla_pr_to_po_realization')->nullable();
+            $table->integer('sla_po_to_onsite_target')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -1,39 +1,40 @@
 @extends('layouts.vertical', ['title' => 'Log Aktivitas', 'sub_title' => 'Access Control', 'mode' => $mode ?? '', 'demo' => $demo ?? ''])
 
 @section('css')
-    @vite([
-        'node_modules/gridjs/dist/theme/mermaid.min.css',
-        'node_modules/glightbox/dist/css/glightbox.min.css',
-        'node_modules/tippy.js/dist/tippy.css',
-    ])
+    @vite(['node_modules/gridjs/dist/theme/mermaid.min.css', 'node_modules/glightbox/dist/css/glightbox.min.css', 'node_modules/tippy.js/dist/tippy.css'])
     <style>
         /* Custom scrollbar untuk modal */
         #logDetailContent::-webkit-scrollbar {
             width: 8px;
         }
+
         #logDetailContent::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 10px;
         }
+
         #logDetailContent::-webkit-scrollbar-thumb {
             background: #888;
             border-radius: 10px;
         }
+
         #logDetailContent::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
-        
+
         /* Animation untuk modal */
         @keyframes slideDown {
             from {
                 opacity: 0;
                 transform: translateY(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+
         .modal-content-animate {
             animation: slideDown 0.3s ease-out;
         }
@@ -53,7 +54,8 @@
                     Pantau semua aktivitas akses dan perubahan hak pengguna
                 </p>
             </div>
-            <button id="btn-refresh" class="btn btn-sm btn-primary hover:brightness-110 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+            <button id="btn-refresh"
+                class="btn btn-sm btn-primary hover:brightness-110 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
                 <i class="mgc_refresh_1_line me-2"></i>
                 Refresh
             </button>
@@ -140,7 +142,8 @@
     <!-- Modal Detail Log - Redesigned -->
     <div id="logDetailModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 p-4">
         <div class="flex items-center justify-center min-h-screen">
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col modal-content-animate">
+            <div
+                class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col modal-content-animate">
                 <!-- Modal Header -->
                 <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
                     <div class="flex items-center gap-3">
@@ -152,17 +155,20 @@
                             <p class="text-sm text-gray-500 dark:text-gray-400">Informasi lengkap perubahan data</p>
                         </div>
                     </div>
-                    <button id="closeLogDetailModal" class="inline-flex items-center justify-center h-10 w-10 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200">
+                    <button id="closeLogDetailModal"
+                        class="inline-flex items-center justify-center h-10 w-10 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200">
                         <i class="mgc_close_line text-2xl"></i>
                     </button>
                 </div>
-                
+
                 <!-- Modal Content -->
                 <div id="logDetailContent" class="overflow-y-auto p-6 flex-1 bg-gray-50 dark:bg-gray-900/50"></div>
-                
+
                 <!-- Modal Footer -->
-                <div class="flex justify-end items-center gap-2 p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                    <button id="closeLogDetailModalBtn" class="btn btn-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 hover:shadow-md transition-all duration-200">
+                <div
+                    class="flex justify-end items-center gap-2 p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                    <button id="closeLogDetailModalBtn"
+                        class="btn btn-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 hover:shadow-md transition-all duration-200">
                         <i class="mgc_close_line me-1"></i>
                         Tutup
                     </button>
@@ -174,6 +180,7 @@
 
 @section('script')
     @vite([
+        // Panggil JS untuk halaman ini
         'resources/js/pages/extended-lightbox.js',
         'resources/js/pages/highlight.js',
         'resources/js/pages/extended-tippy.js',

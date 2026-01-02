@@ -33,8 +33,7 @@ class PurchaseOrderOnsite extends Model
     protected $fillable = [
         'purchase_order_items_id',
         'onsite_date',
-        'sla_target',
-        'sla_realization',
+        'sla_po_to_onsite_realization',
         'created_by',
     ];
 
@@ -52,6 +51,7 @@ class PurchaseOrderOnsite extends Model
      */
     protected $casts = [
         'onsite_date' => 'date',
+        'sla_po_to_onsite_realization' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -77,5 +77,16 @@ class PurchaseOrderOnsite extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Relasi one-to-one dengan Invoice
+     * Onsite dapat memiliki satu invoice
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function invoice()
+    {
+        return $this->hasOne(\App\Models\Invoice\Invoice::class, 'purchase_order_onsite_id');
     }
 }

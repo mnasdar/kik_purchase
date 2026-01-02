@@ -4,6 +4,7 @@ namespace App\Models\Invoice;
 
 use App\Models\User;
 use App\Models\Purchase\PurchaseOrder;
+use App\Models\Purchase\PurchaseOrderOnsite;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -33,12 +34,12 @@ class Invoice extends Model
      * @var array
      */
     protected $fillable = [
-        'purchase_order_id',
+        'purchase_order_onsite_id',
         'invoice_number',
         'invoice_received_at',
+        'sla_invoice_to_finance_target',
         'invoice_submitted_at',
-        'submission_sla_target',
-        'submission_sla_realization',
+        'sla_invoice_to_finance_realization',
         'created_by',
     ];
 
@@ -63,7 +64,18 @@ class Invoice extends Model
     ];
 
     /**
-     * Relasi many-to-one dengan PurchaseOrder
+     * Relasi many-to-one dengan PurchaseOrderOnsite
+     * Satu invoice untuk satu PO onsite
+     * 
+     * @return BelongsTo
+     */
+    public function purchaseOrderOnsite(): BelongsTo
+    {
+        return $this->belongsTo(PurchaseOrderOnsite::class, 'purchase_order_onsite_id');
+    }
+
+    /**
+     * Relasi many-to-one dengan PurchaseOrder (via PO Onsite)
      * Satu invoice untuk satu purchase order
      * 
      * @return BelongsTo

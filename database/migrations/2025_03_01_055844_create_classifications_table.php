@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('classifications', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('type',['barang','jasa']);
             $table->timestamps();
             $table->softDeletes();
         });

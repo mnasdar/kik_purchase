@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Config\Location;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class LocationController extends Controller
 {
@@ -32,7 +33,9 @@ class LocationController extends Controller
      */
     public function getData()
     {
-        $locations = Location::withCount(['users', 'purchaseRequests'])->latest()->get();
+        $locations = Cache::remember('locations.data', 3600, function () {
+            return Location::withCount(['users', 'purchaseRequests'])->latest()->get();
+        });
 
         $locationsJson = $locations->map(function ($location, $index) {
             return [
@@ -86,6 +89,63 @@ class LocationController extends Controller
 
         DB::beginTransaction();
         try {
+            $existing = Location::withTrashed()
+                ->whereRaw('LOWER(name) = ?', [strtolower($validated['name'])])
+                ->first();
+
+            // Reactivate soft-deleted data when user confirms
+            if ($request->boolean('reactivate') && $request->filled('reactivate_id')) {
+                $toRestore = Location::withTrashed()->find($request->input('reactivate_id'));
+
+                if ($toRestore && $toRestore->trashed()) {
+                    $oldData = $toRestore->toArray();
+                    $toRestore->restore();
+                    $toRestore->update($validated);
+                    $newData = $toRestore->fresh()->toArray();
+
+                    activity()
+                        ->causedBy($request->user())
+                        ->performedOn($toRestore)
+                        ->withProperties([
+                            'old' => $oldData,
+                            'new' => $newData,
+                            'action' => 'reactivate'
+                        ])
+                        ->log('Mengaktifkan kembali unit kerja: ' . $toRestore->name);
+
+                    Cache::forget('locations.data');
+                    DB::commit();
+                    return response()->json([
+                        'message' => 'Unit kerja diaktifkan kembali dan diperbarui',
+                        'data' => $toRestore,
+                        'reactivated' => true,
+                    ]);
+                }
+
+                return response()->json([
+                    'message' => 'Data yang akan diaktifkan tidak ditemukan',
+                ], 404);
+            }
+
+            // If there is a soft-deleted match and user has not chosen force_create, ask for confirmation
+            if ($existing && $existing->trashed() && !$request->boolean('force_create')) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => 'soft-deleted',
+                    'message' => 'Data ini sudah pernah ditambahkan. Aktifkan kembali?',
+                    'id' => $existing->id,
+                ], 409);
+            }
+
+            // If active duplicate exists (case-insensitive), block creation
+            if ($existing && !$existing->trashed()) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Nama unit kerja sudah digunakan.',
+                    'errors' => ['name' => ['Nama unit kerja sudah digunakan.']]
+                ], 422);
+            }
+
             $location = Location::create($validated);
 
             activity()
@@ -94,6 +154,7 @@ class LocationController extends Controller
                 ->withProperties(['attributes' => $location->toArray()])
                 ->log('Menambahkan unit kerja: ' . $location->name);
 
+            Cache::forget('locations.data');
             DB::commit();
             return response()->json(['message' => 'Lokasi berhasil dibuat', 'data' => $location], 201);
         } catch (\Throwable $e) {
@@ -134,6 +195,7 @@ class LocationController extends Controller
                 ])
                 ->log('Mengupdate unit kerja: ' . $unit_kerja->name);
 
+            Cache::forget('locations.data');
             DB::commit();
             return response()->json(['message' => 'Lokasi berhasil diupdate', 'data' => $unit_kerja]);
         } catch (\Throwable $e) {
@@ -155,6 +217,7 @@ class LocationController extends Controller
             ->withProperties(['deleted_location' => $locationName])
             ->log('Menghapus unit kerja: ' . $locationName);
 
+        Cache::forget('locations.data');
         return response()->json(['message' => 'Lokasi berhasil dihapus']);
     }
 
@@ -181,6 +244,7 @@ class LocationController extends Controller
             ])
             ->log('Menghapus ' . count($locationNames) . ' unit kerja secara bulk');
 
+        Cache::forget('locations.data');
         return response()->json(['message' => 'Lokasi berhasil dihapus']);
     }
 }

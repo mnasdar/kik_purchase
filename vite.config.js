@@ -70,19 +70,43 @@ export default defineConfig({
                 // Code Highlight Js
                 'resources/js/pages/highlight.js',
 
-                // Code Js Custom
-                'resources/js/custom/autonumeric-input.js',
-                'resources/js/custom/data-table.js',
-                'resources/js/custom/form-create.js',
-                'resources/js/custom/form-delete.js',
-                'resources/js/custom/modal-create.js',
-                'resources/js/custom/modal-update.js',
-                'resources/js/custom/invoice.js',
-                'resources/js/custom/po.js',
+                // Code Js Custom (commented - files not exist)
+                // 'resources/js/custom/autonumeric-input.js',
+                // 'resources/js/custom/data-table.js',
+                // 'resources/js/custom/form-create.js',
+                // 'resources/js/custom/form-delete.js',
+                // 'resources/js/custom/modal-create.js',
+                // 'resources/js/custom/modal-update.js',
+                // 'resources/js/custom/invoice.js',
+                // 'resources/js/custom/po.js',
                 
-                // Code Js Module
-                'resources/js/modules/gridModalSearch.js',
-                'resources/js/modules/tableResult.js',
+                // Purchase Module - Updated structure
+                'resources/js/custom/purchase/purchase-request/index.js',
+                'resources/js/custom/purchase/purchase-request/pr-create.js',
+                'resources/js/custom/purchase/purchase-request/pr-update.js',
+                'resources/js/custom/purchase/purchase-order/index.js',
+                'resources/js/custom/purchase/purchase-order/po-create.js',
+                'resources/js/custom/purchase/purchase-order/po-update.js',
+                'resources/js/custom/purchase/po-onsite/index.js',
+                'resources/js/custom/purchase/po-onsite/onsite-create.js',
+                'resources/js/custom/purchase/po-onsite/onsite-update.js',
+                'resources/js/custom/purchase/po-onsite/bulk-edit.js',
+                
+                // Invoice Module - Updated structure
+                'resources/js/custom/invoice/dari-vendor/index.js',
+                'resources/js/custom/invoice/dari-vendor/dari-vendor-create.js',
+                'resources/js/custom/invoice/dari-vendor/dari-vendor-bulk-edit.js',
+                'resources/js/custom/invoice/pengajuan/index.js',
+                
+                // Pembayaran Module
+                'resources/js/custom/invoice/pembayaran/index.js',
+                'resources/js/custom/invoice/pembayaran/pembayaran-read.js',
+                'resources/js/custom/invoice/pembayaran/pembayaran-create.js',
+                'resources/js/custom/invoice/pembayaran/pembayaran-edit.js',
+                
+                // Code Js Module (commented - files not exist)
+                // 'resources/js/modules/gridModalSearch.js',
+                // 'resources/js/modules/tableResult.js',
 
             ],
             refresh: true

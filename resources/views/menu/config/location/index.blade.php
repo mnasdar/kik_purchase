@@ -143,7 +143,8 @@
                             <i id="locationModalIcon" class="mgc_location_line text-white text-lg"></i>
                         </div>
                         <div>
-                            <h3 id="locationModalTitle" class="text-lg sm:text-xl font-bold text-white">Tambah Unit Kerja</h3>
+                            <h3 id="locationModalTitle" class="text-lg sm:text-xl font-bold text-white">Tambah Unit Kerja
+                            </h3>
                             <p class="text-xs sm:text-sm text-blue-100">Lengkapi data unit kerja baru</p>
                         </div>
                     </div>
@@ -202,7 +203,8 @@
                 class="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-xl shadow-2xl transition-all duration-300 ease-out transform"
                 style="transform: scale(0.95); opacity: 0;">
                 <div class="p-6">
-                    <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
+                    <div
+                        class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
                         <i class="mgc_delete_2_line text-2xl text-red-600 dark:text-red-400"></i>
                     </div>
                     <h3 class="text-lg font-bold text-center text-gray-900 dark:text-white mb-2">Konfirmasi Hapus</h3>
@@ -226,5 +228,10 @@
 @endsection
 
 @section('script')
-    @vite(['resources/js/pages/highlight.js', 'resources/js/pages/extended-tippy.js', 'resources/js/custom/config/location/location.js'])
+    @vite([
+        // Panggil JS untuk halaman ini
+        'resources/js/pages/highlight.js',
+        'resources/js/pages/extended-tippy.js',
+        'resources/js/custom/config/location/index.js',
+    ])
 @endsection

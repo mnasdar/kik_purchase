@@ -15,7 +15,7 @@ use Illuminate\Database\Seeder;
 class SupplierSeeder extends Seeder
 {
     /**
-     * Jalankan seeder untuk membuat data supplier
+     * Jalankan seeder untuk membuat data supplier dari CSV supplierdata.csv
      * 
      * @return void
      */
@@ -24,61 +24,58 @@ class SupplierSeeder extends Seeder
         // Ambil user pertama untuk created_by
         $user = User::first();
 
-        $suppliers = [
-            [
-                'supplier_type' => 'Company',
-                'name' => 'PT Maju Jaya',
-                'contact_person' => 'Budi Santoso',
-                'phone' => '021-1234567',
-                'email' => 'info@majujaya.com',
-                'address' => 'Jl. Sudirman No. 1, Jakarta',
-                'tax_id' => '12.345.678.9-123.456',
-                'created_by' => $user?->id,
-            ],
-            [
-                'supplier_type' => 'Company',
-                'name' => 'PT Sumber Murah',
-                'contact_person' => 'Siti Nurhaliza',
-                'phone' => '021-9876543',
-                'email' => 'contact@sumbermurah.com',
-                'address' => 'Jl. Thamrin No. 10, Jakarta',
-                'tax_id' => '98.765.432.1-654.321',
-                'created_by' => $user?->id,
-            ],
-            [
-                'supplier_type' => 'Individual',
-                'name' => 'Ahmad Hidayat',
-                'contact_person' => 'Ahmad Hidayat',
-                'phone' => '0812-3456789',
-                'email' => 'ahmad@gmail.com',
-                'address' => 'Jl. Gatot Subroto No. 5, Jakarta',
-                'tax_id' => null,
-                'created_by' => $user?->id,
-            ],
-            [
-                'supplier_type' => 'Company',
-                'name' => 'CV Teknologi Maju',
-                'contact_person' => 'Eka Putri',
-                'phone' => '031-5555555',
-                'email' => 'sales@teknologimaju.co.id',
-                'address' => 'Jl. Ahmad Yani No. 20, Surabaya',
-                'tax_id' => '55.555.555.5-555.555',
-                'created_by' => $user?->id,
-            ],
-            [
-                'supplier_type' => 'Company',
-                'name' => 'Toko Elektronik Sukses',
-                'contact_person' => 'Rudi Gunawan',
-                'phone' => '022-2222222',
-                'email' => 'rudi@toko-sukses.com',
-                'address' => 'Jl. Merdeka No. 15, Bandung',
-                'tax_id' => '22.222.222.2-222.222',
-                'created_by' => $user?->id,
-            ],
-        ];
-
-        foreach ($suppliers as $supplier) {
-            Supplier::create($supplier);
+        // Baca CSV file
+        $path = base_path('database/supplierdata.csv');
+        if (!file_exists($path)) {
+            $this->command?->warn("File CSV tidak ditemukan: {$path}");
+            return;
         }
+
+        $handle = fopen($path, 'r');
+        if ($handle === false) {
+            $this->command?->error('Gagal membuka file CSV');
+            return;
+        }
+
+        // Skip header row
+        $header = fgetcsv($handle);
+        $count = 0;
+
+        while (($row = fgetcsv($handle)) !== false) {
+            // Lewati baris kosong
+            if (count(array_filter($row, fn ($v) => trim((string) $v) !== '')) === 0) {
+                continue;
+            }
+
+            [
+                $id,
+                $name,
+            ] = array_pad($row, 2, null);
+
+            if (empty($name)) {
+                continue;
+            }
+
+            $name = trim((string) $name);
+
+            Supplier::firstOrCreate(
+                ['name' => $name],
+                [
+                    'supplier_type' => 'Company',
+                    'contact_person' => null,
+                    'phone' => null,
+                    'email' => null,
+                    'address' => null,
+                    'tax_id' => null,
+                    'created_by' => $user?->id,
+                ]
+            );
+
+            $count++;
+        }
+
+        fclose($handle);
+
+        $this->command?->info("Supplier seeder selesai. Total: {$count} suppliers created/updated");
     }
 }

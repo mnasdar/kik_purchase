@@ -13,8 +13,8 @@ return new class extends Migration {
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id();
             $table->string('po_number')->unique();
-            $table->date('approved_date');
             $table->foreignId('supplier_id')->nullable()->constrained()->nullOnDelete();
+            $table->date('approved_date');
             $table->text('notes')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();

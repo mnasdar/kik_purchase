@@ -1,0 +1,1 @@
+import{N as t}from"./nice-select2-6e0cfbe7.js";document.addEventListener("DOMContentLoaded",function(n){var e=document.querySelectorAll(".selectize");e.forEach(function(c){new t(c)})});document.addEventListener("DOMContentLoaded",function(n){document.querySelectorAll(".search-select").forEach(function(e){new t(e,{searchable:!0})})});

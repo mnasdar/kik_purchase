@@ -21,7 +21,7 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <!-- Total Classifications -->
         <div class="card bg-primary text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
             <div class="p-4">
@@ -32,36 +32,6 @@
                     </div>
                     <div class="text-4xl">
                         <i class="mgc_classify_2_line"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Barang -->
-        <div class="card bg-blue-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-            <div class="p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-white/80 text-xs font-medium mb-1">Klasifikasi Barang</p>
-                        <h3 class="text-2xl font-bold text-white">{{ $barangClassifications ?? 0 }}</h3>
-                    </div>
-                    <div class="text-4xl">
-                        <i class="mgc_box_3_line"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Jasa -->
-        <div class="card bg-purple-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-            <div class="p-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-white/80 text-xs font-medium mb-1">Klasifikasi Jasa</p>
-                        <h3 class="text-2xl font-bold text-white">{{ $jasaClassifications ?? 0 }}</h3>
-                    </div>
-                    <div class="text-4xl">
-                        <i class="mgc_service_line"></i>
                     </div>
                 </div>
             </div>
@@ -95,10 +65,8 @@
                 </div>
                 <div class="flex gap-2">
                     <button id="btn-refresh"
-                        class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors">
-                        <i class="mgc_refresh_1_line mr-2"></i>
-                        Refresh
-                    </button>
+                        class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors">
+                        <i class="mgc_refresh_2_line"></i>
                     <button id="btn-delete-selected"
                         class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled>
@@ -142,7 +110,8 @@
                     <div class="flex items-center gap-3">
                         <div
                             class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900">
-                            <i id="classificationModalIcon" class="mgc_classify_2_line text-xl text-primary-600 dark:text-primary-400"></i>
+                            <i id="classificationModalIcon"
+                                class="mgc_classify_2_line text-xl text-primary-600 dark:text-primary-400"></i>
                         </div>
                         <h3 id="classificationModalTitle" class="text-lg font-semibold text-slate-800 dark:text-white">
                             Tambah Klasifikasi
@@ -160,20 +129,6 @@
                         @csrf
                         <input type="hidden" id="classification_id" name="classification_id">
                         <input type="hidden" id="form_method" name="_method" value="POST">
-
-                        <!-- Type -->
-                        <div>
-                            <label for="type" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                Tipe <span class="text-red-500">*</span>
-                            </label>
-                            <select id="type" name="type"
-                                class="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-slate-900 dark:text-white">
-                                <option value="">Pilih Tipe</option>
-                                <option value="barang">Barang</option>
-                                <option value="jasa">Jasa</option>
-                            </select>
-                            <p id="error-type" class="mt-1 text-sm text-red-600 hidden"></p>
-                        </div>
 
                         <!-- Name -->
                         <div>
@@ -217,7 +172,8 @@
                 style="transform: scale(0.95); opacity: 0;">
                 <div class="p-6">
                     <div class="flex items-center gap-4 mb-4">
-                        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                        <div
+                            class="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
                             <i class="mgc_alert_line text-2xl text-red-600 dark:text-red-400"></i>
                         </div>
                         <div>
@@ -244,5 +200,10 @@
 @endsection
 
 @section('script')
-    @vite(['resources/js/pages/highlight.js', 'resources/js/pages/extended-tippy.js', 'resources/js/custom/config/classification/classification.js'])
+    @vite([
+        // Panggil JS untuk halaman ini
+        'resources/js/pages/highlight.js',
+        'resources/js/pages/extended-tippy.js',
+        'resources/js/custom/config/classification/index.js',
+    ])
 @endsection

@@ -103,15 +103,4 @@ class PurchaseOrder extends Model
     {
         return $this->hasMany(Invoice::class, 'purchase_order_id');
     }
-
-    /**
-     * Relasi one-to-many dengan PurchaseTracking
-     * Satu purchase order dapat memiliki banyak tracking
-     * 
-     * @return HasMany
-     */
-    public function trackings(): HasMany
-    {
-        return $this->hasMany(PurchaseTracking::class, 'purchase_order_id');
-    }
 }

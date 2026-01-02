@@ -39,7 +39,6 @@ class PurchaseRequest extends Model
         'approved_date',
         'notes',
         'created_by',
-        'current_stage',
     ];
 
     /**
@@ -95,13 +94,13 @@ class PurchaseRequest extends Model
     }
 
     /**
-     * Relasi one-to-many dengan PurchaseTracking
-     * Satu purchase request dapat memiliki banyak tracking
+     * Check if PR is locked (cannot be edited/deleted)
      * 
-     * @return HasMany
+     * @return bool
      */
-    public function trackings(): HasMany
+    public function isLocked(): bool
     {
-        return $this->hasMany(PurchaseTracking::class, 'purchase_request_id');
+        // Locked if any item has progressed beyond initial stage (1)
+        return $this->items()->where('purchase_request_items.current_stage', '>', 1)->exists();
     }
 }

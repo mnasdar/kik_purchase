@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Access;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Http\Controllers\Controller;
@@ -132,6 +133,8 @@ class ManajemenUserController extends Controller
                 ])
                 ->log(($request->boolean('restore_deleted') ? 'Mengaktifkan kembali user: ' : 'Membuat user baru: ') . $user->name);
 
+            Cache::forget('users.data');
+
             if ($request->ajax()) {
                 return response()->json([
                     'message' => $request->boolean('restore_deleted')
@@ -242,6 +245,8 @@ class ManajemenUserController extends Controller
                 ])
                 ->log('Mengupdate user: ' . $user->name);
 
+            Cache::forget('users.data');
+
             if ($request->ajax()) {
                 return response()->json([
                     'message' => 'User berhasil disimpan.',
@@ -287,6 +292,8 @@ class ManajemenUserController extends Controller
                     'email' => $userEmail,
                 ])
                 ->log('Menghapus user: ' . $userName);
+
+            Cache::forget('users.data');
 
             return response()->json([
                 'success' => true,
@@ -370,6 +377,8 @@ class ManajemenUserController extends Controller
                 ])
                 ->log('Mengubah custom permissions untuk user: ' . $user->name);
 
+            Cache::forget('users.data');
+
             return response()->json([
                 'success' => true,
                 'message' => 'Custom permissions berhasil diperbarui.'
@@ -395,7 +404,9 @@ class ManajemenUserController extends Controller
      */
     public function dataUsers()
     {
-        $users = User::with(['roles', 'permissions'])->orderBy('updated_at', 'desc')->get();
+        $users = Cache::remember('users.data', 3600, function () {
+            return User::with(['roles', 'permissions'])->orderBy('updated_at', 'desc')->get();
+        });
 
         $userJson = $users->map(function ($item, $index) {
             // Badge untuk user baru/update

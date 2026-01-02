@@ -34,8 +34,7 @@ class Payment extends Model
         'invoice_id',
         'payment_number',
         'payment_date',
-        'payment_sla_target',
-        'payment_sla_realization',
+        'sla_payment',
         'created_by',
     ];
 

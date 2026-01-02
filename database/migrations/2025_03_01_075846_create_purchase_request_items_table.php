@@ -19,6 +19,8 @@ return new class extends Migration {
             $table->decimal('unit_price', 15, 2);
             $table->integer('quantity');
             $table->decimal('amount', 15, 2);
+            $table->integer('sla_pr_to_po_target')->nullable();
+            $table->integer('current_stage')->default(1)->comment('1=PR Created, 2=PO Linked to PR, 3=PO Onsite, 4=Invoice Received, 5=Invoice Submitted, 6=Payment, 7=Completed');
             $table->timestamps();
             $table->softDeletes();
         });

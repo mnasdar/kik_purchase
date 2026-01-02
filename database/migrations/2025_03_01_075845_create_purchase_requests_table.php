@@ -18,7 +18,6 @@ return new class extends Migration {
             $table->date('approved_date');
             $table->text('notes')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->integer('current_stage')->default(1)->comment('1=PR Created, 2=PO Created, 3=PO Linked to PR, 4=PO Onsite, 5=Invoice Received, 7=Invoice Submitted, 8=Payment, 9=Completed');
             $table->timestamps();
             $table->softDeletes();
         });

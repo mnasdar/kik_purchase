@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Config;
 use Illuminate\Http\Request;
 use App\Models\Config\Supplier;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
 
 class SupplierController extends Controller
@@ -32,7 +33,9 @@ class SupplierController extends Controller
      */
     public function getData()
     {
-        $suppliers = Supplier::with('creator')->latest()->get();
+        $suppliers = Cache::remember('suppliers.data', 3600, function () {
+            return Supplier::with('creator')->latest()->get();
+        });
 
         $suppliersJson = $suppliers->map(function ($supplier, $index) {
             // Badge untuk tipe supplier
@@ -108,6 +111,65 @@ class SupplierController extends Controller
 
         DB::beginTransaction();
         try {
+            $existing = Supplier::withTrashed()
+                ->whereRaw('LOWER(name) = ?', [strtolower($validated['name'])])
+                ->first();
+
+            // Reactivate soft-deleted data when user confirms
+            if ($request->boolean('reactivate') && $request->filled('reactivate_id')) {
+                $toRestore = Supplier::withTrashed()->find($request->input('reactivate_id'));
+
+                if ($toRestore && $toRestore->trashed()) {
+                    $oldData = $toRestore->toArray();
+                    $toRestore->restore();
+                    $toRestore->update(array_merge($validated, [
+                        'created_by' => $request->user()?->id,
+                    ]));
+                    $newData = $toRestore->fresh()->toArray();
+
+                    activity()
+                        ->causedBy($request->user())
+                        ->performedOn($toRestore)
+                        ->withProperties([
+                            'old' => $oldData,
+                            'new' => $newData,
+                            'action' => 'reactivate'
+                        ])
+                        ->log('Mengaktifkan kembali supplier: ' . $toRestore->name);
+
+                    Cache::forget('suppliers.data');
+                    DB::commit();
+                    return response()->json([
+                        'message' => 'Supplier diaktifkan kembali dan diperbarui',
+                        'data' => $toRestore,
+                        'reactivated' => true,
+                    ]);
+                }
+
+                return response()->json([
+                    'message' => 'Data yang akan diaktifkan tidak ditemukan',
+                ], 404);
+            }
+
+            // If there is a soft-deleted match and user has not chosen force_create, ask for confirmation
+            if ($existing && $existing->trashed() && !$request->boolean('force_create')) {
+                DB::rollBack();
+                return response()->json([
+                    'status' => 'soft-deleted',
+                    'message' => 'Data ini sudah pernah ditambahkan. Aktifkan kembali?',
+                    'id' => $existing->id,
+                ], 409);
+            }
+
+            // If active duplicate exists (case-insensitive), block creation
+            if ($existing && !$existing->trashed()) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Nama supplier sudah digunakan.',
+                    'errors' => ['name' => ['Nama supplier sudah digunakan.']]
+                ], 422);
+            }
+
             $supplier = Supplier::create(array_merge($validated, [
                 'created_by' => $request->user()?->id,
             ]));
@@ -118,6 +180,7 @@ class SupplierController extends Controller
                 ->withProperties(['attributes' => $supplier->toArray()])
                 ->log('Menambahkan supplier: ' . $supplier->name);
 
+            Cache::forget('suppliers.data');
             DB::commit();
             return response()->json(['message' => 'Supplier berhasil dibuat', 'data' => $supplier], 201);
         } catch (\Throwable $e) {
@@ -164,6 +227,7 @@ class SupplierController extends Controller
                 ])
                 ->log('Mengupdate supplier: ' . $supplier->name);
 
+            Cache::forget('suppliers.data');
             DB::commit();
             return response()->json(['message' => 'Supplier berhasil diupdate', 'data' => $supplier]);
         } catch (\Throwable $e) {
@@ -185,6 +249,7 @@ class SupplierController extends Controller
             ->withProperties(['deleted_supplier' => $supplierName])
             ->log('Menghapus supplier: ' . $supplierName);
 
+        Cache::forget('suppliers.data');
         return response()->json(['message' => 'Supplier berhasil dihapus']);
     }
 
@@ -211,6 +276,7 @@ class SupplierController extends Controller
             ])
             ->log('Menghapus ' . count($supplierNames) . ' supplier secara bulk');
 
+        Cache::forget('suppliers.data');
         return response()->json(['message' => 'Supplier berhasil dihapus']);
     }
 }

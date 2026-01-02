@@ -337,14 +337,15 @@
                                         Permissions dari Role
                                     </h4>
                                 </div>
-                                <button type="button" id="toggleRolePermissions" 
+                                <button type="button" id="toggleRolePermissions"
                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors duration-200"
                                     title="Minimize/Expand">
                                     <i class="mgc_minimize_line text-sm" id="toggleRoleIcon"></i>
                                     <span id="toggleRoleText">Minimize</span>
                                 </button>
                             </div>
-                            <div id="rolePermissionsWrapper" class="transition-all duration-300 ease-in-out" style="max-height: 288px; overflow: hidden;">
+                            <div id="rolePermissionsWrapper" class="transition-all duration-300 ease-in-out"
+                                style="max-height: 288px; overflow: hidden;">
                                 <p class="text-xs text-gray-600 dark:text-gray-400 ml-4 mb-3">
                                     Permissions yang didapatkan user dari role yang diberikan (read-only)
                                 </p>
@@ -424,5 +425,14 @@
 @endsection
 
 @section('script')
-    @vite(['resources/js/pages/form-select.js', 'resources/js/pages/highlight.js', 'resources/js/pages/extended-tippy.js', 'resources/js/custom/access/users/users-read.js', 'resources/js/custom/access/users/users-create.js', 'resources/js/custom/access/users/users-edit.js', 'resources/js/custom/access/users/users-delete.js'])
+    @vite([
+        // Panggil JS untuk halaman ini
+        'resources/js/pages/form-select.js',
+        'resources/js/pages/highlight.js',
+        'resources/js/pages/extended-tippy.js',
+        'resources/js/custom/access/users/users-read.js',
+        'resources/js/custom/access/users/users-create.js',
+        'resources/js/custom/access/users/users-edit.js',
+        'resources/js/custom/access/users/users-delete.js',
+    ])
 @endsection

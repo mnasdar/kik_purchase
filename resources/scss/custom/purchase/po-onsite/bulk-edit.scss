@@ -1,0 +1,17 @@
+/**
+ * PO Onsite Bulk Edit Styles
+ * Custom styling for bulk edit form
+ */
+
+/* Hide up/down spinner for number inputs on supported browsers */
+/* Chromium (Chrome, Edge, Opera) */
+input[type=number].no-spinner::-webkit-outer-spin-button,
+input[type=number].no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number].no-spinner {
+    -moz-appearance: textfield;
+}

@@ -15,8 +15,7 @@ return new class extends Migration {
             $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
             $table->string('payment_number')->nullable();
             $table->date('payment_date');
-            $table->integer('payment_sla_target')->nullable();
-            $table->integer('payment_sla_realization')->nullable();
+            $table->integer('sla_payment')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();

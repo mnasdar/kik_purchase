@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Access;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Spatie\Permission\Models\Role;
@@ -62,6 +63,8 @@ class RolesController extends Controller
                 ->performedOn($role)
                 ->withProperties(['permissions' => $validated['permissions'] ?? []])
                 ->log('Membuat role baru: ' . $role->name);
+
+            Cache::forget('roles.data');
 
             if ($request->ajax()) {
                 return response()->json([
@@ -144,6 +147,8 @@ class RolesController extends Controller
                 ])
                 ->log('Mengupdate role: ' . $role->name);
 
+            Cache::forget('roles.data');
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
@@ -208,6 +213,8 @@ class RolesController extends Controller
                 ->causedBy(auth()->user())
                 ->log('Menghapus role: ' . $roleName);
 
+            Cache::forget('roles.data');
+
             return response()->json([
                 'success' => true,
                 'message' => 'Role berhasil dihapus.'
@@ -228,7 +235,9 @@ class RolesController extends Controller
      */
     public function dataRoles()
     {
-        $roles = Role::withCount(['users', 'permissions'])->orderBy('name')->get();
+        $roles = Cache::remember('roles.data', 3600, function () {
+            return Role::withCount(['users', 'permissions'])->orderBy('name')->get();
+        });
 
         $rolesJson = $roles->map(function ($role, $index) {
             $badge = '';

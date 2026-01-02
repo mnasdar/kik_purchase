@@ -33,12 +33,13 @@ class PurchaseOrderItem extends Model
      */
     protected $fillable = [
         'purchase_order_id',
+        'purchase_request_item_id',
         'unit_price',
         'quantity',
         'amount',
         'cost_saving',
-        'sla_target',
-        'sla_realization',
+        'sla_pr_to_po_realization',
+        'sla_po_to_onsite_target',
     ];
 
     /**
@@ -57,6 +58,8 @@ class PurchaseOrderItem extends Model
         'unit_price' => 'decimal:0',
         'amount' => 'decimal:0',
         'cost_saving' => 'decimal:0',
+        'sla_pr_to_po_realization' => 'integer',
+        'sla_po_to_onsite_target' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -82,5 +85,15 @@ class PurchaseOrderItem extends Model
     public function onsites(): HasMany
     {
         return $this->hasMany(PurchaseOrderOnsite::class, 'purchase_order_items_id');
+    }
+    /**
+     * Relasi many-to-one dengan PurchaseRequestItem
+     * Setiap item belong to satu purchase request item
+     * 
+     * @return BelongsTo
+     */
+    public function purchaseRequestItem(): BelongsTo
+    {
+        return $this->belongsTo(PurchaseRequestItem::class, 'purchase_request_item_id');
     }
 }
