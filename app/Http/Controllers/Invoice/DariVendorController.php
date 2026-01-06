@@ -16,21 +16,42 @@ class DariVendorController extends Controller
 {
     public function index()
     {
-        $totalInvoices = Invoice::count();
-        $receivedInvoices = Invoice::whereNotNull('invoice_received_at')->count();
-        $submittedInvoices = Invoice::whereNotNull('invoice_submitted_at')->count();
-        $recentInvoices = Invoice::where('created_at', '>=', now()->subDays(30))->count();
+        $user = auth()->user();
+        
+        $query = Invoice::query();
+        
+        // Filter by user's location_id
+        if ($user && $user->location_id) {
+            $query->whereHas('purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest', function ($q) use ($user) {
+                $q->where('location_id', $user->location_id);
+            });
+        }
+        
+        $totalInvoices = (clone $query)->count();
+        $receivedInvoices = (clone $query)->whereNotNull('invoice_received_at')->count();
+        $submittedInvoices = (clone $query)->whereNotNull('invoice_submitted_at')->count();
+        $recentInvoices = (clone $query)->where('created_at', '>=', now()->subDays(30))->count();
 
         return view('menu.invoice.dari-vendor.index', compact('totalInvoices', 'receivedInvoices', 'submittedInvoices', 'recentInvoices'));
     }
 
     public function getData()
     {
-        $invoices = Invoice::with([
+        $query = Invoice::with([
             'purchaseOrderOnsite.purchaseOrderItem.purchaseOrder',
             'purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest',
             'creator'
-        ])->latest()->get();
+        ]);
+
+        // Filter by user's location_id
+        $user = auth()->user();
+        if ($user && $user->location_id) {
+            $query->whereHas('purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest', function ($q) use ($user) {
+                $q->where('location_id', $user->location_id);
+            });
+        }
+
+        $invoices = $query->latest()->get();
 
         $data = $invoices->map(function ($invoice, $index) {
             $onsite = $invoice->purchaseOrderOnsite;
@@ -85,7 +106,9 @@ class DariVendorController extends Controller
 
     public function search(string $keyword)
     {
-        $onsites = PurchaseOrderOnsite::with([
+        $user = auth()->user();
+        
+        $query = PurchaseOrderOnsite::with([
             'purchaseOrderItem.purchaseOrder',
             'purchaseOrderItem.purchaseRequestItem.purchaseRequest',
             'purchaseOrderItem.supplier'
@@ -93,8 +116,16 @@ class DariVendorController extends Controller
         ->whereDoesntHave('invoice')
         ->whereHas('purchaseOrderItem.purchaseOrder', function ($query) use ($keyword) {
             $query->where('po_number', 'like', "%{$keyword}%");
-        })
-        ->get();
+        });
+
+        // Filter by user's location_id
+        if ($user && $user->location_id) {
+            $query->whereHas('purchaseOrderItem.purchaseRequestItem.purchaseRequest', function ($q) use ($user) {
+                $q->where('location_id', $user->location_id);
+            });
+        }
+
+        $onsites = $query->get();
 
         $data = $onsites->map(function ($onsite) {
             $item = $onsite->purchaseOrderItem;
@@ -117,17 +148,26 @@ class DariVendorController extends Controller
 
     public function create()
     {
+        $user = auth()->user();
+        
         // Get all PO Onsites that don't have invoice received yet
-        $onsites = PurchaseOrderOnsite::with([
+        $query = PurchaseOrderOnsite::with([
             'purchaseOrderItem.purchaseOrder',
             'purchaseOrderItem.purchaseRequestItem.purchaseRequest',
             'purchaseOrderItem.purchaseOrder.supplier'
         ])
         ->whereDoesntHave('invoice', function ($query) {
             $query->whereNotNull('invoice_received_at');
-        })
-        ->latest()
-        ->get();
+        });
+
+        // Filter by user's location_id
+        if ($user && $user->location_id) {
+            $query->whereHas('purchaseOrderItem.purchaseRequestItem.purchaseRequest', function ($q) use ($user) {
+                $q->where('location_id', $user->location_id);
+            });
+        }
+
+        $onsites = $query->latest()->get();
 
         return view('menu.invoice.dari-vendor.create', compact('onsites'));
     }
@@ -156,6 +196,15 @@ class DariVendorController extends Controller
         DB::beginTransaction();
         try {
             $invoice = Invoice::create($data);
+
+            // Update PR Item stage to 4 (Invoice Received)
+            $onsite = PurchaseOrderOnsite::with('purchaseOrderItem.purchaseRequestItem')
+                ->find($validated['purchase_order_onsite_id']);
+            if ($onsite && $onsite->purchaseOrderItem && $onsite->purchaseOrderItem->purchaseRequestItem) {
+                $prItem = $onsite->purchaseOrderItem->purchaseRequestItem;
+                $prItem->update(['current_stage' => 4]);
+            }
+
             DB::commit();
             return response()->json([
                 'success' => true,
@@ -206,9 +255,11 @@ class DariVendorController extends Controller
                 ]);
 
                 // Update PR Item stage to 4 (Invoice Received)
-                $onsite = PurchaseOrderOnsite::with('purchaseOrderItem.purchaseRequestItem')->find($invoiceData['onsite_id']);
+                $onsite = PurchaseOrderOnsite::with('purchaseOrderItem.purchaseRequestItem')
+                    ->find($invoiceData['onsite_id']);
                 if ($onsite && $onsite->purchaseOrderItem && $onsite->purchaseOrderItem->purchaseRequestItem) {
-                    $onsite->purchaseOrderItem->purchaseRequestItem->update(['current_stage' => 4]);
+                    $prItem = $onsite->purchaseOrderItem->purchaseRequestItem;
+                    $prItem->update(['current_stage' => 4]);
                 }
 
                 $createdInvoices[] = $invoice;
@@ -304,12 +355,23 @@ class DariVendorController extends Controller
             return redirect()->route('dari-vendor.index')->with('error', 'Tidak ada data yang dipilih');
         }
 
-        $invoices = Invoice::with([
+        $user = auth()->user();
+        
+        $query = Invoice::with([
             'purchaseOrderOnsite.purchaseOrderItem.purchaseOrder',
             'purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest',
             'purchaseOrderOnsite.purchaseOrderItem.purchaseOrder.supplier',
             'creator'
-        ])->whereIn('id', $ids)->get();
+        ])->whereIn('id', $ids);
+
+        // Filter by user's location_id
+        if ($user && $user->location_id) {
+            $query->whereHas('purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest', function ($q) use ($user) {
+                $q->where('location_id', $user->location_id);
+            });
+        }
+
+        $invoices = $query->get();
 
         if ($invoices->isEmpty()) {
             return redirect()->route('dari-vendor.index')->with('error', 'Data tidak ditemukan');

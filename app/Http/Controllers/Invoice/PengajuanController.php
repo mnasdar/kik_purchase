@@ -105,12 +105,25 @@ class PengajuanController extends Controller
 
         DB::beginTransaction();
         try {
-            $invoice = Invoice::findOrFail($validated['invoice_id']);
+            $locationId = $request->user()?->location_id;
+            
+            // Get invoice with location validation
+            $query = Invoice::where('id', $validated['invoice_id']);
+            $this->applyLocationScope($query, $locationId);
+            $invoice = $query->firstOrFail();
             $submittedDate = Carbon::parse($validated['invoice_submitted_at']);
             $invoice->update([
                 'invoice_submitted_at' => $submittedDate,
                 'sla_invoice_to_finance_realization' => $this->calculateSlaRealization($invoice->invoice_received_at, $submittedDate),
             ]);
+
+            // Update PR Item stage to 5 (Invoice Submitted)
+            $invoice->load('purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem');
+            $prItem = $invoice->purchaseOrderOnsite?->purchaseOrderItem?->purchaseRequestItem;
+            if ($prItem) {
+                $prItem->update(['current_stage' => 5]);
+            }
+
             DB::commit();
             return response()->json(['message' => 'Pengajuan invoice berhasil dicatat', 'data' => $invoice]);
         } catch (\Throwable $e) {
@@ -129,6 +142,16 @@ class PengajuanController extends Controller
         $validated = $request->validate([
             'invoice_submitted_at' => 'required|date',
         ]);
+
+        // Validate location ownership
+        $locationId = $request->user()?->location_id;
+        if ($locationId) {
+            $query = Invoice::where('id', $pengajuan->id);
+            $this->applyLocationScope($query, $locationId);
+            if (!$query->exists()) {
+                return response()->json(['message' => 'Invoice tidak ditemukan atau tidak memiliki akses'], 403);
+            }
+        }
 
         $submittedDate = Carbon::parse($validated['invoice_submitted_at']);
         $pengajuan->update([
@@ -149,13 +172,30 @@ class PengajuanController extends Controller
         DB::beginTransaction();
         try {
             $submittedDate = Carbon::parse($validated['invoice_submitted_at']);
-            $invoices = Invoice::whereIn('id', $validated['ids'])->get();
+            
+            // Get invoices with location filter
+            $locationId = $request->user()?->location_id;
+            $query = Invoice::whereIn('id', $validated['ids']);
+            $this->applyLocationScope($query, $locationId);
+            $invoices = $query->get();
 
             foreach ($invoices as $invoice) {
                 $invoice->update([
                     'invoice_submitted_at' => $submittedDate,
                     'sla_invoice_to_finance_realization' => $this->calculateSlaRealization($invoice->invoice_received_at, $submittedDate),
                 ]);
+
+                // Update PR Item stage to 5 (Invoice Submitted)
+                $invoice->load('purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest');
+                $prItem = $invoice->purchaseOrderOnsite?->purchaseOrderItem?->purchaseRequestItem;
+                if ($prItem) {
+                    $prItem->update(['current_stage' => 5]);
+                    
+                    // Update PR stage to 5 (Invoice Submitted)
+                    if ($prItem->purchaseRequest) {
+                        $prItem->purchaseRequest->update(['current_stage' => 5]);
+                    }
+                }
             }
 
             DB::commit();
@@ -179,7 +219,11 @@ class PengajuanController extends Controller
             return response()->json(['message' => 'Tidak ada data yang dikirim'], 400);
         }
 
-        Invoice::whereIn('id', $ids)->delete();
+        // Apply location filter
+        $locationId = $request->user()?->location_id;
+        $query = Invoice::whereIn('id', $ids);
+        $this->applyLocationScope($query, $locationId);
+        $query->delete();
         return response()->json(['message' => 'Data pengajuan dihapus']);
     }
 
@@ -286,9 +330,14 @@ class PengajuanController extends Controller
 
         DB::beginTransaction();
         try {
-            foreach ($validated['ids'] as $id) {
-                $invoice = Invoice::findOrFail($id);
-                $data = $validated['invoice_data'][$id] ?? [];
+            // Get invoices with location filter
+            $locationId = $request->user()?->location_id;
+            $query = Invoice::whereIn('id', $validated['ids']);
+            $this->applyLocationScope($query, $locationId);
+            $invoices = $query->get();
+
+            foreach ($invoices as $invoice) {
+                $data = $validated['invoice_data'][$invoice->id] ?? [];
 
                 $updateData = [];
 

@@ -6,6 +6,7 @@ Contact: support@coderthemes.com
 File: Dashboard js
 */
 
+import NiceSelect from "nice-select2/src/js/nice-select2.js";
 import ApexCharts from "apexcharts";
 
 var colors = ["#3073F1", "#0acf97"];

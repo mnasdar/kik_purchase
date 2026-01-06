@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoutingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\Access\RolesController;
 use App\Http\Controllers\Config\LocationController;
 use App\Http\Controllers\Config\SupplierController;
@@ -37,6 +38,10 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/data', [DashboardController::class, 'getData'])->name('dashboard.data');
     Route::get('/dashboard/po-analytics', [DashboardController::class, 'getPoAnalytics'])->name('dashboard.po-analytics');
+    
+    /* ================= Export Data ======================== */
+    Route::get('/export', [ExportController::class, 'index'])->name('export.index');
+    Route::get('/export/data', [ExportController::class, 'export'])->name('export.data');
     
     /* ================= Purchase Request ======================== */
     Route::get('/purchase-request/data', [PurchaseRequestController::class, 'getData'])->name('purchase-request.data');

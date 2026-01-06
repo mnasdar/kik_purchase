@@ -416,6 +416,7 @@ class PurchaseOrderController extends Controller
 
             // Simpan items dan kumpulkan PR IDs untuk update stage
             $affectedPRIds = [];
+            $affectedPRItemIds = [];
             foreach ($items as $item) {
                 $prAmount = $item['pr_amount'] ?? 0;
                 $poAmount = $item['amount'] ?? 0;
@@ -434,18 +435,19 @@ class PurchaseOrderController extends Controller
                     'sla_pr_to_po_realization' => $item['sla_pr_to_po_realization'] ?? null,
                 ]);
 
-                // Track PR ID jika ada
+                // Track PR ID dan PR Item ID jika ada
                 if (!empty($item['purchase_request_item_id'])) {
                     $prItem = PurchaseRequestItem::find($item['purchase_request_item_id']);
                     if ($prItem && $prItem->purchase_request_id) {
                         $affectedPRIds[] = $prItem->purchase_request_id;
+                        $affectedPRItemIds[] = $item['purchase_request_item_id'];
                     }
                 }
             }
 
-            // Update current_stage untuk PR yang terkait menjadi 2 (PO Linked)
-            if (!empty($affectedPRIds)) {
-                PurchaseRequest::whereIn('id', array_unique($affectedPRIds))
+            // Update current_stage untuk PR Items yang terkait menjadi 2 (PO Created)
+            if (!empty($affectedPRItemIds)) {
+                PurchaseRequestItem::whereIn('id', $affectedPRItemIds)
                     ->update(['current_stage' => 2]);
             }
 
@@ -628,12 +630,6 @@ class PurchaseOrderController extends Controller
         // Soft delete PO
         PurchaseOrder::whereIn('id', $ids)->delete();
 
-        // Reset current_stage PR yang terkait kembali ke 1 (PR Created)
-        if (!empty($affectedPRIds)) {
-            PurchaseRequest::whereIn('id', array_unique($affectedPRIds))
-                ->update(['current_stage' => 1]);
-        }
-
         Cache::forget("purchase_orders.data");
         return response()->json(['message' => 'PO berhasil dihapus']);
     }
@@ -703,19 +699,86 @@ class PurchaseOrderController extends Controller
     }
 
     /**
+     * Soft delete PO dan kembalikan PR Item stage ke 1
+     */
+    public function destroy(PurchaseOrder $purchase_order)
+    {
+        DB::beginTransaction();
+        try {
+            // Ambil PR Item IDs dan PR IDs yang terkait sebelum dihapus
+            $affectedPRItemIds = [];
+            $affectedPRIds = [];
+            foreach ($purchase_order->items as $poItem) {
+                if ($poItem->purchase_request_item_id) {
+                    $prItem = PurchaseRequestItem::find($poItem->purchase_request_item_id);
+                    if ($prItem) {
+                        $affectedPRItemIds[] = $prItem->id;
+                        $affectedPRIds[] = $prItem->purchase_request_id;
+                    }
+                }
+            }
+
+            // Soft delete PO dan items
+            $purchase_order->delete();
+
+            // Kembalikan current_stage PR Items ke 1 (PR Created)
+            if (!empty($affectedPRItemIds)) {
+                PurchaseRequestItem::whereIn('id', $affectedPRItemIds)
+                    ->update(['current_stage' => 1]);
+            }
+
+            activity()
+                ->causedBy(request()->user())
+                ->performedOn($purchase_order)
+                ->event('deleted')
+                ->withProperties(['po_number' => $purchase_order->po_number])
+                ->log('Menghapus Purchase Order');
+
+            Cache::forget("purchase_orders.data");
+            DB::commit();
+
+            return response()->json(['message' => 'PO berhasil dihapus']);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('PO Delete Error: ' . $e->getMessage());
+            return response()->json(['message' => 'Gagal menghapus PO', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * Restore PO yang sudah dihapus beserta items-nya
      */
     public function restore(Request $request, $id)
     {
+        DB::beginTransaction();
         try {
             // Find deleted PO
             $po = PurchaseOrder::onlyTrashed()->with('items')->findOrFail($id);
+
+            // Ambil PR Item IDs dan PR IDs yang terkait
+            $affectedPRItemIds = [];
+            $affectedPRIds = [];
+            foreach ($po->items()->onlyTrashed()->get() as $poItem) {
+                if ($poItem->purchase_request_item_id) {
+                    $prItem = PurchaseRequestItem::find($poItem->purchase_request_item_id);
+                    if ($prItem) {
+                        $affectedPRItemIds[] = $prItem->id;
+                        $affectedPRIds[] = $prItem->purchase_request_id;
+                    }
+                }
+            }
 
             // Restore PO
             $po->restore();
 
             // Restore all items
             $po->items()->onlyTrashed()->restore();
+
+            // Update current_stage PR Items kembali ke 2 (PO Created)
+            if (!empty($affectedPRItemIds)) {
+                PurchaseRequestItem::whereIn('id', $affectedPRItemIds)
+                    ->update(['current_stage' => 2]);
+            }
 
             activity()
                 ->causedBy($request->user())
@@ -725,12 +788,14 @@ class PurchaseOrderController extends Controller
                 ->log('Mengaktifkan kembali Purchase Order');
 
             Cache::forget("purchase_orders.data");
+            DB::commit();
 
             return response()->json([
                 'message' => 'PO berhasil diaktifkan kembali',
                 'data' => $po->load(['items.purchaseRequestItem.purchaseRequest', 'supplier'])
             ]);
         } catch (\Throwable $e) {
+            DB::rollBack();
             Log::error('PO Restore Error: ' . $e->getMessage());
             return response()->json(['message' => 'Gagal mengaktifkan PO', 'error' => $e->getMessage()], 500);
         }

@@ -15,6 +15,10 @@ let currentDateRange = {
     start: null,
     end: null
 };
+let currentFilters = {
+    dateType: 'pr',
+    locationId: null
+};
 
 /**
  * Initialize date range picker
@@ -68,6 +72,12 @@ function fetchDashboardData(showNotification = false) {
     if (currentDateRange.end) {
         params.end_date = formatDate(currentDateRange.end);
     }
+    if (currentFilters.dateType) {
+        params.date_type = currentFilters.dateType;
+    }
+    if (currentFilters.locationId) {
+        params.location_id = currentFilters.locationId;
+    }
 
     $.ajax({
         url: route('dashboard.data'),
@@ -90,8 +100,18 @@ function fetchDashboardData(showNotification = false) {
             }
         },
         error: function(xhr) {
-            showError('Gagal memuat data dashboard', 'Error!');
             console.error('Dashboard fetch error:', xhr);
+            
+            let errorMessage = 'Gagal memuat data dashboard';
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMessage += ': ' + xhr.responseJSON.message;
+            } else if (xhr.status === 500) {
+                errorMessage += '. Terjadi kesalahan server. Silakan cek log untuk detail.';
+            } else if (xhr.status === 404) {
+                errorMessage += '. Route tidak ditemukan.';
+            }
+            
+            showError(errorMessage, 'Error!');
         }
     });
 }
@@ -327,16 +347,33 @@ function resetFilter() {
     currentDateRange.start = thirtyDaysAgo;
     currentDateRange.end = today;
     
+    // Reset other filters
+    $('#dateTypeFilter').val('pr').trigger('change');
+    const unitFilter = $('#unitFilter');
+    if (unitFilter.is('select')) {
+        unitFilter.val('').trigger('change');
+    }
+    currentFilters.dateType = 'pr';
+    currentFilters.locationId = null;
+    
     fetchDashboardData(true);
+    fetchPoAnalytics();
 }
 
 /**
  * Fetch PO Analytics data (12 months)
  */
 function fetchPoAnalytics() {
+    const params = {};
+    
+    if (currentFilters.locationId) {
+        params.location_id = currentFilters.locationId;
+    }
+    
     $.ajax({
         url: route('dashboard.po-analytics'),
         method: 'GET',
+        data: params,
         success: function(response) {
             renderPoChart(response);
         },
@@ -523,6 +560,14 @@ function renderPoChart(data) {
  */
 $(document).ready(function() {
     initDateRangePicker();
+    
+    // Initialize filters
+    const unitFilter = $('#unitFilter');
+    if (unitFilter.is('input[type="hidden"]')) {
+        // User bukan Super Admin, gunakan location_id dari hidden input
+        currentFilters.locationId = unitFilter.val() || null;
+    }
+    
     fetchDashboardData(false);
     fetchPoAnalytics();
 
@@ -530,4 +575,19 @@ $(document).ready(function() {
     $('#btn-reset-filter').on('click', function() {
         resetFilter();
     });
+    
+    // Date type filter change
+    $('#dateTypeFilter').on('change', function() {
+        currentFilters.dateType = $(this).val();
+        fetchDashboardData(true);
+    });
+    
+    // Unit filter change (only for Super Admin)
+    if (unitFilter.is('select')) {
+        unitFilter.on('change', function() {
+            currentFilters.locationId = $(this).val() || null;
+            fetchDashboardData(true);
+            fetchPoAnalytics();
+        });
+    }
 });

@@ -10,6 +10,7 @@ use App\Models\Purchase\PurchaseOrder;
 use App\Models\Purchase\PurchaseOrderItem;
 use App\Models\Purchase\PurchaseOrderOnsite;
 use App\Models\Purchase\PurchaseRequestItem;
+use App\Models\Purchase\PurchaseRequest;
 
 /**
  * Controller untuk mengelola PO Onsite
@@ -264,9 +265,10 @@ class PurchaseOrderOnsiteController extends Controller
             $poItem = PurchaseOrderItem::with(['purchaseOrder', 'purchaseRequestItem.purchaseRequest'])
                 ->findOrFail($validated['purchase_order_items_id']);
 
-            // Update current_stage di PurchaseRequestItem jadi 3 (Onsite)
+            // Update current_stage di PurchaseRequestItem jadi 3 (PO Onsite)
             if ($poItem->purchaseRequestItem) {
                 $poItem->purchaseRequestItem->update(['current_stage' => 3]);
+
             }
 
             DB::commit();
@@ -340,7 +342,30 @@ class PurchaseOrderOnsiteController extends Controller
 
         DB::beginTransaction();
         try {
+            // Get affected PR Items before delete
+            $affectedPRItemIds = [];
+            $affectedPRIds = [];
+            $onsites = PurchaseOrderOnsite::with('purchaseOrderItem.purchaseRequestItem.purchaseRequest')
+                ->whereIn('id', $validated['ids'])
+                ->get();
+            
+            foreach ($onsites as $onsite) {
+                if ($onsite->purchaseOrderItem && $onsite->purchaseOrderItem->purchaseRequestItem) {
+                    $prItem = $onsite->purchaseOrderItem->purchaseRequestItem;
+                    $affectedPRItemIds[] = $prItem->id;
+                    $affectedPRIds[] = $prItem->purchase_request_id;
+                }
+            }
+
             PurchaseOrderOnsite::whereIn('id', $validated['ids'])->delete();
+
+            // Kembalikan current_stage PR Items ke 2 (PO Created)
+            if (!empty($affectedPRItemIds)) {
+                PurchaseRequestItem::whereIn('id', $affectedPRItemIds)
+                    ->update(['current_stage' => 2]);
+            }
+
+
             DB::commit();
 
             return response()->json([

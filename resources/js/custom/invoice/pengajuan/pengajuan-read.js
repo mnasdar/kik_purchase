@@ -180,6 +180,9 @@ function submitSelected() {
     $.ajax({
         url: route("pengajuan.bulk-submit"),
         method: "POST",
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
         data: {
             ids: selectedIds,
             invoice_submitted_at: submittedAt,

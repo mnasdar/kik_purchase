@@ -330,6 +330,7 @@ class PurchaseRequestController extends Controller
                         'quantity' => $item['quantity'],
                         'amount' => $item['amount'],
                         'sla_pr_to_po_target' => $item['sla_pr_to_po_target'],
+                        'current_stage' => 1,
                     ]);
                 }
             }

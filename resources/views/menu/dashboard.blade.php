@@ -15,13 +15,43 @@
                         Monitoring progress Purchase Request hingga Pembayaran
                     </p>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 flex-wrap">
+
+                    <!-- Unit Filter -->
+                    @if(auth()->user()->hasRole('Super Admin'))
+                        <div class="relative">
+                            <select id="unitFilter" 
+                                class="search-select pr-10">
+                                <option value="">Semua Unit</option>
+                                @foreach($locations as $location)
+                                    <option value="{{ $location->id }}">{{ $location->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @else
+                        <input type="hidden" id="unitFilter" value="{{ auth()->user()->location_id }}">
+                    @endif
+
+                    <!-- Date Type Filter -->
+                    <div class="relative">
+                        <select id="dateTypeFilter" 
+                            class="search-select pr-10">
+                            <option value="pr">PR (Approved Date)</option>
+                            <option value="po">PO (Approved Date)</option>
+                            <option value="invoice">Invoice (Submittion Date)</option>
+                            <option value="payment">Payment (Payment Date)</option>
+                        </select>
+                    </div>
+
+                    <!-- Date Range Filter -->
                     <div class="relative">
                         <input type="text" id="dateRange" 
                             class="form-input pl-10 pr-4 py-2 w-72" 
                             placeholder="Pilih rentang tanggal..." readonly>
                         <i class="mgc_calendar_line absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
                     </div>
+
+                    <!-- Reset Button -->
                     <button type="button" id="btn-reset-filter"
                         class="btn bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">
                         <i class="mgc_refresh_1_line"></i> Reset
@@ -261,5 +291,9 @@
 @endsection
 
 @section('script')
-    @vite(['resources/js/pages/form-flatpickr.js', 'resources/js/custom/dashboard/index.js'])
+    @vite([
+        // 
+        'resources/js/pages/form-select.js',
+        'resources/js/pages/form-flatpickr.js', 
+        'resources/js/custom/dashboard/index.js'])
 @endsection

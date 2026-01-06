@@ -24,11 +24,22 @@ class PembayaranController extends Controller
      */
     public function data()
     {
-        $payments = Payment::with([
+        $user = auth()->user();
+        
+        $query = Payment::with([
             'invoice.purchaseOrderOnsite.purchaseOrderItem.purchaseOrder',
             'invoice.purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest.location',
             'creator'
-        ])->latest()->get();
+        ]);
+
+        // Filter by user's location_id
+        if ($user && $user->location_id) {
+            $query->whereHas('invoice.purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest', function ($q) use ($user) {
+                $q->where('location_id', $user->location_id);
+            });
+        }
+
+        $payments = $query->latest()->get();
 
         $data = $payments->map(function ($payment, $index) {
             $invoice = $payment->invoice;
@@ -76,14 +87,23 @@ class PembayaranController extends Controller
      */
     public function getInvoices()
     {
-        $invoices = Invoice::whereNotNull('invoice_submitted_at')
+        $user = auth()->user();
+        
+        $query = Invoice::whereNotNull('invoice_submitted_at')
             ->doesntHave('payments')
             ->with([
                 'purchaseOrderOnsite.purchaseOrderItem.purchaseOrder',
                 'purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest.location'
-            ])
-            ->latest()
-            ->get();
+            ]);
+
+        // Filter by user's location_id
+        if ($user && $user->location_id) {
+            $query->whereHas('purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest', function ($q) use ($user) {
+                $q->where('location_id', $user->location_id);
+            });
+        }
+
+        $invoices = $query->latest()->get();
 
         $data = $invoices->map(function ($invoice) {
             $onsite = $invoice->purchaseOrderOnsite ?? null;
@@ -149,6 +169,17 @@ class PembayaranController extends Controller
                 ];
 
                 $payment = Payment::create($paymentData);
+
+                // Update PR Item stage to 7 (Payment Completed)
+                $invoice = Invoice::with('purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem')
+                    ->find($item['invoice_id']);
+                if ($invoice) {
+                    $prItem = $invoice->purchaseOrderOnsite?->purchaseOrderItem?->purchaseRequestItem;
+                    if ($prItem) {
+                        $prItem->update(['current_stage' => 7]);
+                    }
+                }
+
                 $createdPayments[] = $payment;
             }
 
@@ -213,6 +244,38 @@ class PembayaranController extends Controller
     }
 
     /**
+     * Delete single payment dan kembalikan stage ke 5
+     */
+    public function destroy(Payment $pembayaran)
+    {
+        DB::beginTransaction();
+        try {
+            // Get PR Item before delete
+            $payment = $pembayaran->load('invoice.purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem');
+            $prItem = $payment->invoice?->purchaseOrderOnsite?->purchaseOrderItem?->purchaseRequestItem;
+            
+            // Delete payment
+            $pembayaran->delete();
+
+            // Kembalikan current_stage ke 5 (Invoice Submitted)
+            if ($prItem) {
+                $prItem->update(['current_stage' => 5]);
+            }
+
+            DB::commit();
+            return response()->json([
+                'message' => 'Pembayaran berhasil dihapus'
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Gagal menghapus pembayaran',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Delete multiple payments.
      */
     public function bulkDestroy(Request $request)
@@ -225,10 +288,33 @@ class PembayaranController extends Controller
             ], 400);
         }
 
-        Payment::whereIn('id', $ids)->delete();
+        DB::beginTransaction();
+        try {
+            // Get affected PR Items before delete
+            $payments = Payment::with('invoice.purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem')
+                ->whereIn('id', $ids)
+                ->get();
+            
+            foreach ($payments as $payment) {
+                $prItem = $payment->invoice?->purchaseOrderOnsite?->purchaseOrderItem?->purchaseRequestItem;
+                if ($prItem) {
+                    // Kembalikan current_stage ke 5 (Invoice Submitted)
+                    $prItem->update(['current_stage' => 5]);
+                }
+            }
 
-        return response()->json([
-            'message' => count($ids) . ' pembayaran berhasil dihapus'
-        ]);
+            Payment::whereIn('id', $ids)->delete();
+
+            DB::commit();
+            return response()->json([
+                'message' => count($ids) . ' pembayaran berhasil dihapus'
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Gagal menghapus pembayaran',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

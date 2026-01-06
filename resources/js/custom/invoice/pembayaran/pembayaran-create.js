@@ -10,6 +10,7 @@ let itemCounter = 0;
 let invoiceCache = [];
 let flatpickrInstances = [];
 let defaultPaymentDateInstance = null;
+let isSubmitting = false; // Flag to prevent double submit
 
 /**
  * Format number as Indonesian currency without symbol
@@ -597,13 +598,23 @@ function calculateAllSLA() {
  * Setup form submit
  */
 function setupFormSubmit() {
-    $('#form-create-pembayaran').on('submit', async function(e) {
+    // Remove existing handler to prevent double binding
+    $('#form-create-pembayaran').off('submit').on('submit', async function(e) {
         e.preventDefault();
+        
+        // Prevent double submit
+        if (isSubmitting) {
+            console.log('Form is already being submitted...');
+            return false;
+        }
         
         // Validate form
         if (!validateForm()) {
-            return;
+            return false;
         }
+        
+        // Set submitting flag
+        isSubmitting = true;
         
         const formData = new FormData(this);
         
@@ -627,6 +638,7 @@ function setupFormSubmit() {
         const $submitBtn = $(this).find('button[type="submit"]');
         const originalText = $submitBtn.html();
         
+        // Disable button immediately
         $submitBtn.prop('disabled', true).html('<i class="mgc_loading_line animate-spin me-2"></i>Menyimpan...');
         
         try {
@@ -654,7 +666,10 @@ function setupFormSubmit() {
             
         } catch (error) {
             showError(error.message);
+            
+            // Re-enable button on error
             $submitBtn.prop('disabled', false).html(originalText);
+            isSubmitting = false;
         }
     });
 }

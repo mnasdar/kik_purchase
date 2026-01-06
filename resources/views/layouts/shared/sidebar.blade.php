@@ -109,6 +109,13 @@
                 </ul>
             </li>
 
+            <li class="menu-item">
+                <a href="{{ route('export.index') }}" class="menu-link">
+                    <span class="menu-icon"><i class="mgc_file_export_line"></i></span>
+                    <span class="menu-text"> Export Data </span>
+                </a>
+            </li>
+
             <li class="menu-title">Manajemen Akses</li>
 
             <li class="menu-item">
