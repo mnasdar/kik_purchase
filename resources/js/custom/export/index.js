@@ -160,7 +160,8 @@ function initFormSubmit() {
 
         const startDate = $('#start_date').val();
         const endDate = $('#end_date').val();
-        const filterType = $('input[name="filter_type"]:checked').val();
+        const filterType = $('#filter_type').val();
+        const locationId = $('#export_location').val();
 
         if (!startDate || !endDate) {
             showError('Mohon pilih rentang tanggal', 'Validasi Error');
@@ -180,8 +181,11 @@ function initFormSubmit() {
         const originalText = $btnExport.html();
         $btnExport.prop('disabled', true).html('<i class="mgc_loading_line animate-spin"></i> Mengexport...');
 
-        // Build export URL
-        const exportUrl = route('export.data') + '?start_date=' + startDate + '&end_date=' + endDate + '&filter_type=' + filterType;
+        // Build export URL with location parameter
+        let exportUrl = route('export.data') + '?start_date=' + startDate + '&end_date=' + endDate + '&filter_type=' + filterType;
+        if (locationId) {
+            exportUrl += '&location_id=' + locationId;
+        }
         
         // Create temporary anchor element for download
         const link = document.createElement('a');
@@ -209,6 +213,17 @@ function initReset() {
         const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         
         dateRangePicker.setDate([firstDayOfMonth, today]);
+        
+        // Reset filter type to default (PR)
+        $('#filter_type').val('pr');
+        
+        // Reset location to default (empty for Super Admin, or user's location for staff)
+        const locationSelect = $('#export_location');
+        if (!locationSelect.is(':disabled')) {
+            // Super Admin - reset to "Semua Lokasi" (empty value)
+            locationSelect.val('');
+        }
+        // For disabled select (staff), don't change the value
         
         showToast('Form direset ke default (bulan ini)', 'info', 1500);
     });

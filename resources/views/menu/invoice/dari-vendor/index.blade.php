@@ -33,8 +33,8 @@
         <div class="card bg-green-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
             <div class="p-4 flex items-center justify-between">
                 <div>
-                    <p class="text-sm opacity-90">Diterima</p>
-                    <h3 class="text-2xl font-bold">{{ $receivedInvoices }}</h3>
+                    <p class="text-sm opacity-90">Total Item Diterima</p>
+                    <h3 class="text-2xl font-bold">{{ $totalReceivedItems }}</h3>
                 </div>
                 <i class="mgc_check_circle_line text-3xl opacity-80"></i>
             </div>
@@ -42,8 +42,8 @@
         <div class="card bg-blue-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
             <div class="p-4 flex items-center justify-between">
                 <div>
-                    <p class="text-sm opacity-90">Diajukan</p>
-                    <h3 class="text-2xl font-bold">{{ $submittedInvoices }}</h3>
+                    <p class="text-sm opacity-90">Total Item Belum Diajukan</p>
+                    <h3 class="text-2xl font-bold">{{ $totalUnsubmittedItems }}</h3>
                 </div>
                 <i class="mgc_send_line text-3xl opacity-80"></i>
             </div>
@@ -51,7 +51,7 @@
         <div class="card bg-orange-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
             <div class="p-4 flex items-center justify-between">
                 <div>
-                    <p class="text-sm opacity-90">Recent (30d)</p>
+                    <p class="text-sm opacity-90">Total Invoice 30 Hari</p>
                     <h3 class="text-2xl font-bold">{{ $recentInvoices }}</h3>
                 </div>
                 <i class="mgc_calendar_line text-3xl opacity-80"></i>
@@ -137,6 +137,24 @@
                             Hapus
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Detail Invoice Modal -->
+    <div id="detailInvoiceModal" class="fixed inset-0 z-50 hidden overflow-y-auto transition-opacity duration-300 ease-out" style="opacity: 0;">
+        <div id="detailInvoiceModalBackdrop" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity duration-300 ease-out" style="opacity: 0;"></div>
+        <div class="relative min-h-screen flex items-center justify-center px-4">
+            <div id="detailInvoiceModalContent" class="relative w-full max-w-3xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl transition-all duration-300 ease-out transform" style="transform: scale(0.95); opacity: 0;">
+                <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detail Invoice & PO</h3>
+                    <button type="button" id="detailInvoiceModalClose" class="btn bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">
+                        <i class="mgc_close_line"></i>
+                    </button>
+                </div>
+                <div class="p-6" id="detailInvoiceContent">
+                    <!-- populated by JS -->
                 </div>
             </div>
         </div>

@@ -21,40 +21,63 @@
 
     <!-- Statistik ringkas -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <!-- Total PO Onsite -->
         <div class="card bg-primary text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-            <div class="p-4 flex items-center justify-between">
-                <div>
-                    <p class="text-sm opacity-90">Total Onsite</p>
-                    <h3 class="text-2xl font-bold">{{ $totalOnsites }}</h3>
+            <div class="p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white/80 text-xs font-medium mb-1">Total PO Onsite</p>
+                        <h3 class="text-2xl font-bold text-white">{{ $totalOnsites ?? 0 }}</h3>
+                    </div>
+                    <div class="text-4xl">
+                        <i class="mgc_file_check_line"></i>
+                    </div>
                 </div>
-                <i class="mgc_file_check_line text-3xl opacity-80"></i>
             </div>
         </div>
-        <div class="card bg-green-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-            <div class="p-4 flex items-center justify-between">
-                <div>
-                    <p class="text-sm opacity-90">Completed</p>
-                    <h3 class="text-2xl font-bold">{{ $completedOnsites }}</h3>
-                </div>
-                <i class="mgc_check_circle_line text-3xl opacity-80"></i>
-            </div>
-        </div>
-        <div class="card bg-orange-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-            <div class="p-4 flex items-center justify-between">
-                <div>
-                    <p class="text-sm opacity-90">Pending</p>
-                    <h3 class="text-2xl font-bold">{{ $pendingOnsites }}</h3>
-                </div>
-                <i class="mgc_time_line text-3xl opacity-80"></i>
-            </div>
-        </div>
+
+        <!-- Total Item PO Onsite -->
         <div class="card bg-blue-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-            <div class="p-4 flex items-center justify-between">
-                <div>
-                    <p class="text-sm opacity-90">Recent (30d)</p>
-                    <h3 class="text-2xl font-bold">{{ $recentOnsites }}</h3>
+            <div class="p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white/80 text-xs font-medium mb-1">Total Item Onsite</p>
+                        <h3 class="text-2xl font-bold text-white">{{ $totalOnsiteItems ?? 0 }}</h3>
+                    </div>
+                    <div class="text-4xl">
+                        <i class="mgc_shopping_bag_3_line"></i>
+                    </div>
                 </div>
-                <i class="mgc_calendar_line text-3xl opacity-80"></i>
+            </div>
+        </div>
+
+        <!-- PO Belum Diterima -->
+        <div class="card bg-warning text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+            <div class="p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white/80 text-xs font-medium mb-1">Belum Diterima Dari Vendor</p>
+                        <h3 class="text-2xl font-bold text-white">{{ $totalPONotReceived ?? 0 }}</h3>
+                    </div>
+                    <div class="text-4xl">
+                        <i class="mgc_alert_line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Onsite (30d) -->
+        <div class="card bg-green-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+            <div class="p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white/80 text-xs font-medium mb-1">Onsite (30 Hari)</p>
+                        <h3 class="text-2xl font-bold text-white">{{ $recentOnsites ?? 0 }}</h3>
+                    </div>
+                    <div class="text-4xl">
+                        <i class="mgc_time_line"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

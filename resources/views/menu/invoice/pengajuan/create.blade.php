@@ -1,30 +1,20 @@
-@extends('layouts.vertical', ['title' => 'Tambah Pembayaran', 'sub_title' => 'Invoice'])
+@extends('layouts.vertical', ['title' => 'Tambah Pengajuan', 'sub_title' => 'Invoice'])
 
 @section('css')
     @vite(['node_modules/flatpickr/dist/flatpickr.min.css'])
 @endsection
 
 @section('content')
-    <!-- Full Page Loading Overlay -->
-    <div id="invoice-page-loading" class="fixed inset-0 z-[9999] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div class="flex flex-col items-center gap-4">
-            <div class="inline-flex">
-                <div class="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
-            </div>
-            <p class="text-white font-medium text-lg">Memuat data invoice...</p>
-        </div>
-    </div>
-
     <!-- Header Section -->
     <div class="flex flex-col gap-4 mb-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                     <i class="mgc_add_line text-3xl"></i>
-                    <span>Tambah Pembayaran</span>
+                    <span>Tambah Pengajuan Invoice</span>
                 </h1>
                 <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                    Form untuk menambahkan pembayaran invoice
+                    Form untuk mengajukan invoice ke finance
                 </p>
             </div>
         </div>
@@ -33,23 +23,18 @@
     <!-- Form Card -->
     <div class="card">
         <div class="card-header">
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-white">Form Pembayaran</h4>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-white">Form Pengajuan</h4>
         </div>
         <div class="p-6">
-            <form id="form-create-pembayaran" method="POST" action="{{ route('pembayaran.store') }}">
+            <form id="form-create-pengajuan" method="POST" action="{{ route('pengajuan.bulk-submit') }}">
                 @csrf
 
-                <!-- Payment Info -->
+                <!-- Submission Info -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div>
-                        <label for="payment_number" class="form-label">Payment Number</label>
-                        <input type="text" id="payment_number" name="payment_number" class="form-input" placeholder="Masukkan nomor pembayaran">
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Opsional. Nomor pembayaran untuk semua invoice.</p>
-                    </div>
-                    <div>
-                        <label for="payment_date" class="form-label">Payment Date <span class="text-red-500">*</span></label>
-                        <input type="text" id="payment_date" name="payment_date" required class="form-input flatpickr-payment-date" placeholder="Pilih tanggal pembayaran">
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Tanggal pembayaran untuk semua invoice. SLA akan dihitung otomatis.</p>
+                        <label for="invoice_submitted_at" class="form-label">Tanggal Pengajuan <span class="text-red-500">*</span></label>
+                        <input type="text" id="invoice_submitted_at" name="invoice_submitted_at" required class="form-input flatpickr-submit-date" placeholder="Pilih tanggal pengajuan">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Tanggal pengajuan untuk semua invoice. SLA akan dihitung otomatis.</p>
                     </div>
                 </div>
 
@@ -57,7 +42,7 @@
                 <div class="border-t pt-6">
                     <div class="flex justify-between items-center mb-4">
                         <div class="flex items-center gap-3">
-                            <h5 class="text-lg font-semibold text-gray-800 dark:text-white">Invoice untuk Dibayar</h5>
+                            <h5 class="text-lg font-semibold text-gray-800 dark:text-white">Invoice untuk Diajukan</h5>
                             <button type="button" id="btn-delete-selected-items"
                                 class="btn btn-sm bg-red-500 text-white hover:bg-red-600 hidden">
                                 <i class="mgc_delete_2_line me-2"></i>
@@ -72,7 +57,7 @@
                     </div>
 
                     <div class="overflow-x-auto">
-                        <table class="w-full border-collapse" id="pembayaran-items-table">
+                        <table class="w-full border-collapse" id="pengajuan-items-table">
                             <thead>
                                 <tr class="bg-gray-50 dark:bg-gray-800">
                                     <th class="border px-2 py-2 text-center w-10">
@@ -86,14 +71,15 @@
                                     <th class="border px-2 py-2 text-right min-w-[100px]">Unit Price</th>
                                     <th class="border px-2 py-2 text-center min-w-[60px]">Qty</th>
                                     <th class="border px-2 py-2 text-right min-w-[120px]">Amount</th>
-                                    <th class="border px-2 py-2 text-center min-w-[100px]">Invoice Submit</th>
-                                    <th class="border px-2 py-2 text-center min-w-[100px]">SLA (Hari Kerja)</th>
-                                    <th class="border px-2 py-2 text-center min-w-[80px]">Aksi</th>
+                                    <th class="border px-2 py-2 text-center min-w-[100px]">Invoice Received</th>
+                                        <th class="border px-2 py-2 text-center min-w-[100px]">SLA Target</th>
+                                        <th class="border px-2 py-2 text-center min-w-[120px]">SLA Realisasi</th>
+                                        <th class="border px-2 py-2 text-center min-w-[80px]">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody id="pembayaran-items-container">
+                            <tbody id="pengajuan-items-container">
                                 <tr class="text-center text-gray-500">
-                                    <td colspan="12" class="border px-4 py-8">
+                                        <td colspan="13" class="border px-4 py-8">
                                         <div class="flex flex-col items-center gap-2">
                                             <i class="mgc_inbox_line text-4xl text-gray-400"></i>
                                             <p class="text-sm">Belum ada invoice yang dipilih</p>
@@ -108,13 +94,13 @@
 
                 <!-- Form Actions -->
                 <div class="flex justify-end gap-2 mt-6 pt-6 border-t">
-                    <a href="{{ route('pembayaran.index') }}" class="btn bg-gray-500 text-white hover:bg-gray-600">
+                    <a href="{{ route('pengajuan.index') }}" class="btn bg-gray-500 text-white hover:bg-gray-600">
                         <i class="mgc_close_line me-2"></i>
                         Batal
                     </a>
                     <button type="submit" class="btn bg-success text-white hover:bg-success-600">
                         <i class="mgc_check_line me-2"></i>
-                        Simpan Pembayaran
+                        Simpan Pengajuan
                     </button>
                 </div>
             </form>
@@ -122,44 +108,45 @@
     </div>
 
     <!-- Item Row Template -->
-    <template id="pembayaran-item-row-template">
-        <tr class="pembayaran-item-row">
+    <template id="pengajuan-item-row-template">
+        <tr class="pengajuan-item-row">
             <td class="border px-2 py-2 text-center align-middle">
                 <input type="checkbox" class="form-checkbox rounded text-primary item-checkbox">
             </td>
-            <td class="border px-2 py-2 text-center align-middle pembayaran-item-number">1</td>
+            <td class="border px-2 py-2 text-center align-middle pengajuan-item-number">1</td>
             <td class="border px-2 py-2 text-left align-middle">
-                <input type="hidden" name="items[0][invoice_id]" class="pembayaran-invoice-id" />
-                <span class="text-sm font-semibold text-blue-600 dark:text-blue-400 pembayaran-invoice-number">-</span>
+                <input type="hidden" name="ids[]" class="pengajuan-invoice-id" />
+                <span class="text-sm font-semibold text-blue-600 dark:text-blue-400 pengajuan-invoice-number">-</span>
             </td>
             <td class="border px-2 py-2 text-left align-middle">
-                <span class="text-sm pembayaran-po-number">-</span>
+                <span class="text-sm pengajuan-po-number">-</span>
             </td>
             <td class="border px-2 py-2 text-left align-middle">
-                <span class="text-sm pembayaran-pr-number">-</span>
+                <span class="text-sm pengajuan-pr-number">-</span>
             </td>
             <td class="border px-2 py-2 text-left align-middle">
-                <span class="text-sm pembayaran-item-desc">-</span>
+                <span class="text-sm pengajuan-item-desc">-</span>
             </td>
             <td class="border px-2 py-2 text-right align-top">
-                <span class="text-sm pembayaran-unit-price">-</span>
+                <span class="text-sm pengajuan-unit-price">-</span>
             </td>
             <td class="border px-2 py-2 text-center align-top">
-                <span class="text-sm pembayaran-qty">-</span>
+                <span class="text-sm pengajuan-qty">-</span>
             </td>
             <td class="border px-2 py-2 text-right align-top">
-                <span class="text-sm font-semibold pembayaran-amount">-</span>
+                <span class="text-sm font-semibold pengajuan-amount">-</span>
             </td>
             <td class="border px-2 py-2 text-center align-top">
-                <input type="hidden" name="items[0][invoice_submitted_at]" class="pembayaran-submitted-at" />
-                <span class="text-sm pembayaran-submitted-date">-</span>
+                <span class="text-sm pengajuan-received-date">-</span>
             </td>
             <td class="border px-2 py-2 text-center align-top">
-                <input type="hidden" name="items[0][sla_payment]" class="pembayaran-sla-input" />
-                <span class="text-sm font-semibold text-blue-600 dark:text-blue-400 pembayaran-sla-display">-</span>
+                <span class="text-sm font-semibold text-blue-600 dark:text-blue-400 pengajuan-sla-target">-</span>
             </td>
+                <td class="border px-2 py-2 text-center align-top">
+                    <span class="text-sm font-semibold text-amber-600 dark:text-amber-400 pengajuan-sla-realisasi">-</span>
+                </td>
             <td class="border px-2 py-2 text-center align-top">
-                <button type="button" class="pembayaran-btn-remove-item text-red-500 hover:text-red-700">
+                <button type="button" class="pengajuan-btn-remove-item text-red-500 hover:text-red-700">
                     <i class="mgc_delete_2_line text-xl"></i>
                 </button>
             </td>
@@ -172,8 +159,8 @@
         <div class="relative mx-auto mt-12 max-w-6xl rounded-lg bg-white dark:bg-slate-800 shadow-xl">
             <div class="flex items-center justify-between border-b px-5 py-3">
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Pilih Invoice untuk Pembayaran</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Pilih invoice yang sudah diajukan dan belum dibayar</p>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Pilih Invoice untuk Pengajuan</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Pilih invoice yang sudah diterima dan belum diajukan</p>
                 </div>
                 <button type="button" id="btn-close-invoice-modal"
                     class="text-gray-500 hover:text-gray-800 dark:hover:text-white">
@@ -194,7 +181,7 @@
                     <table class="w-full text-sm">
                         <thead class="bg-gray-50 dark:bg-slate-700/60">
                             <tr>
-                                <th class="px-3 py-2 text-center w-10">
+                                <th class="px-3 py-2 text-center font-semibold text-gray-700 dark:text-gray-200 w-10">
                                     <input type="checkbox" id="invoice-select-all" class="form-checkbox rounded text-primary">
                                 </th>
                                 <th class="px-3 py-2 text-left font-semibold text-gray-700 dark:text-gray-200">Invoice Number</th>
@@ -210,8 +197,8 @@
                     </table>
                 </div>
 
-                <!-- Pagination Controls -->
-                <div class="mt-4 flex items-center justify-between">
+                <!-- Pagination Controls & Save Button -->
+                <div class="mt-4 flex items-center justify-between gap-4">
                     <div class="flex gap-2">
                         <button type="button" id="btn-invoice-prev"
                             class="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
@@ -227,23 +214,10 @@
                         Halaman <span id="invoice-current-page">1</span> dari <span id="invoice-total-pages">1</span> | Per halaman:
                         <span id="invoice-per-page">10</span>
                     </div>
-                </div>
-
-                <!-- Modal Footer -->
-                <div class="border-t mt-4 pt-4 flex items-center justify-between">
-                    <div class="text-sm text-gray-600 dark:text-gray-400">
-                        <span id="invoice-selected-count">0</span> invoice terpilih
-                    </div>
-                    <div class="flex gap-2">
-                        <button type="button" id="btn-close-invoice-modal-footer"
-                            class="btn bg-gray-500 text-white hover:bg-gray-600">
-                            <i class="mgc_close_line me-2"></i>Batal
-                        </button>
-                        <button type="button" id="btn-apply-selected-invoices"
-                            class="btn bg-primary text-white hover:bg-primary-600">
-                            <i class="mgc_check_line me-2"></i>Pilih (<span id="btn-apply-count">0</span>)
-                        </button>
-                    </div>
+                    <button type="button" id="btn-save-invoice-selection" class="btn bg-success text-white hover:bg-success-600 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <i class="mgc_check_line me-2"></i>
+                        Simpan Pilihan
+                    </button>
                 </div>
             </div>
         </div>
@@ -251,5 +225,5 @@
 @endsection
 
 @section('script')
-    @vite(['resources/js/custom/invoice/pembayaran/index.js'])
+    @vite(['resources/js/custom/invoice/pengajuan/pengajuan-create.js'])
 @endsection

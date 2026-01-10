@@ -24,120 +24,48 @@
     <!--- Menu -->
     <div class="srcollbar" data-simplebar>
         <ul class="menu" data-fc-type="accordion">
-            <li class="menu-title">Menu</li>
+            @php
+                $menuService = app(\App\Services\MenuService::class);
+                $menuItems = $menuService->getAccessibleMenuItems();
+            @endphp
 
-            <li class="menu-item">
-                <a href="{{ route('dashboard') }}" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_home_3_line"></i></span>
-                    <span class="menu-text"> Dashboard </span>
-                </a>
-            </li>
-
-            <li class="menu-item">
-                <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_shopping_cart_2_line"></i></span>
-                    <span class="menu-text"> Purchase </span>
-                    <span class="menu-arrow"></span>
-                </a>
-
-                <ul class="sub-menu hidden">
+            @forelse($menuItems as $item)
+                {{-- Menu Title/Divider --}}
+                @if(isset($item['type']) && $item['type'] === 'divider')
+                    <li class="menu-title">{{ $item['title'] }}</li>
+                {{-- Parent Menu with Children --}}
+                @elseif(isset($item['children']) && count($item['children']) > 0)
                     <li class="menu-item">
-                        <a href="{{ route('purchase-request.index') }}" class="menu-link">
-                            <span class="menu-text">PR (Purchase Request)</span>
+                        <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
+                            <span class="menu-icon"><i class="{{ $item['icon'] }}"></i></span>
+                            <span class="menu-text"> {{ $item['title'] }} </span>
+                            <span class="menu-arrow"></span>
+                        </a>
+                        <ul class="sub-menu hidden">
+                            @foreach($item['children'] as $child)
+                                <li class="menu-item">
+                                    <a href="{{ route($child['route']) }}" class="menu-link">
+                                        <span class="menu-text">{{ $child['title'] }}</span>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </li>
+                {{-- Single Menu Item --}}
+                @else
+                    <li class="menu-item">
+                        <a href="{{ route($item['route']) }}" class="menu-link">
+                            <span class="menu-icon"><i class="{{ $item['icon'] }}"></i></span>
+                            <span class="menu-text"> {{ $item['title'] }} </span>
                         </a>
                     </li>
-                    <li class="menu-item">
-                        <a href="{{ route('purchase-order.index') }}" class="menu-link">
-                            <span class="menu-text">PO (Purchase Order)</span>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="{{ route('po-onsite.index') }}" class="menu-link">
-                            <span class="menu-text">PO On Site</span>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            
-            <li class="menu-item">
-                <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_bill_line"></i></span>
-                    <span class="menu-text"> Invoice</span>
-                    <span class="menu-arrow"></span>
-                </a>
-                <ul class="sub-menu hidden">
-                    <li class="menu-item">
-                        <a href="{{ route('dari-vendor.index') }}" class="menu-link">
-                            <span class="menu-text">Dari Vendor</span>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="{{ route('pengajuan.index') }}" class="menu-link">
-                            <span class="menu-text">Pengajuan</span>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="{{ route('pembayaran.index') }}" class="menu-link">
-                            <span class="menu-text">Pembayaran</span>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-
-            <li class="menu-item">
-                <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_settings_1_line"></i></span>
-                    <span class="menu-text"> Konfigurasi </span>
-                    <span class="menu-arrow"></span>
-                </a>
-                <ul class="sub-menu hidden">
-                    <li class="menu-item">
-                        <a href="{{ route('klasifikasi.index') }}" class="menu-link">
-                            <span class="menu-text">Klasifikasi</span>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="{{ route('unit-kerja.index') }}" class="menu-link">
-                            <span class="menu-text">Unit Kerja</span>
-                        </a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="{{ route('supplier.index') }}" class="menu-link">
-                            <span class="menu-text">Supplier</span>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-
-            <li class="menu-item">
-                <a href="{{ route('export.index') }}" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_file_export_line"></i></span>
-                    <span class="menu-text"> Export Data </span>
-                </a>
-            </li>
-
-            <li class="menu-title">Manajemen Akses</li>
-
-            <li class="menu-item">
-                <a href="{{ route('roles.index') }}" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_shield_line"></i></span>
-                    <span class="menu-text"> Roles </span>
-                </a>
-            </li>
-
-            <li class="menu-item">
-                <a href="{{ route('users.index') }}" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_user_3_line"></i></span>
-                    <span class="menu-text"> Users </span>
-                </a>
-            </li>
-
-            <li class="menu-item">
-                <a href="{{ route('log.index') }}" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_history_line"></i></span>
-                    <span class="menu-text"> Log Aktivitas </span>
-                </a>
-            </li>
+                @endif
+            @empty
+                <li class="menu-title">Menu</li>
+                <li class="menu-item text-gray-500">
+                    <span class="menu-text text-sm">No accessible menus</span>
+                </li>
+            @endforelse
             
             {{-- <li class="menu-title">Menu</li>
 

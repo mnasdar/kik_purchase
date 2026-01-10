@@ -11,6 +11,7 @@ let invoiceCache = [];
 let flatpickrInstances = [];
 let defaultPaymentDateInstance = null;
 let isSubmitting = false; // Flag to prevent double submit
+let selectedInvoiceIds = new Set();
 
 /**
  * Format number as Indonesian currency without symbol
@@ -19,6 +20,16 @@ function formatCurrencyID(value) {
     if (value === null || value === undefined || value === '') return '-';
     const num = Number(value) || 0;
     return new Intl.NumberFormat('id-ID').format(num);
+}
+
+function syncSelectedInvoiceIdsFromTable() {
+    selectedInvoiceIds.clear();
+    $('#pembayaran-items-container .pembayaran-invoice-id').each(function() {
+        const val = Number($(this).val());
+        if (!Number.isNaN(val) && val > 0) {
+            selectedInvoiceIds.add(val);
+        }
+    });
 }
 
 /**
@@ -60,6 +71,7 @@ export function initPembayaranCreate() {
     setupDynamicItems();
     setupInvoicePicker();
     setupPaymentDate();
+    syncSelectedInvoiceIdsFromTable();
 }
 
 /**
@@ -84,6 +96,7 @@ function setupDynamicItems() {
         $row.remove();
         renumberItems();
         checkAndShowEmptyState();
+        syncSelectedInvoiceIdsFromTable();
         
         // Re-render invoice list to show newly available invoice
         if (invoiceCache.length > 0) {
@@ -171,6 +184,7 @@ async function deleteSelectedItems() {
     selectedRows.remove();
     
     renumberItems();
+    syncSelectedInvoiceIdsFromTable();
     
     // Reset checkboxes
     $('#item-select-all').prop('checked', false);
@@ -192,32 +206,49 @@ async function deleteSelectedItems() {
  */
 function setupInvoicePicker() {
     $(document).off('click', '#btn-pick-invoice').on('click', '#btn-pick-invoice', async function() {
+        syncSelectedInvoiceIdsFromTable();
+        showInvoiceLoadingOverlay();
         await loadInvoiceList();
-        showInvoiceModal();
+        refreshInvoiceCheckboxVisual();
+        updateSelectedCountDisplay();
     });
 
     $(document).off('click', '#btn-close-invoice-modal').on('click', '#btn-close-invoice-modal', function() {
         hideInvoiceModal();
     });
 
-    $(document).off('click', '.btn-select-invoice').on('click', '.btn-select-invoice', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const $btn = $(this);
-        // Prevent double-click
-        if ($btn.prop('disabled')) return;
-        $btn.prop('disabled', true);
-        
-        const invoiceId = $btn.data('invoice-id');
-        const invoice = invoiceCache.find(inv => inv.id == invoiceId);
-        if (invoice) {
-            addInvoiceToTable(invoice);
-            hideInvoiceModal();
+    $(document).off('click', '#btn-close-invoice-modal-footer').on('click', '#btn-close-invoice-modal-footer', function() {
+        hideInvoiceModal();
+    });
+
+    $(document).off('change', '.invoice-row-checkbox').on('change', '.invoice-row-checkbox', function() {
+        const invoiceId = Number($(this).data('invoice-id'));
+        if (this.checked) {
+            selectedInvoiceIds.add(invoiceId);
+        } else {
+            selectedInvoiceIds.delete(invoiceId);
         }
-        
-        // Re-enable button after a short delay
-        setTimeout(() => $btn.prop('disabled', false), 500);
+        refreshInvoiceSelectAllState();
+        updateSelectedCountDisplay();
+    });
+
+    $(document).off('change', '#invoice-select-all').on('change', '#invoice-select-all', function() {
+        const visibleCheckboxes = $('.invoice-row-checkbox');
+        const shouldCheck = $(this).is(':checked');
+        visibleCheckboxes.each(function() {
+            const invoiceId = Number($(this).data('invoice-id'));
+            if (shouldCheck) {
+                selectedInvoiceIds.add(invoiceId);
+            } else {
+                selectedInvoiceIds.delete(invoiceId);
+            }
+            $(this).prop('checked', shouldCheck);
+        });
+        updateSelectedCountDisplay();
+    });
+
+    $(document).off('click', '#btn-apply-selected-invoices').on('click', '#btn-apply-selected-invoices', function() {
+        applySelectedInvoices();
     });
 }
 
@@ -247,26 +278,79 @@ async function loadInvoiceList() {
     } catch (error) {
         console.error('Error loading invoices:', error);
         showError('Gagal memuat data invoice');
+        hideInvoiceLoadingOverlay();
     }
 }
 
-function renderInvoiceList(list) {
-    // Store full list for search functionality
-    fullInvoiceList = list;
-    
-    // Get existing invoice_ids in the table
-    const existingInvoiceIds = [];
+function updateSelectedCountDisplay() {
+    // Count only non-existing invoices in selection
+    const existingIds = new Set();
     $('#pembayaran-items-container .pembayaran-invoice-id').each(function() {
-        const rawId = $(this).val();
-        const invoiceId = Number(rawId);
-        if (!Number.isNaN(invoiceId) && invoiceId > 0) {
-            existingInvoiceIds.push(invoiceId);
+        const val = Number($(this).val());
+        if (!Number.isNaN(val) && val > 0) {
+            existingIds.add(val);
+        }
+    });
+    
+    const newCount = Array.from(selectedInvoiceIds).filter(id => !existingIds.has(id)).length;
+    $('#invoice-selected-count').text(newCount);
+    $('#btn-apply-count').text(newCount);
+    $('#btn-apply-selected-invoices').prop('disabled', newCount === 0);
+}
+
+function applySelectedInvoices() {
+    const existingIds = new Set();
+    $('#pembayaran-items-container .pembayaran-invoice-id').each(function() {
+        const val = Number($(this).val());
+        if (!Number.isNaN(val) && val > 0) {
+            existingIds.add(val);
         }
     });
 
-    // Filter invoices that haven't been added yet
-    filteredInvoiceList = list.filter(invoice => !existingInvoiceIds.includes(invoice.id));
+    const toAdd = [];
+    selectedInvoiceIds.forEach(invoiceId => {
+        if (!existingIds.has(invoiceId)) {
+            const invoice = invoiceCache.find(inv => Number(inv.id) === invoiceId);
+            if (invoice) {
+                toAdd.push(invoice);
+            }
+        }
+    });
 
+    if (toAdd.length === 0) {
+        showError('Pilih minimal 1 invoice baru');
+        return;
+    }
+
+    // Add only new invoices to table
+    toAdd.forEach(invoice => {
+        addInvoiceToTable(invoice);
+    });
+
+    // Sync and refresh modal display
+    syncSelectedInvoiceIdsFromTable();
+    renderInvoiceList(invoiceCache);
+    updateSelectedCountDisplay();
+    hideInvoiceModal();
+}
+
+function renderInvoiceList(list) {
+    // Get existing invoice ids from table
+    const existingIds = new Set();
+    $('#pembayaran-items-container .pembayaran-invoice-id').each(function() {
+        const val = Number($(this).val());
+        if (!Number.isNaN(val) && val > 0) {
+            existingIds.add(val);
+        }
+    });
+
+    // Show all invoices, mark existing ones in selection
+    fullInvoiceList = list;
+    filteredInvoiceList = [...fullInvoiceList];
+    
+    // Ensure existing invoices are marked in selectedInvoiceIds
+    existingIds.forEach(id => selectedInvoiceIds.add(id));
+    
     // Reset to first page when loading new list
     currentInvoicePage = 1;
     
@@ -277,7 +361,7 @@ function renderInvoiceList(list) {
         $('#invoice-list-body').html(`
             <tr>
                 <td colspan="8" class="px-3 py-4 text-center text-gray-500">
-                    Tidak ada invoice yang tersedia atau semua sudah ditambahkan
+                    Tidak ada invoice yang tersedia
                 </td>
             </tr>
         `);
@@ -288,6 +372,8 @@ function renderInvoiceList(list) {
     renderInvoicePage(currentInvoicePage);
     setupInvoiceSearch();
     setupInvoicePaginationButtons();
+    hideInvoiceLoadingOverlay();
+    showInvoiceModal();
 }
 
 function renderInvoicePage(pageNum) {
@@ -309,9 +395,26 @@ function renderInvoicePage(pageNum) {
         return;
     }
 
+    // Get existing ids for this page render
+    const existingIds = new Set();
+    $('#pembayaran-items-container .pembayaran-invoice-id').each(function() {
+        const val = Number($(this).val());
+        if (!Number.isNaN(val) && val > 0) {
+            existingIds.add(val);
+        }
+    });
+
     displayedInvoices.forEach(invoice => {
+        const isChecked = selectedInvoiceIds.has(Number(invoice.id));
+        const isExisting = existingIds.has(Number(invoice.id));
+        const disabledAttr = isExisting ? 'disabled' : '';
+        const rowClass = isExisting ? 'bg-gray-100 dark:bg-slate-700/50 opacity-60' : 'hover:bg-gray-50 dark:hover:bg-slate-700/30';
+        
         const row = `
-            <tr class="hover:bg-gray-50 dark:hover:bg-slate-700/30">
+            <tr class="${rowClass}">
+                <td class="px-3 py-2 text-center">
+                    <input type="checkbox" class="form-checkbox rounded text-primary invoice-row-checkbox" data-invoice-id="${invoice.id}" ${isChecked ? 'checked' : ''} ${disabledAttr} title="${isExisting ? 'Sudah ditambahkan' : ''}">
+                </td>
                 <td class="px-3 py-2 text-left">
                     <span class="font-medium text-blue-600 dark:text-blue-400">${invoice.invoice_number}</span>
                 </td>
@@ -321,20 +424,18 @@ function renderInvoicePage(pageNum) {
                 <td class="px-3 py-2 text-right">${formatCurrencyID(invoice.unit_price)}</td>
                 <td class="px-3 py-2 text-center">${invoice.quantity ?? '-'}</td>
                 <td class="px-3 py-2 text-right font-semibold">${formatCurrencyID(invoice.amount)}</td>
-                <td class="px-3 py-2 text-center">
-                    <button type="button" class="btn-select-invoice btn btn-sm bg-primary text-white hover:bg-primary-600"
-                        data-invoice-id="${invoice.id}">
-                        <i class="mgc_check_line me-1"></i>Pilih
-                    </button>
-                </td>
             </tr>
         `;
         $body.append(row);
     });
 
+    // Re-attach checkbox handlers
+    attachInvoiceCheckboxHandlers();
+
     // Update display counters
     $('#invoice-count').text(displayedInvoices.length);
     updateInvoicePaginationControls();
+    refreshInvoiceSelectAllState();
 }
 
 function updateInvoicePaginationControls() {
@@ -349,28 +450,52 @@ function updateInvoicePaginationControls() {
     $('#btn-invoice-next').prop('disabled', currentInvoicePage >= totalPages);
 }
 
+function attachInvoiceCheckboxHandlers() {
+    $(document).off('change', '.invoice-row-checkbox').on('change', '.invoice-row-checkbox', function(e) {
+        // Don't allow unchecking disabled (existing) invoices
+        if ($(this).is(':disabled')) {
+            e.preventDefault();
+            return false;
+        }
+
+        const invoiceId = Number($(this).data('invoice-id'));
+        if (this.checked) {
+            selectedInvoiceIds.add(invoiceId);
+        } else {
+            selectedInvoiceIds.delete(invoiceId);
+        }
+        refreshInvoiceSelectAllState();
+        updateSelectedCountDisplay();
+    });
+}
+
+
+function refreshInvoiceSelectAllState() {
+    const checkboxes = $('.invoice-row-checkbox');
+    if (!checkboxes.length) {
+        $('#invoice-select-all').prop('checked', false);
+        return;
+    }
+    const checked = $('.invoice-row-checkbox:checked').length;
+    $('#invoice-select-all').prop('checked', checked > 0 && checked === checkboxes.length);
+}
+
+function refreshInvoiceCheckboxVisual() {
+    $('.invoice-row-checkbox').each(function() {
+        const id = Number($(this).data('invoice-id'));
+        $(this).prop('checked', selectedInvoiceIds.has(id));
+    });
+    refreshInvoiceSelectAllState();
+}
+
 function setupInvoiceSearch() {
     $(document).off('input', '#invoice-search-input').on('input', '#invoice-search-input', function() {
         const searchTerm = $(this).val().toLowerCase().trim();
-        
-        // Get existing invoice_ids in the table
-        const existingInvoiceIds = [];
-        $('#pembayaran-items-container .pembayaran-invoice-id').each(function() {
-            const rawId = $(this).val();
-            const invoiceId = Number(rawId);
-            if (!Number.isNaN(invoiceId) && invoiceId > 0) {
-                existingInvoiceIds.push(invoiceId);
-            }
-        });
 
         if (searchTerm === '') {
-            // Show all available invoices
-            filteredInvoiceList = fullInvoiceList.filter(invoice => !existingInvoiceIds.includes(Number(invoice.id)));
+            filteredInvoiceList = [...fullInvoiceList];
         } else {
-            // Filter by search term
             filteredInvoiceList = fullInvoiceList.filter(invoice => {
-                if (existingInvoiceIds.includes(Number(invoice.id))) return false;
-                
                 return (
                     (invoice.invoice_number || '').toLowerCase().includes(searchTerm) ||
                     (invoice.po_number || '').toLowerCase().includes(searchTerm) ||
@@ -413,10 +538,18 @@ function hideInvoiceModal() {
     $('#modal-pick-invoice').addClass('hidden');
 }
 
+function showInvoiceLoadingOverlay() {
+    $('#invoice-page-loading').removeClass('hidden');
+}
+
+function hideInvoiceLoadingOverlay() {
+    $('#invoice-page-loading').addClass('hidden');
+}
+
 /**
  * Add invoice to payment table
  */
-function addInvoiceToTable(invoice) {
+function addInvoiceToTable(invoice, options = {}) {
     // Remove empty state row if exists
     $('#pembayaran-items-container tr.text-center.text-gray-500').remove();
 
@@ -431,20 +564,36 @@ function addInvoiceToTable(invoice) {
     });
 
     if (existingInvoiceIds.includes(Number(invoice.id))) {
-        showError('Invoice ini sudah ditambahkan');
         return;
     }
 
     addItemRow(invoice);
-    
-    // Re-render invoice list to update available counts
-    renderInvoiceList(invoiceCache);
+    selectedInvoiceIds.add(Number(invoice.id));
 
     renumberItems();
     $('#item-select-all').prop('checked', false);
     updateItemDeleteButton();
-    
-    showSuccess(`Invoice ${invoice.invoice_number} berhasil ditambahkan`);
+}
+
+function removeInvoiceFromTable(invoiceId) {
+    $('#pembayaran-items-container tr.pembayaran-item-row').each(function() {
+        const currentId = Number($(this).find('.pembayaran-invoice-id').val());
+        if (currentId === invoiceId) {
+            const rowId = $(this).attr('data-row-id');
+            const fpIndex = flatpickrInstances.findIndex(fp => fp.rowId === rowId);
+            if (fpIndex !== -1) {
+                if (flatpickrInstances[fpIndex].instance) {
+                    flatpickrInstances[fpIndex].instance.destroy();
+                }
+                flatpickrInstances.splice(fpIndex, 1);
+            }
+            $(this).remove();
+        }
+    });
+    renumberItems();
+    checkAndShowEmptyState();
+    syncSelectedInvoiceIdsFromTable();
+    refreshInvoiceCheckboxVisual();
 }
 
 /**

@@ -316,29 +316,134 @@ class ManajemenUserController extends Controller
     }
 
     /**
-     * Get user permissions (role-based + custom)
+     * Get user permissions structured by menu (for modal display)
      */
-    public function getUserPermissions(User $user)
+    public function getPermissionsStructured(User $user)
     {
-        // Permission dari role
         $rolePermissions = $user->getPermissionsViaRoles();
-        
-        // Custom permission langsung di user
         $customPermissions = $user->permissions;
+        $permissions = Permission::all();
         
-        // Semua permission available
-        $allPermissions = Permission::orderBy('category')->orderBy('name')->get();
-        
-        // Group by category
-        $categories = $allPermissions->pluck('category')->unique()->filter()->values();
+        // Permission structure sesuai menu sidebar
+        $structured = [
+            [
+                'menu' => 'Dashboard',
+                'icon' => 'mgc_home_3_line',
+                'order' => 1,
+                'permissions' => $permissions->where('category', 'Dashboard')->values()->all(),
+                'rolePermissions' => $rolePermissions->where('category', 'Dashboard')->values()->all(),
+            ],
+            [
+                'menu' => 'Purchase',
+                'icon' => 'mgc_shopping_cart_2_line',
+                'order' => 2,
+                'submenus' => [
+                    [
+                        'submenu' => 'PR (Purchase Request)',
+                        'permissions' => $permissions->filter(function($p) {
+                            return $p->category === 'Purchase' && strpos($p->name, 'purchase-requests') !== false;
+                        })->values()->all(),
+                    ],
+                    [
+                        'submenu' => 'PO (Purchase Order)',
+                        'permissions' => $permissions->filter(function($p) {
+                            return $p->category === 'Purchase' && strpos($p->name, 'purchase-orders') !== false;
+                        })->values()->all(),
+                    ],
+                ]
+            ],
+            [
+                'menu' => 'Invoice',
+                'icon' => 'mgc_bill_line',
+                'order' => 3,
+                'submenus' => [
+                    [
+                        'submenu' => 'Dari Vendor',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'invoices.dari-vendor') !== false;
+                        })->values()->all(),
+                    ],
+                    [
+                        'submenu' => 'Pengajuan',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'invoices.pengajuan') !== false;
+                        })->values()->all(),
+                    ],
+                    [
+                        'submenu' => 'Pembayaran',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'invoices.pembayaran') !== false;
+                        })->values()->all(),
+                    ],
+                ]
+            ],
+            [
+                'menu' => 'Konfigurasi',
+                'icon' => 'mgc_settings_1_line',
+                'order' => 4,
+                'submenus' => [
+                    [
+                        'submenu' => 'Klasifikasi',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'classifications') !== false;
+                        })->values()->all(),
+                    ],
+                    [
+                        'submenu' => 'Unit Kerja',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'locations') !== false;
+                        })->values()->all(),
+                    ],
+                    [
+                        'submenu' => 'Supplier',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'suppliers') !== false;
+                        })->values()->all(),
+                    ],
+                ]
+            ],
+            [
+                'menu' => 'Export Data',
+                'icon' => 'mgc_file_export_line',
+                'order' => 5,
+                'permissions' => $permissions->filter(function($p) {
+                    return strpos($p->name, 'reports.export') !== false;
+                })->values()->all(),
+            ],
+            [
+                'menu' => 'Manajemen Akses',
+                'icon' => 'mgc_shield_line',
+                'order' => 6,
+                'isDivider' => true,
+                'submenus' => [
+                    [
+                        'submenu' => 'Roles',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'roles') !== false;
+                        })->values()->all(),
+                    ],
+                    [
+                        'submenu' => 'Users',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'users') !== false;
+                        })->values()->all(),
+                    ],
+                    [
+                        'submenu' => 'Activity Log',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'activity-log') !== false;
+                        })->values()->all(),
+                    ],
+                ]
+            ],
+        ];
 
         return response()->json([
             'success' => true,
             'user' => $user->load('roles'),
             'rolePermissions' => $rolePermissions,
             'customPermissions' => $customPermissions,
-            'allPermissions' => $allPermissions,
-            'categories' => $categories,
+            'structured' => $structured,
         ]);
     }
 

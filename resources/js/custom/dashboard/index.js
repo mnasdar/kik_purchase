@@ -11,27 +11,33 @@ import { showToast, showError } from "../../core/notification";
 let dateRangePicker = null;
 let chartInstance = null;
 let chartPoInstance = null;
+let chartCostSavingTotalInstance = null;
+let chartCostSavingPercentInstance = null;
+let chartSlaPercentInstance = null;
 let currentDateRange = {
     start: null,
     end: null
 };
 let currentFilters = {
     dateType: 'pr',
-    locationId: null
+    locationId: null,
+    poAnalyticsType: 'po'
 };
 
 /**
  * Initialize date range picker
  */
 function initDateRangePicker() {
-    // Calculate 30 days ago
+    // Default to last 1 year
     const today = new Date();
-    const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+    const oneYearAgo = new Date(today);
+    oneYearAgo.setFullYear(today.getFullYear() - 1);
 
     dateRangePicker = flatpickr("#dateRange", {
         mode: "range",
         dateFormat: "d M Y",
-        defaultDate: [thirtyDaysAgo, today],
+        defaultDate: [oneYearAgo, today],
+        allowInput: true,   
         onChange: function(selectedDates) {
             if (selectedDates.length === 2) {
                 currentDateRange.start = selectedDates[0];
@@ -341,10 +347,11 @@ function formatDate(date) {
  */
 function resetFilter() {
     const today = new Date();
-    const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
-    
-    dateRangePicker.setDate([thirtyDaysAgo, today]);
-    currentDateRange.start = thirtyDaysAgo;
+    const oneYearAgo = new Date(today);
+    oneYearAgo.setFullYear(today.getFullYear() - 1);
+
+    dateRangePicker.setDate([oneYearAgo, today]);
+    currentDateRange.start = oneYearAgo;
     currentDateRange.end = today;
     
     // Reset other filters
@@ -358,6 +365,7 @@ function resetFilter() {
     
     fetchDashboardData(true);
     fetchPoAnalytics();
+    fetchCostSavingAnalytics();
 }
 
 /**
@@ -365,32 +373,427 @@ function resetFilter() {
  */
 function fetchPoAnalytics() {
     const params = {};
+    const analyticsType = currentFilters.poAnalyticsType || 'po';
     
     if (currentFilters.locationId) {
         params.location_id = currentFilters.locationId;
     }
     
+    const route_name = analyticsType === 'pr' ? 'dashboard.pr-analytics' : 'dashboard.po-analytics';
+    
     $.ajax({
-        url: route('dashboard.po-analytics'),
+        url: route(route_name),
         method: 'GET',
         data: params,
         success: function(response) {
-            renderPoChart(response);
+            renderPoChart(response, analyticsType);
         },
         error: function(xhr) {
-            console.error('PO Analytics fetch error:', xhr);
-            showError('Gagal memuat data analisis PO', 'Error!');
+            console.error('Analytics fetch error:', xhr);
+            showError('Gagal memuat data analisis', 'Error!');
         }
     });
 }
 
 /**
+ * Fetch Cost Saving analytics
+ */
+function fetchCostSavingAnalytics() {
+    const params = {};
+    if (currentDateRange.start) params.start_date = formatDate(currentDateRange.start);
+    if (currentDateRange.end) params.end_date = formatDate(currentDateRange.end);
+    const unitFilter = $('#unitFilter');
+    let locationId = null;
+    if (unitFilter.is('select')) {
+        locationId = unitFilter.val() || null;
+    } else {
+        locationId = unitFilter.val() || null;
+    }
+    if (locationId) params.location_id = locationId;
+
+    $.ajax({
+        url: route('dashboard.cost-saving'),
+        method: 'GET',
+        data: params,
+        success: function(response) {
+            renderCostSavingChart(response);
+        },
+        error: function(xhr) {
+            console.error('Cost Saving fetch error:', xhr.responseJSON || xhr.statusText);
+            if (chartCostSavingTotalInstance) {
+                chartCostSavingTotalInstance.destroy();
+                chartCostSavingTotalInstance = null;
+            }
+            if (chartCostSavingPercentInstance) {
+                chartCostSavingPercentInstance.destroy();
+                chartCostSavingPercentInstance = null;
+            }
+            if (chartSlaPercentInstance) {
+                chartSlaPercentInstance.destroy();
+                chartSlaPercentInstance = null;
+            }
+            $('#chart-cost-saving-total').html('<div class="text-center py-8 text-gray-500"><i class="mgc_inbox_2_line text-3xl"></i><p class="mt-2">Tidak ada data</p></div>');
+            $('#chart-cost-saving-percent').html('<div class="text-center py-8 text-gray-500"><i class="mgc_inbox_2_line text-3xl"></i><p class="mt-2">Tidak ada data</p></div>');
+            $('#chart-sla-percent').html('<div class="text-center py-8 text-gray-500"><i class="mgc_inbox_2_line text-3xl"></i><p class="mt-2">Tidak ada data</p></div>');
+        }
+    });
+}
+
+/**
+ * Render Cost Saving charts (split into three separate charts)
+ * Supports both aggregated mode and per-location comparison mode
+ */
+function renderCostSavingChart(data) {
+    // Destroy existing instances
+    if (chartCostSavingTotalInstance) {
+        chartCostSavingTotalInstance.destroy();
+    }
+    if (chartCostSavingPercentInstance) {
+        chartCostSavingPercentInstance.destroy();
+    }
+    if (chartSlaPercentInstance) {
+        chartSlaPercentInstance.destroy();
+    }
+
+    const mode = data.mode || 'aggregated';
+    
+    if (mode === 'per-location') {
+        // Per-location comparison mode
+        // Chart 1: Total Cost Saving per location (grouped column chart)
+        const optionsTotal = {
+            series: data.seriesTotal,
+            chart: {
+                type: 'bar',
+                height: 380,
+                toolbar: { show: true },
+            },
+            plotOptions: {
+                bar: {
+                    borderRadius: 4,
+                    columnWidth: '70%',
+                    dataLabels: {
+                        position: 'top',
+                    }
+                }
+            },
+            colors: ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6', '#F97316'],
+            xaxis: {
+                categories: data.categories,
+                labels: { 
+                    style: { colors: '#64748B' },
+                    rotate: -45,
+                    rotateAlways: data.categories.length > 20
+                }
+            },
+            yaxis: {
+                title: { text: 'Total Cost Saving (Rp)', style: { color: '#64748B' } },
+                labels: { 
+                    formatter: (val) => 'Rp ' + Math.round(val).toLocaleString('id-ID'),
+                    style: { colors: '#64748B' }
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            legend: { 
+                position: 'top', 
+                horizontalAlign: 'center',
+                fontSize: '12px',
+                markers: {
+                    width: 10,
+                    height: 10,
+                    radius: 2
+                }
+            },
+            tooltip: {
+                shared: true,
+                intersect: false,
+                y: {
+                    formatter: function(value) {
+                        return `Rp ${Math.round(value).toLocaleString('id-ID')}`;
+                    }
+                }
+            },
+            grid: {
+                borderColor: '#E5E7EB',
+                strokeDashArray: 4
+            }
+        };
+
+        chartCostSavingTotalInstance = new ApexCharts(document.querySelector('#chart-cost-saving-total'), optionsTotal);
+        chartCostSavingTotalInstance.render();
+
+        // Chart 2: % Cost Saving per location (line chart)
+        const optionsPercent = {
+            series: data.seriesPercent,
+            chart: {
+                type: 'line',
+                height: 380,
+                toolbar: { show: true },
+            },
+            stroke: { width: 3, curve: 'smooth' },
+            markers: { size: 4 },
+            colors: ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6', '#F97316'],
+            xaxis: {
+                categories: data.categories,
+                labels: { 
+                    style: { colors: '#64748B' },
+                    rotate: -45,
+                    rotateAlways: data.categories.length > 20
+                }
+            },
+            yaxis: {
+                title: { text: 'Percentage (%)', style: { color: '#64748B' } },
+                labels: { 
+                    formatter: (val) => `${val}%`,
+                    style: { colors: '#64748B' }
+                },
+                min: 0,
+                max: 100
+            },
+            legend: { 
+                position: 'top', 
+                horizontalAlign: 'center',
+                fontSize: '11px',
+                markers: {
+                    width: 10,
+                    height: 10,
+                    radius: 12
+                }
+            },
+            tooltip: {
+                shared: true,
+                intersect: false,
+                y: {
+                    formatter: function(value) {
+                        return `${value}%`;
+                    }
+                }
+            },
+            grid: {
+                borderColor: '#E5E7EB',
+                strokeDashArray: 4
+            }
+        };
+
+        chartCostSavingPercentInstance = new ApexCharts(document.querySelector('#chart-cost-saving-percent'), optionsPercent);
+        chartCostSavingPercentInstance.render();
+
+        // Chart 3: % SLA per location (line chart)
+        const optionsSla = {
+            series: data.seriesSla,
+            chart: {
+                type: 'line',
+                height: 380,
+                toolbar: { show: true },
+            },
+            stroke: { width: 3, curve: 'smooth' },
+            markers: { size: 4 },
+            colors: ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6', '#F97316'],
+            xaxis: {
+                categories: data.categories,
+                labels: { 
+                    style: { colors: '#64748B' },
+                    rotate: -45,
+                    rotateAlways: data.categories.length > 20
+                }
+            },
+            yaxis: {
+                title: { text: 'Percentage (%)', style: { color: '#64748B' } },
+                labels: { 
+                    formatter: (val) => `${val}%`,
+                    style: { colors: '#64748B' }
+                },
+                min: 0,
+                max: 100
+            },
+            legend: { 
+                position: 'top', 
+                horizontalAlign: 'center',
+                fontSize: '11px',
+                markers: {
+                    width: 10,
+                    height: 10,
+                    radius: 12
+                }
+            },
+            tooltip: {
+                shared: true,
+                intersect: false,
+                y: {
+                    formatter: function(value) {
+                        return `${value}%`;
+                    }
+                }
+            },
+            grid: {
+                borderColor: '#E5E7EB',
+                strokeDashArray: 4
+            }
+        };
+
+        chartSlaPercentInstance = new ApexCharts(document.querySelector('#chart-sla-percent'), optionsSla);
+        chartSlaPercentInstance.render();
+
+    } else {
+        // Aggregated mode (single location or default)
+        // Chart 1: Total Cost Saving (column chart)
+        const optionsTotal = {
+            series: [data.series[0]], // Only Total Cost Saving
+            chart: {
+                type: 'bar',
+                height: 380,
+                toolbar: { show: true },
+            },
+            plotOptions: {
+                bar: {
+                    borderRadius: 4,
+                    columnWidth: '60%',
+                }
+            },
+            colors: ['#10B981'],
+            xaxis: {
+                categories: data.categories,
+                labels: { 
+                    style: { colors: '#64748B' },
+                    rotate: -45,
+                    rotateAlways: data.categories.length > 20
+                }
+            },
+            yaxis: {
+                title: { text: 'Total Cost Saving (Rp)', style: { color: '#10B981' } },
+                labels: { 
+                    formatter: (val) => 'Rp ' + Math.round(val).toLocaleString('id-ID'),
+                    style: { colors: '#64748B' }
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            legend: { position: 'top', horizontalAlign: 'center' },
+            tooltip: {
+                y: {
+                    formatter: function(value) {
+                        return `Rp ${Math.round(value).toLocaleString('id-ID')}`;
+                    }
+                }
+            },
+            grid: {
+                borderColor: '#E5E7EB',
+                strokeDashArray: 4
+            }
+        };
+
+        chartCostSavingTotalInstance = new ApexCharts(document.querySelector('#chart-cost-saving-total'), optionsTotal);
+        chartCostSavingTotalInstance.render();
+
+        // Chart 2: % Cost Saving (line chart)
+        const optionsPercent = {
+            series: [data.series[1]], // % Cost Saving
+            chart: {
+                type: 'line',
+                height: 380,
+                toolbar: { show: true },
+            },
+            stroke: { width: 3, curve: 'smooth' },
+            markers: { size: 5 },
+            colors: ['#F59E0B'],
+            xaxis: {
+                categories: data.categories,
+                labels: { 
+                    style: { colors: '#64748B' },
+                    rotate: -45,
+                    rotateAlways: data.categories.length > 20
+                }
+            },
+            yaxis: {
+                title: { text: 'Percentage (%)', style: { color: '#64748B' } },
+                labels: { 
+                    formatter: (val) => `${val}%`,
+                    style: { colors: '#64748B' }
+                },
+                min: 0,
+                max: 100
+            },
+            legend: { position: 'top', horizontalAlign: 'center' },
+            tooltip: {
+                shared: true,
+                intersect: false,
+                y: {
+                    formatter: function(value) {
+                        return `${value}%`;
+                    }
+                }
+            },
+            grid: {
+                borderColor: '#E5E7EB',
+                strokeDashArray: 4
+            }
+        };
+
+        chartCostSavingPercentInstance = new ApexCharts(document.querySelector('#chart-cost-saving-percent'), optionsPercent);
+        chartCostSavingPercentInstance.render();
+
+        // Chart 3: % SLA (line chart)
+        const optionsSla = {
+            series: [data.series[2]], // Avg % SLA
+            chart: {
+                type: 'line',
+                height: 380,
+                toolbar: { show: true },
+            },
+            stroke: { width: 3, curve: 'smooth' },
+            markers: { size: 5 },
+            colors: ['#EF4444'],
+            xaxis: {
+                categories: data.categories,
+                labels: { 
+                    style: { colors: '#64748B' },
+                    rotate: -45,
+                    rotateAlways: data.categories.length > 20
+                }
+            },
+            yaxis: {
+                title: { text: 'Percentage (%)', style: { color: '#64748B' } },
+                labels: { 
+                    formatter: (val) => `${val}%`,
+                    style: { colors: '#64748B' }
+                },
+                min: 0,
+                max: 100
+            },
+            legend: { position: 'top', horizontalAlign: 'center' },
+            tooltip: {
+                shared: true,
+                intersect: false,
+                y: {
+                    formatter: function(value) {
+                        return `${value}%`;
+                    }
+                }
+            },
+            grid: {
+                borderColor: '#E5E7EB',
+                strokeDashArray: 4
+            }
+        };
+
+        chartSlaPercentInstance = new ApexCharts(document.querySelector('#chart-sla-percent'), optionsSla);
+        chartSlaPercentInstance.render();
+    }
+}
+
+/**
  * Render PO Analytics Chart
  */
-function renderPoChart(data) {
+function renderPoChart(data, type = 'po') {
     if (chartPoInstance) {
         chartPoInstance.destroy();
     }
+
+    // Set labels based on chart type
+    const itemLabel = type === 'pr' ? 'Jumlah PR Items' : 'Jumlah PO Items';
+    const tooltipItemLabel = type === 'pr' ? 'items PR' : 'items PO';
 
     const options = {
         chart: {
@@ -474,7 +877,7 @@ function renderPoChart(data) {
             {
                 opposite: true,
                 title: {
-                    text: 'Jumlah PO Items',
+                    text: itemLabel,
                     style: {
                         color: '#8b5cf6'
                     }
@@ -519,7 +922,7 @@ function renderPoChart(data) {
                 },
                 {
                     formatter: function(value) {
-                        return Math.round(value) + ' items PO';
+                        return Math.round(value) + ' ' + tooltipItemLabel;
                     }
                 },
                 {
@@ -563,13 +966,18 @@ $(document).ready(function() {
     
     // Initialize filters
     const unitFilter = $('#unitFilter');
-    if (unitFilter.is('input[type="hidden"]')) {
-        // User bukan Super Admin, gunakan location_id dari hidden input
-        currentFilters.locationId = unitFilter.val() || null;
+    // Set initial locationId from select value (works for both Super Admin and regular users)
+    const initialLocationId = unitFilter.val();
+    if (initialLocationId) {
+        currentFilters.locationId = initialLocationId;
     }
+    
+    // Update chart titles on page load
+    updateAllChartTitles();
     
     fetchDashboardData(false);
     fetchPoAnalytics();
+    fetchCostSavingAnalytics();
 
     // Reset filter button
     $('#btn-reset-filter').on('click', function() {
@@ -582,12 +990,140 @@ $(document).ready(function() {
         fetchDashboardData(true);
     });
     
-    // Unit filter change (only for Super Admin)
-    if (unitFilter.is('select')) {
+    // Unit filter change (only for Super Admin - regular users have disabled select)
+    if (unitFilter.is('select') && !unitFilter.is(':disabled')) {
         unitFilter.on('change', function() {
             currentFilters.locationId = $(this).val() || null;
+            updateAllChartTitles();
             fetchDashboardData(true);
             fetchPoAnalytics();
+            fetchCostSavingAnalytics();
         });
     }
+
+    // Super Admin-only cost saving dropdown filter
+    $(document).off('change', '#costSavingLocation').on('change', '#costSavingLocation', function() {
+        fetchCostSavingAnalytics();
+    });
+
+    // PO Analytics type filter (PO or PR)
+    $('#poAnalyticsFilter').on('change', function() {
+        currentFilters.poAnalyticsType = $(this).val();
+        updatePoChartTitle();
+        fetchPoAnalytics();
+    });
 });
+
+/**
+ * Get location name from filter select
+ */
+function getLocationName() {
+    const unitFilter = $('#unitFilter');
+    const selectedValue = unitFilter.val();
+    
+    if (selectedValue && selectedValue !== '') {
+        return unitFilter.find('option:selected').text();
+    }
+    return null;
+}
+
+/**
+ * Update all chart titles based on location filter
+ */
+function updateAllChartTitles() {
+    updateProgressFlowTitle();
+    updateChartItemTitle();
+    updatePoChartTitle();
+    updateCostSavingChartTitles();
+}
+
+/**
+ * Update Progress Flow Title based on location filter
+ */
+function updateProgressFlowTitle() {
+    const locationName = getLocationName();
+    const $title = $('#progressFlowTitle');
+    
+    let title = 'Progress Flow';
+    let html = 'Progress Flow';
+    
+    if (locationName) {
+        html = `Progress Flow <span class="text-indigo-600 dark:text-indigo-400 font-semibold">- ${locationName}</span>`;
+    }
+    
+    $title.html(html);
+}
+
+/**
+ * Update Grafik Jumlah Item Title based on location filter
+ */
+function updateChartItemTitle() {
+    const locationName = getLocationName();
+    const $title = $('#chartItemTitle');
+    
+    let html = 'Grafik Jumlah Item';
+    
+    if (locationName) {
+        html = `Grafik Jumlah Item <span class="text-purple-600 dark:text-purple-400 font-semibold">- ${locationName}</span>`;
+    }
+    
+    $title.html(html);
+}
+
+/**
+ * Update PO Chart Title based on filter selection
+ */
+function updatePoChartTitle() {
+    const type = currentFilters.poAnalyticsType || 'po';
+    const locationName = getLocationName();
+    
+    const titleMap = {
+        'po': {
+            title: 'Grafik Purchase Order (PO)',
+            subtitle: 'Grafik total amount, jumlah PO, dan rata-rata % realisasi SLA per bulan (12 bulan terakhir)'
+        },
+        'pr': {
+            title: 'Grafik Purchase Request (PR)',
+            subtitle: 'Grafik total amount, jumlah PR, dan rata-rata % realisasi SLA per bulan (12 bulan terakhir)'
+        }
+    };
+    
+    const texts = titleMap[type] || titleMap['po'];
+    const $title = $('#poChartTitle');
+    
+    let html = texts.title;
+    if (locationName) {
+        html = `${texts.title} <span class="text-purple-600 dark:text-purple-400 font-semibold">- ${locationName}</span>`;
+    }
+    
+    $title.html(html);
+    $('#poChartSubtitle').text(texts.subtitle);
+}
+
+/**
+ * Update Cost Saving Chart Titles based on location filter
+ */
+function updateCostSavingChartTitles() {
+    const locationName = getLocationName();
+    
+    // Update Total Cost Saving title
+    let totalHtml = 'Total Cost Saving';
+    if (locationName) {
+        totalHtml = `Total Cost Saving <span class="text-purple-600 dark:text-purple-400 font-semibold">- ${locationName}</span>`;
+    }
+    $('#totalCostSavingTitle').html(totalHtml);
+    
+    // Update % Cost Saving title
+    let percentHtml = '% Cost Saving';
+    if (locationName) {
+        percentHtml = `% Cost Saving <span class="text-purple-600 dark:text-purple-400 font-semibold">- ${locationName}</span>`;
+    }
+    $('#percentCostSavingTitle').html(percentHtml);
+    
+    // Update % SLA title
+    let slaHtml = '% SLA PR → PO';
+    if (locationName) {
+        slaHtml = `% SLA PR → PO <span class="text-purple-600 dark:text-purple-400 font-semibold">- ${locationName}</span>`;
+    }
+    $('#slaCostSavingTitle').html(slaHtml);
+}

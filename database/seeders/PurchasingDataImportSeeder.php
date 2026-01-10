@@ -28,6 +28,7 @@ class PurchasingDataImportSeeder extends Seeder
         'payments' => ['created' => 0, 'skipped' => 0],
         'locations' => ['created' => 0],
         'suppliers' => ['created' => 0],
+        'classifications' => ['found' => 0, 'null' => 0],
         'relationships' => ['pr_to_po' => 0, 'po_to_onsite' => 0, 'onsite_to_invoice' => 0, 'invoice_to_payment' => 0],
         'rows_processed' => 0,
         'rows_skipped' => 0,
@@ -60,6 +61,12 @@ class PurchasingDataImportSeeder extends Seeder
         $header = array_map(fn ($h) => trim((string) $h), $rawHeader);
         $headerIndex = [];
         foreach ($header as $i => $name) {
+            // Hapus BOM (Byte Order Mark) jika ada di kolom pertama
+            if ($i === 0) {
+                $name = preg_replace('/^\x{FEFF}/u', '', $name); // Remove UTF-8 BOM
+                $name = preg_replace('/^[\x00-\x1F\x7F-\xFF]{3}/', '', $name); // Remove other BOMs
+            }
+            
             $key = strtolower(preg_replace('/\s+/', ' ', trim($name)));
             if ($key !== '') {
                 $headerIndex[$key] = $i;
@@ -75,7 +82,14 @@ class PurchasingDataImportSeeder extends Seeder
                 return null;
             }
             $idx = $headerIndex[$key];
-            return array_key_exists($idx, $row) ? (is_string($row[$idx]) ? trim($row[$idx]) : $row[$idx]) : null;
+            $value = array_key_exists($idx, $row) ? $row[$idx] : null;
+            
+            // Pastikan return string atau null
+            if ($value === null || $value === false) {
+                return null;
+            }
+            
+            return is_string($value) ? trim($value) : (string) $value;
         };
 
         $rowNumber = 1; // Header sudah dibaca
@@ -112,7 +126,7 @@ class PurchasingDataImportSeeder extends Seeder
     private function processRow(array $row, callable $getCell, int $rowNumber): void
     {
         // Ambil nilai berdasarkan nama kolom pada CSV agar akurat
-        $classificationIdRaw = $getCell($row, 'purchase_requests~classification_id');
+        $classificationIdRaw = $getCell($row, 'purchase_request_items~classification_id');
         $prNumber = $getCell($row, 'purchase_requests~pr_number');
         $locationName = $getCell($row, 'purchase_requests~location_id');
         $prApprovedDate = $getCell($row, 'purchase_requests~approved_date');
@@ -137,6 +151,7 @@ class PurchasingDataImportSeeder extends Seeder
         $poAmount = $getCell($row, 'purchase_order_items~amount');
         $poCostSaving = $getCell($row, 'purchase_order_items~cost_saving');
         $poSlaRealization = $getCell($row, 'purchase_order_items~sla_pr_to_po_realization');
+        $poSlaPoToOnsiteTarget = $getCell($row, 'purchase_order_items~sla_po_to_onsite_target');
         
         // Purchase Order Onsite
         $onsiteDate = $getCell($row, 'purchase_order_onsites~onsite_date');
@@ -160,7 +175,6 @@ class PurchasingDataImportSeeder extends Seeder
         // ===== IMPORT PURCHASE REQUEST =====
         $purchaseRequest = $this->importPurchaseRequest(
             $prNumber,
-            $classificationIdRaw,
             $locationName,
             $prApprovedDate
         );
@@ -193,7 +207,8 @@ class PurchasingDataImportSeeder extends Seeder
                 $poUnitPrice,
                 $poAmount,
                 $poCostSaving,
-                $poSlaRealization
+                $poSlaRealization,
+                $poSlaPoToOnsiteTarget
             );
 
             // Update PR Item stage
@@ -205,51 +220,63 @@ class PurchasingDataImportSeeder extends Seeder
 
         // ===== IMPORT PURCHASE ORDER ONSITE =====
         $onsite = null;
-        if ($poItem && !empty($onsiteDate) && $this->isValidDate($onsiteDate)) {
-            $onsite = $this->importPurchaseOrderOnsite(
-                $poItem,
-                $onsiteDate,
-                $onsiteSlaRealization
-            );
-            
-            // Update PR Item stage
-            $prItem->current_stage = 3; // Onsite Done
-            $prItem->save();
-            
-            $this->stats['relationships']['po_to_onsite']++;
+        if ($poItem) {
+            $onsiteDateParsed = $this->parseDate($onsiteDate);
+            if ($onsiteDateParsed) {
+                $onsite = $this->importPurchaseOrderOnsite(
+                    $poItem,
+                    $onsiteDateParsed,
+                    $onsiteSlaRealization
+                );
+                
+                // Update PR Item stage
+                $prItem->current_stage = 3; // Onsite Done
+                $prItem->save();
+                
+                $this->stats['relationships']['po_to_onsite']++;
+            }
         }
 
         // ===== IMPORT INVOICE =====
         $invoice = null;
-        if ($onsite && (!empty($invoiceReceivedAt) || !empty($invoiceSubmittedAt))) {
-            $invoice = $this->importInvoice(
-                $onsite,
-                $invoiceReceivedAt,
-                $invoiceSubmittedAt,
-                $invoiceSlaTarget,
-                $invoiceSlaRealization
-            );
+        if ($onsite) {
+            $receivedAtParsed = $this->parseDate($invoiceReceivedAt);
+            $submittedAtParsed = $this->parseDate($invoiceSubmittedAt);
             
-            // Update PR Item stage
-            $prItem->current_stage = 4; // Invoice Submitted
-            $prItem->save();
-            
-            $this->stats['relationships']['onsite_to_invoice']++;
+            // Jika ada minimal satu tanggal (received atau submitted), buat invoice
+            if ($receivedAtParsed || $submittedAtParsed) {
+                $invoice = $this->importInvoice(
+                    $onsite,
+                    $receivedAtParsed,
+                    $submittedAtParsed,
+                    $invoiceSlaTarget,
+                    $invoiceSlaRealization
+                );
+                
+                // Update PR Item stage
+                $prItem->current_stage = 4; // Invoice Submitted
+                $prItem->save();
+                
+                $this->stats['relationships']['onsite_to_invoice']++;
+            }
         }
 
         // ===== IMPORT PAYMENT =====
-        if ($invoice && !empty($paymentDate) && $this->isValidDate($paymentDate)) {
-            $this->importPayment(
-                $invoice,
-                $paymentDate,
-                $paymentSla
-            );
-            
-            // Update PR Item stage
-            $prItem->current_stage = 5; // Payment Done
-            $prItem->save();
-            
-            $this->stats['relationships']['invoice_to_payment']++;
+        if ($invoice) {
+            $paymentDateParsed = $this->parseDate($paymentDate);
+            if ($paymentDateParsed) {
+                $this->importPayment(
+                    $invoice,
+                    $paymentDateParsed,
+                    $paymentSla
+                );
+                
+                // Update PR Item stage
+                $prItem->current_stage = 5; // Payment Done
+                $prItem->save();
+                
+                $this->stats['relationships']['invoice_to_payment']++;
+            }
         }
     }
 
@@ -258,7 +285,6 @@ class PurchasingDataImportSeeder extends Seeder
      */
     private function importPurchaseRequest(
         string $prNumber,
-        ?string $classificationIdRaw,
         ?string $locationName,
         ?string $prApprovedDate
     ): PurchaseRequest {
@@ -317,13 +343,18 @@ class PurchasingDataImportSeeder extends Seeder
         ?string $amount,
         ?string $slaTarget
     ): PurchaseRequestItem {
-        // Parse classification_id
+        // Parse classification_id - gunakan parseNumber untuk lebih robust
         $classificationId = null;
         if ($classificationIdRaw !== null && $classificationIdRaw !== '') {
-            $trimmed = trim((string) $classificationIdRaw);
-            if ($trimmed !== '' && is_numeric($trimmed)) {
-                $classificationId = (int) $trimmed;
+            $parsedNum = $this->parseNumber($classificationIdRaw);
+            if ($parsedNum !== null && $parsedNum > 0) {
+                $classificationId = (int) $parsedNum;
+                $this->stats['classifications']['found']++;
+            } else {
+                $this->stats['classifications']['null']++;
             }
+        } else {
+            $this->stats['classifications']['null']++;
         }
 
         $unitPriceNum = $this->parseNumber($unitPrice) ?? 0;
@@ -409,13 +440,15 @@ class PurchasingDataImportSeeder extends Seeder
         ?string $unitPrice,
         ?string $amount,
         ?string $costSaving,
-        ?string $slaRealization
+        ?string $slaRealization,
+        ?string $slaPoToOnsiteTarget = null
     ): PurchaseOrderItem {
         $qtyNum = (int) ($this->parseNumber($qty) ?? 0);
         $unitPriceNum = $this->parseNumber($unitPrice) ?? 0;
         $amountNum = $this->parseNumber($amount) ?? ($qtyNum * $unitPriceNum);
         $costSavingNum = $this->parseNumber($costSaving);
         $slaRealizationNum = $this->parseNumber($slaRealization);
+        $slaPoToOnsiteTargetNum = $this->parseNumber($slaPoToOnsiteTarget);
 
         $poItem = PurchaseOrderItem::create([
             'purchase_order_id' => $po->id,
@@ -425,6 +458,7 @@ class PurchasingDataImportSeeder extends Seeder
             'amount' => $amountNum,
             'cost_saving' => $costSavingNum,
             'sla_pr_to_po_realization' => $slaRealizationNum,
+            'sla_po_to_onsite_target' => $slaPoToOnsiteTargetNum,
         ]);
 
         $this->stats['purchase_order_items']['created']++;
@@ -440,18 +474,11 @@ class PurchasingDataImportSeeder extends Seeder
         string $onsiteDate,
         ?string $slaRealization
     ): PurchaseOrderOnsite {
-        $onsiteDateParsed = $this->parseDate($onsiteDate);
-        
-        if (!$onsiteDateParsed) {
-            $this->stats['purchase_order_onsites']['skipped']++;
-            throw new \Exception("Invalid onsite date: {$onsiteDate}");
-        }
-
         $slaRealizationNum = $this->parseNumber($slaRealization);
 
         $onsite = PurchaseOrderOnsite::create([
             'purchase_order_items_id' => $poItem->id,
-            'onsite_date' => $onsiteDateParsed,
+            'onsite_date' => $onsiteDate,
             'sla_po_to_onsite_realization' => $slaRealizationNum,
             'created_by' => 1,
         ]);
@@ -471,19 +498,15 @@ class PurchasingDataImportSeeder extends Seeder
         ?string $slaTarget,
         ?string $slaRealization
     ): Invoice {
-        $receivedAtParsed = $this->parseDate($receivedAt);
-        $submittedAtParsed = $this->parseDate($submittedAt);
-        $slaTargetNum = $this->parseNumber($slaTarget);
+        $slaTargetNum = $this->parseNumber($slaTarget) ?? 5; // Default 5 hari
         $slaRealizationNum = $this->parseNumber($slaRealization);
-
-        // Generate invoice number
-        $invoiceNumber = 'INV-' . $onsite->id . '-' . time();
 
         $invoice = Invoice::create([
             'purchase_order_onsite_id' => $onsite->id,
-            'invoice_number' => $invoiceNumber,
-            'invoice_received_at' => $receivedAtParsed,
-            'invoice_submitted_at' => $submittedAtParsed,
+            // Biarkan kosong sesuai permintaan
+            'invoice_number' => null,
+            'invoice_received_at' => $receivedAt,
+            'invoice_submitted_at' => $submittedAt,
             'sla_invoice_to_finance_target' => $slaTargetNum,
             'sla_invoice_to_finance_realization' => $slaRealizationNum,
             'created_by' => 1,
@@ -502,22 +525,13 @@ class PurchasingDataImportSeeder extends Seeder
         string $paymentDate,
         ?string $sla
     ): Payment {
-        $paymentDateParsed = $this->parseDate($paymentDate);
-        
-        if (!$paymentDateParsed) {
-            $this->stats['payments']['skipped']++;
-            throw new \Exception("Invalid payment date: {$paymentDate}");
-        }
-
         $slaNum = $this->parseNumber($sla);
-
-        // Generate payment number
-        $paymentNumber = 'PAY-' . $invoice->id . '-' . time();
 
         $payment = Payment::create([
             'invoice_id' => $invoice->id,
-            'payment_number' => $paymentNumber,
-            'payment_date' => $paymentDateParsed,
+            // Biarkan kosong sesuai permintaan
+            'payment_number' => null,
+            'payment_date' => $paymentDate,
             'sla_payment' => $slaNum,
             'created_by' => 1,
         ]);
@@ -544,6 +558,8 @@ class PurchasingDataImportSeeder extends Seeder
         $this->command?->info('--- MASTER DATA ---');
         $this->command?->info("📍 Locations Created: {$this->stats['locations']['created']}");
         $this->command?->info("🏢 Suppliers Created: {$this->stats['suppliers']['created']}");
+        $this->command?->info("🏷️  Classifications Found: {$this->stats['classifications']['found']}");
+        $this->command?->info("⚠️  Classifications Null: {$this->stats['classifications']['null']}");
         $this->command?->newLine();
 
         $this->command?->info('--- PURCHASE REQUESTS ---');
@@ -630,6 +646,21 @@ class PurchasingDataImportSeeder extends Seeder
         }
 
         $value = trim((string) $value);
+        
+        // Cek jika adalah Excel serial number (numeric)
+        if (is_numeric($value)) {
+            $excelSerialNumber = (int) $value;
+            // Excel serial number 0 = 1900-01-00 (invalid)
+            // Excel serial number 1 = 1900-01-01
+            if ($excelSerialNumber > 0) {
+                // Basis Excel serial number adalah 1900-01-01
+                $baseDate = new \DateTime('1899-12-30');
+                $baseDate->add(new \DateInterval('P' . $excelSerialNumber . 'D'));
+                return $baseDate->format('Y-m-d');
+            }
+        }
+        
+        // Coba format tanggal standar
         $formats = [
             'Y-m-d', 'd-m-Y', 'd/m/Y', 'm/d/Y', 'd-M-y', 'd-M-Y', 'j-M-y', 'j-M-Y',
         ];

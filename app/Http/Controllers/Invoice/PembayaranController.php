@@ -25,21 +25,39 @@ class PembayaranController extends Controller
     public function data()
     {
         $user = auth()->user();
-        
-        $query = Payment::with([
-            'invoice.purchaseOrderOnsite.purchaseOrderItem.purchaseOrder',
+        $paymentQuery = Payment::with([
+            'invoice.purchaseOrderOnsite.purchaseOrderItem.purchaseOrder.supplier',
             'invoice.purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest.location',
+            'invoice.purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.classification',
             'creator'
         ]);
 
         // Filter by user's location_id
         if ($user && $user->location_id) {
-            $query->whereHas('invoice.purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest', function ($q) use ($user) {
+            $paymentQuery->whereHas('invoice.purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest', function ($q) use ($user) {
                 $q->where('location_id', $user->location_id);
             });
         }
 
-        $payments = $query->latest()->get();
+        $payments = $paymentQuery->latest()->get();
+
+        // Build stats using the same location scope
+        $invoiceQuery = Invoice::whereNotNull('invoice_submitted_at');
+        if ($user && $user->location_id) {
+            $invoiceQuery->whereHas('purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest', function ($q) use ($user) {
+                $q->where('location_id', $user->location_id);
+            });
+        }
+
+        $totalInvoices = (clone $invoiceQuery)->count();
+        $paidInvoices = (clone $invoiceQuery)->whereHas('payments')->count();
+        $unpaidInvoices = max($totalInvoices - $paidInvoices, 0);
+
+        $now = Carbon::now();
+        $thirtyDaysAgo = Carbon::now()->subDays(30)->startOfDay();
+        $recentPayments = (clone $paymentQuery)
+            ->whereBetween('created_at', [$thirtyDaysAgo->toDateString(), $now->toDateString()])
+            ->count();
 
         $data = $payments->map(function ($payment, $index) {
             $invoice = $payment->invoice;
@@ -48,30 +66,95 @@ class PembayaranController extends Controller
             $po = $item->purchaseOrder ?? null;
             $prItem = $item->purchaseRequestItem ?? null;
             $pr = $prItem?->purchaseRequest;
+            $supplier = $po->supplier ?? null;
+            $location = $pr->location ?? null;
+            $classification = $prItem?->classification;
 
+            // PO item pricing
             $unitPrice = $item->unit_price ?? 0;
             $qty = $item->quantity ?? 0;
             $amount = $unitPrice * $qty;
 
+            // PR item pricing
+            $prUnitPrice = $prItem->unit_price ?? 0;
+            $prQty = $prItem->quantity ?? 0;
+            $prAmount = $prItem->amount ?? ($prUnitPrice * $prQty);
+
+            // SLA metrics
+            $slaPrToPoTarget = $prItem->sla_pr_to_po_target ?? null;
+            $slaPrToPoReal = $item->sla_pr_to_po_realization ?? null;
+            $slaPrToPoPct = ($slaPrToPoTarget && $slaPrToPoReal !== null && $slaPrToPoTarget > 0)
+                ? (round(($slaPrToPoReal / $slaPrToPoTarget) * 100)) . '%'
+                : '-';
+
+            $slaPoToOnsiteTarget = $item->sla_po_to_onsite_target ?? null;
+            $slaPoToOnsiteReal = $onsite->sla_po_to_onsite_realization ?? null;
+            $slaPoToOnsitePct = ($slaPoToOnsiteTarget && $slaPoToOnsiteReal !== null && $slaPoToOnsiteTarget > 0)
+                ? (round(($slaPoToOnsiteReal / $slaPoToOnsiteTarget) * 100)) . '%'
+                : '-';
+
+            $slaInvoiceTarget = $invoice->sla_invoice_to_finance_target ?? null;
+            $slaInvoiceReal = $invoice->sla_invoice_to_finance_realization ?? null;
+            $slaInvoicePct = ($slaInvoiceTarget && $slaInvoiceReal !== null && $slaInvoiceTarget > 0)
+                ? (round(($slaInvoiceReal / $slaInvoiceTarget) * 100)) . '%'
+                : '-';
+
             return [
                 'id' => $payment->id,
                 'number' => $index + 1,
-                'payment_number' => $payment->payment_number ?? '-',
-                'invoice_number' => $invoice->invoice_number ?? '-',
-                'po_number' => $po->po_number ?? '-',
+                // PR Section
                 'pr_number' => $pr->pr_number ?? '-',
+                'pr_request_type' => $pr->request_type ?? '-',
+                'pr_location' => $location->name ?? '-',
+                'pr_approved_date' => $pr->approved_date ? $pr->approved_date->format('d-M-y') : '-',
                 'item_desc' => $prItem->item_desc ?? '-',
-                'unit_price' => $unitPrice > 0 ? number_format($unitPrice, 0, ',', '.') : '-',
+                'item_uom' => $prItem->uom ?? '-',
+                'classification' => $classification?->name ?? '-',
+                'pr_qty' => $prQty ?: '-',
+                'pr_unit_price' => $prUnitPrice > 0 ? number_format($prUnitPrice, 0, ',', '.') : '-',
+                'pr_amount' => ($prAmount && $prAmount > 0) ? number_format($prAmount, 0, ',', '.') : '-',
+                // PO Section
+                'po_number' => $po->po_number ?? '-',
+                'po_supplier' => $supplier->name ?? '-',
+                'po_approved_date' => $po->approved_date ? $po->approved_date->format('d-M-y') : '-',
                 'qty' => $qty ?? '-',
+                'unit_price' => $unitPrice > 0 ? number_format($unitPrice, 0, ',', '.') : '-',
                 'amount' => $amount > 0 ? number_format($amount, 0, ',', '.') : '-',
+                'cost_saving' => ($item->cost_saving && $item->cost_saving > 0) ? number_format($item->cost_saving, 0, ',', '.') : '-',
+                // SLA PR -> PO
+                'sla_pr_to_po_target' => $slaPrToPoTarget ?? '-',
+                'sla_pr_to_po_realization' => $slaPrToPoReal ?? '-',
+                'sla_pr_to_po_percentage' => $slaPrToPoPct,
+                // Onsite Section
+                'onsite_date' => $onsite?->onsite_date ? $onsite->onsite_date->format('d-M-y') : '-',
+                'sla_po_to_onsite_target' => $slaPoToOnsiteTarget ?? '-',
+                'sla_po_to_onsite_realization' => $slaPoToOnsiteReal ?? '-',
+                'sla_po_to_onsite_percentage' => $slaPoToOnsitePct,
+                // Invoice Section
+                'invoice_number' => $invoice->invoice_number ?? '-',
+                'invoice_received_at' => $invoice->invoice_received_at ? $invoice->invoice_received_at->format('d-M-y') : '-',
                 'invoice_submit' => $invoice->invoice_submitted_at ? $invoice->invoice_submitted_at->format('d-M-y') : '-',
+                'sla_invoice_target' => $slaInvoiceTarget ?? '-',
+                'sla_invoice_realization' => $slaInvoiceReal ?? '-',
+                'sla_invoice_percentage' => $slaInvoicePct,
+                // Payment Section
+                'payment_number' => $payment->payment_number ?? '-',
                 'payment_date' => $payment->payment_date ? $payment->payment_date->format('d-M-y') : '-',
                 'sla_payment' => $payment->sla_payment ?? '-',
                 'created_by' => $payment->creator->name ?? '-',
+                'created_at' => $payment->created_at ? $payment->created_at->format('d-M-y H:i') : '-',
             ];
         });
 
-        return response()->json($data);
+        return response()->json([
+            'data' => $data,
+            'stats' => [
+                'total' => $totalInvoices,
+                'paid' => $paidInvoices,
+                'pending' => $unpaidInvoices,
+                'recent' => $recentPayments,
+            ],
+        ]);
     }
 
     /**

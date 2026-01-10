@@ -8,67 +8,123 @@ import { route } from "ziggy-js";
 import { showSuccess, showError } from "../../../core/notification.js";
 
 /**
- * Load permissions dari server untuk form create
+ * Load permissions dari server dengan struktur menu
  */
 async function loadPermissions(selectedIds = []) {
     try {
-        const response = await fetch(route("roles.apiPermissions"));
+        const response = await fetch(route("roles.permissionsStructured"));
         const data = await response.json();
-        const permissions = data.permissions || [];
-        const categories = data.categories || [];
+        const structured = data.structured || [];
 
         let html = "";
 
-        // Group permissions by category dengan checkbox select all
-        categories.forEach((category) => {
-            const categoryPermissions = permissions.filter(
-                (p) => p.category === category
-            );
-
-            if (categoryPermissions.length > 0) {
-                const categorySlug = (category || "Other").toLowerCase().replace(/\s+/g, '-');
-                
-                html += `
-                    <div class="space-y-2" data-category="${categorySlug}">
-                        <div class="px-3 py-2 rounded-lg bg-blue-100 dark:bg-blue-900/20 sticky top-0 z-10">
-                            <label class="font-bold text-xs uppercase tracking-wider text-blue-800 dark:text-blue-200 flex items-center gap-2 cursor-pointer hover:text-blue-900 dark:hover:text-blue-100 transition-colors">
+        // Render permissions organized by menu structure
+        structured.forEach((menu) => {
+            const menuSlug = (menu.menu || "Other").toLowerCase().replace(/\s+/g, '-');
+            
+            // Menu header dengan icon
+            html += `
+                <div class="space-y-3" data-menu="${menuSlug}">
+                    <div class="px-4 py-3 rounded-lg bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-800/20 border border-blue-200 dark:border-blue-800 sticky top-0 z-10">
+                        <div class="flex items-center gap-3">
+                            <i class="${menu.icon} text-lg text-blue-600 dark:text-blue-400"></i>
+                            <label class="font-semibold text-sm text-blue-900 dark:text-blue-100 flex-1 cursor-pointer">
                                 <input type="checkbox" 
-                                    class="category-select-all w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-700 cursor-pointer"
-                                    data-category="${categorySlug}">
-                                <span class="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"></span>
-                                ${category || "Other"}
+                                    class="menu-select-all w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-700 cursor-pointer mr-2"
+                                    data-menu="${menuSlug}">
+                                <span>${menu.menu}</span>
                             </label>
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-3">
+                    </div>
+            `;
+
+            // Check if has submenus
+            if (menu.submenus && menu.submenus.length > 0) {
+                // Render submenus
+                menu.submenus.forEach((submenu) => {
+                    const submenuSlug = (submenu.submenu || "Other").toLowerCase().replace(/\s+/g, '-');
+                    
+                    html += `
+                        <div class="ml-4 pl-3 border-l-2 border-blue-300 dark:border-blue-700 space-y-2" data-submenu="${submenuSlug}">
+                            <div class="px-3 py-2 rounded-lg bg-blue-50 dark:bg-slate-700/40">
+                                <label class="font-medium text-xs uppercase tracking-wider text-blue-700 dark:text-blue-300 flex items-center gap-2 cursor-pointer hover:text-blue-900 dark:hover:text-blue-100 transition-colors">
+                                    <input type="checkbox" 
+                                        class="submenu-select-all w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-700 cursor-pointer"
+                                        data-menu="${menuSlug}"
+                                        data-submenu="${submenuSlug}">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400"></span>
+                                    ${submenu.submenu}
+                                </label>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-2">
+                    `;
+
+                    if (submenu.permissions && submenu.permissions.length > 0) {
+                        submenu.permissions.forEach((permission) => {
+                            const isChecked = selectedIds.includes(permission.id) ? "checked" : "";
+                            html += `
+                                <label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-blue-100 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer group">
+                                    <input type="checkbox" name="permissions[]" 
+                                        value="${permission.id}" 
+                                        class="permission-checkbox w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-700 cursor-pointer"
+                                        data-menu="${menuSlug}"
+                                        data-submenu="${submenuSlug}"
+                                        ${isChecked}>
+                                    <span class="text-xs text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                                        <strong>${getActionLabel(permission.name)}</strong>
+                                    </span>
+                                </label>
+                            `;
+                        });
+                    } else {
+                        html += `
+                            <p class="text-xs text-gray-500 dark:text-gray-400 py-2 px-2 col-span-2 italic">
+                                Tidak ada permission
+                            </p>
+                        `;
+                    }
+
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+            } else if (menu.permissions && menu.permissions.length > 0) {
+                // Render permissions directly without submenus
+                html += `
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-4">
                 `;
 
-                categoryPermissions.forEach((permission) => {
+                menu.permissions.forEach((permission) => {
                     const isChecked = selectedIds.includes(permission.id) ? "checked" : "";
                     html += `
-                        <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer group">
+                        <label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-blue-100 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer group">
                             <input type="checkbox" name="permissions[]" 
                                 value="${permission.id}" 
                                 class="permission-checkbox w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-slate-700 cursor-pointer"
-                                data-category="${categorySlug}"
+                                data-menu="${menuSlug}"
                                 ${isChecked}>
-                            <span class="text-sm text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-                                ${permission.display_name || permission.name}
+                            <span class="text-xs text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                                <strong>${permission.display_name || permission.name}</strong>
                             </span>
                         </label>
                     `;
                 });
 
                 html += `
-                        </div>
                     </div>
                 `;
             }
+
+            html += `
+                </div>
+            `;
         });
 
         $("#permissionsContainer").html(html);
         
-        // Initialize category checkboxes
-        initCategoryCheckboxes();
+        // Initialize menu/submenu checkboxes
+        initMenuCheckboxes();
     } catch (error) {
         console.error("Error loading permissions:", error);
         $("#permissionsContainer").html(
@@ -78,55 +134,122 @@ async function loadPermissions(selectedIds = []) {
 }
 
 /**
- * Initialize category checkbox states and event handlers
+ * Get human-readable action label
  */
-function initCategoryCheckboxes() {
-    // Update all category checkboxes based on current state
-    $(".category-select-all").each(function () {
-        updateCategoryCheckboxState($(this).data("category"));
+function getActionLabel(permissionName) {
+    const actions = {
+        '.view': '👁️ Lihat',
+        '.create': '➕ Buat',
+        '.edit': '✏️ Edit',
+        '.delete': '🗑️ Hapus',
+        '.approve': '✅ Approve',
+        '.export': '📤 Export',
+    };
+
+    for (const [key, label] of Object.entries(actions)) {
+        if (permissionName.includes(key)) {
+            return label;
+        }
+    }
+
+    return '🔐 ' + permissionName;
+}
+
+/**
+ * Initialize menu/submenu checkbox states and event handlers
+ */
+function initMenuCheckboxes() {
+    // Update all menu/submenu checkboxes based on current state
+    $(".menu-select-all").each(function () {
+        updateMenuCheckboxState($(this).data("menu"));
     });
 
-    // Handle category checkbox click (select/deselect all in category)
-    $(document).off("change", ".category-select-all").on("change", ".category-select-all", function () {
-        const category = $(this).data("category");
+    $(".submenu-select-all").each(function () {
+        updateSubmenuCheckboxState($(this).data("menu"), $(this).data("submenu"));
+    });
+
+    // Handle menu checkbox click (select/deselect all in menu)
+    $(document).off("change", ".menu-select-all").on("change", ".menu-select-all", function () {
+        const menu = $(this).data("menu");
         const isChecked = $(this).prop("checked");
         
-        // Select/deselect all permissions in this category
-        $(`.permission-checkbox[data-category="${category}"]`).prop("checked", isChecked);
+        // Select/deselect all permissions in this menu
+        $(`.permission-checkbox[data-menu="${menu}"]`).prop("checked", isChecked);
         
-        // Update the category checkbox state (remove indeterminate)
-        updateCategoryCheckboxState(category);
+        // Update all submenu checkboxes in this menu
+        $(`.submenu-select-all[data-menu="${menu}"]`).each(function() {
+            $(this).prop("checked", isChecked).prop("indeterminate", false);
+        });
+        
+        updateMenuCheckboxState(menu);
+    });
+
+    // Handle submenu checkbox click (select/deselect all in submenu)
+    $(document).off("change", ".submenu-select-all").on("change", ".submenu-select-all", function () {
+        const menu = $(this).data("menu");
+        const submenu = $(this).data("submenu");
+        const isChecked = $(this).prop("checked");
+        
+        // Select/deselect all permissions in this submenu
+        $(`.permission-checkbox[data-menu="${menu}"][data-submenu="${submenu}"]`).prop("checked", isChecked);
+        
+        // Update menu checkbox state
+        updateMenuCheckboxState(menu);
     });
 
     // Handle individual permission checkbox click
     $(document).off("change", ".permission-checkbox").on("change", ".permission-checkbox", function () {
-        const category = $(this).data("category");
-        updateCategoryCheckboxState(category);
+        const menu = $(this).data("menu");
+        const submenu = $(this).data("submenu");
+        
+        if (submenu) {
+            updateSubmenuCheckboxState(menu, submenu);
+        }
+        updateMenuCheckboxState(menu);
     });
 }
 
 /**
- * Update category checkbox state based on its permissions
+ * Update menu checkbox state based on its permissions
  */
-function updateCategoryCheckboxState(category) {
-    const categoryCheckbox = $(`.category-select-all[data-category="${category}"]`);
-    const permissionCheckboxes = $(`.permission-checkbox[data-category="${category}"]`);
+function updateMenuCheckboxState(menu) {
+    const menuCheckbox = $(`.menu-select-all[data-menu="${menu}"]`);
+    const permissionCheckboxes = $(`.permission-checkbox[data-menu="${menu}"]`);
     
     const total = permissionCheckboxes.length;
     const checked = permissionCheckboxes.filter(":checked").length;
     
     if (checked === 0) {
-        // None checked
-        categoryCheckbox.prop("checked", false);
-        categoryCheckbox.prop("indeterminate", false);
+        menuCheckbox.prop("checked", false);
+        menuCheckbox.prop("indeterminate", false);
     } else if (checked === total) {
-        // All checked
-        categoryCheckbox.prop("checked", true);
-        categoryCheckbox.prop("indeterminate", false);
+        menuCheckbox.prop("checked", true);
+        menuCheckbox.prop("indeterminate", false);
     } else {
-        // Some checked (indeterminate state)
-        categoryCheckbox.prop("checked", false);
-        categoryCheckbox.prop("indeterminate", true);
+        menuCheckbox.prop("checked", false);
+        menuCheckbox.prop("indeterminate", true);
+    }
+}
+
+/**
+ * Update submenu checkbox state based on its permissions
+ */
+function updateSubmenuCheckboxState(menu, submenu) {
+    const submenuCheckbox = $(`.submenu-select-all[data-menu="${menu}"][data-submenu="${submenu}"]`);
+    const permissionCheckboxes = $(`.permission-checkbox[data-menu="${menu}"][data-submenu="${submenu}"]`);
+    
+    const total = permissionCheckboxes.length;
+    const checked = permissionCheckboxes.filter(":checked").length;
+    
+    if (checked === 0) {
+        submenuCheckbox.prop("checked", false);
+        submenuCheckbox.prop("indeterminate", false);
+    } else if (checked === total) {
+        submenuCheckbox.prop("checked", true);
+        submenuCheckbox.prop("indeterminate", false);
+    } else {
+        submenuCheckbox.prop("checked", false);
+        submenuCheckbox.prop("indeterminate", true);
     }
 }
 

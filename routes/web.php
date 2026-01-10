@@ -38,6 +38,8 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/data', [DashboardController::class, 'getData'])->name('dashboard.data');
     Route::get('/dashboard/po-analytics', [DashboardController::class, 'getPoAnalytics'])->name('dashboard.po-analytics');
+    Route::get('/dashboard/pr-analytics', [DashboardController::class, 'getPrAnalytics'])->name('dashboard.pr-analytics');
+    Route::get('/dashboard/cost-saving', [DashboardController::class, 'costSavingAnalytics'])->name('dashboard.cost-saving');
     
     /* ================= Export Data ======================== */
     Route::get('/export', [ExportController::class, 'index'])->name('export.index');
@@ -71,23 +73,24 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
 
     Route::prefix('invoice')->group(function () {
         /* ================= Terima Dari Vendor ======================== */
+        Route::get('/dari-vendor/get-onsites', [DariVendorController::class, 'getOnsitesData'])->name('dari-vendor.get-onsites');
         Route::get('/dari-vendor/data', [DariVendorController::class, 'getData'])->name('dari-vendor.data');
         Route::get('/dari-vendor/search/{keyword}', [DariVendorController::class, 'search'])->name('dari-vendor.search');
         Route::get('/dari-vendor/bulk-edit', [DariVendorController::class, 'bulkEdit'])->name('dari-vendor.bulk-edit');
         Route::post('/dari-vendor/bulk-update', [DariVendorController::class, 'bulkUpdate'])->name('dari-vendor.bulk-update');
         Route::post('/dari-vendor/store-multiple', [DariVendorController::class, 'storeMultiple'])->name('dari-vendor.store-multiple');
         Route::delete('/dari-vendor', [DariVendorController::class, 'bulkDestroy'])->name('dari-vendor.bulkDestroy');
-        Route::resource('/dari-vendor', DariVendorController::class)->except(['show', 'destroy']);
+        Route::resource('/dari-vendor', DariVendorController::class)->except(['destroy']);
         /* ================= Pengajuan ke Finance ======================== */
+        Route::resource('/pengajuan', PengajuanController::class)->except(['show', 'destroy']);
         Route::get('/pengajuan/data', [PengajuanController::class, 'getData'])->name('pengajuan.data');
         Route::get('/pengajuan/search/{keyword}', [PengajuanController::class, 'search'])->name('pengajuan.search');
-        Route::get('/pengajuan/history', [PengajuanController::class, 'history'])->name('pengajuan.history');
-        Route::get('/pengajuan/history/data', [PengajuanController::class, 'getHistoryData'])->name('pengajuan.history-data');
         Route::get('/pengajuan/bulk-edit', [PengajuanController::class, 'bulkEditForm'])->name('pengajuan.bulk-edit');
+        Route::get('/pengajuan/get-invoices', [PengajuanController::class, 'getInvoices'])->name('pengajuan.get-invoices');
         Route::post('/pengajuan/bulk-submit', [PengajuanController::class, 'bulkSubmit'])->name('pengajuan.bulk-submit');
         Route::post('/pengajuan/bulk-update', [PengajuanController::class, 'bulkUpdate'])->name('pengajuan.bulk-update');
         Route::delete('/pengajuan', [PengajuanController::class, 'bulkDestroy'])->name('pengajuan.bulkDestroy');
-        Route::resource('/pengajuan', PengajuanController::class)->except(['show', 'destroy']);
+        Route::get('/pengajuan/{pengajuan}', [PengajuanController::class, 'show'])->name('pengajuan.show');
         /* ================= Pembayaran Oleh Finance ======================== */
         Route::get('/pembayaran/get-invoices', [PembayaranController::class, 'getInvoices'])->name('pembayaran.get-invoices');
         Route::get('/pembayaran/data', [PembayaranController::class, 'data'])->name('pembayaran.data');
@@ -115,12 +118,15 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
         /* ================= Roles Management ======================== */
         Route::get('/roles/data', [RolesController::class, 'dataRoles'])->name('roles.data');
         Route::get('/roles/api/permissions', [RolesController::class, 'apiPermissions'])->name('roles.apiPermissions');
+        Route::get('/roles/api/permissions-with-mappings', [RolesController::class, 'getPermissionsWithMappings'])->name('roles.permissionsMappings');
+        Route::get('/roles/api/permissions-structured', [RolesController::class, 'getPermissionsStructured'])->name('roles.permissionsStructured');
         Route::get('/roles/{role}/permissions', [RolesController::class, 'getPermissions'])->name('roles.permissions');
         Route::resource('/roles', RolesController::class)->only(['index', 'store', 'update', 'destroy']);
 
         /* ================= Users Management ======================== */
         Route::get('/users/data', [ManajemenUserController::class, 'dataUsers'])->name('users.data');
         Route::get('/users/{user}/permissions', [ManajemenUserController::class, 'getUserPermissions'])->name('users.permissions');
+        Route::get('/users/{user}/permissions-structured', [ManajemenUserController::class, 'getPermissionsStructured'])->name('users.permissionsStructured');
         Route::post('/users/{user}/permissions', [ManajemenUserController::class, 'updateUserPermissions'])->name('users.updatePermissions');
         Route::resource('/users', ManajemenUserController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
 

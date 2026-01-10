@@ -2,10 +2,11 @@
  * Pengajuan Invoice - Entry Point
  */
 import $ from "jquery";
-import { initPengajuanTable, initPengajuanRefresh, initBulkSubmit } from "./pengajuan-read";
+import { initPengajuanTable, initPengajuanRefresh, initBulkEdit, initBulkDelete } from "./pengajuan-read";
 
 $(document).ready(function () {
     initPengajuanTable();
     initPengajuanRefresh();
-    initBulkSubmit();
+    initBulkEdit();
+    initBulkDelete();
 });

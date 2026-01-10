@@ -58,8 +58,14 @@ function getTableColumns() {
             formatter: (cell) => h("div", { innerHTML: cell }),
         },
         {
-            id: "created_at",
-            name: "Created At",
+            id: "total_amount",
+            name: "Total Amount",
+            width: "150px",
+            formatter: (cell) => h("div", { innerHTML: cell }),
+        },
+        {
+            id: "approved_date",
+            name: "Approved Date",
             width: "150px",
             formatter: (cell) => h("div", { innerHTML: cell }),
         },
@@ -108,7 +114,8 @@ function fetchTableData(showNotification = false) {
                 item.pr_number,
                 item.location,
                 item.items_count,
-                item.created_at,
+                item.total_amount,
+                item.approved_date,
                 item.created_by,
                 item.actions,
             ]);
@@ -302,8 +309,46 @@ export function initFilterControls() {
         $("#filter-date-from").val("");
         $("#filter-date-to").val("");
         
-        // Clear current filters
+        // Clear current filters but keep stat_filter if exists
+        const statFilter = currentFilters.stat_filter;
         currentFilters = {};
+        if (statFilter) {
+            currentFilters.stat_filter = statFilter;
+        }
+        
+        // Reload data
+        fetchTableData(true);
+    });
+
+    // Initialize statistic card filters with default
+    currentFilters = {
+        stat_filter: 'items_without_po'
+    };
+
+    // Handle statistic card click
+    $(document).on("click", ".stat-card", function() {
+        const statFilter = $(this).data("stat-filter");
+        
+        // Remove active class from all cards
+        $(".stat-card").removeClass("active").removeClass("ring-4").removeClass("ring-white/30");
+        
+        // Add active class to clicked card
+        $(this).addClass("active").addClass("ring-4").addClass("ring-white/30");
+        
+        // Clear all filters except stat_filter
+        $("#filter-pr-number").val("");
+        $("#filter-item-desc").val("");
+        $("#filter-request-type").val("");
+        $("#filter-location").val("");
+        $("#filter-stage").val("");
+        $("#filter-classification").val("");
+        $("#filter-date-from").val("");
+        $("#filter-date-to").val("");
+        
+        // Set stat filter
+        currentFilters = {
+            stat_filter: statFilter
+        };
         
         // Reload data
         fetchTableData(true);

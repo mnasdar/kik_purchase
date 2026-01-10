@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Services\MenuService;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
@@ -20,7 +21,7 @@ class RolesController extends Controller
         $totalRoles = Role::count();
         $totalPermissions = Permission::count();
         $rolesWithUsers = Role::whereHas('users')->count();
-        $protectedRoles = Role::whereIn('name', ['Super Admin', 'Kasir', 'Gudang'])->count();
+        $protectedRoles = Role::whereIn('name', ['Super Admin', 'Staff'])->count();
         
         return view('menu.access.roles.index', compact(
             'totalRoles',
@@ -184,7 +185,7 @@ class RolesController extends Controller
     public function destroy(Role $role)
     {
         // Prevent deleting protected roles
-        $protectedRoles = ['Super Admin', 'Kasir', 'Gudang'];
+        $protectedRoles = ['Super Admin', 'Staff'];
         
         if (in_array($role->name, $protectedRoles)) {
             return response()->json([
@@ -317,7 +318,151 @@ class RolesController extends Controller
 
         return response()->json([
             'permissions' => $permissions,
-            'categories' => $categories
+            'categories' => $categories,
+            'mappings' => \App\Helpers\MenuHelper::getMenuPermissionsMapping(),
+        ]);
+    }
+
+    /**
+     * Get permissions grouped by category with menu mappings
+     * Used for role/user permission selection forms
+     */
+    public function getPermissionsWithMappings()
+    {
+        $mappings = \App\Helpers\MenuHelper::getMenuPermissionsMapping();
+        $permissions = Permission::orderBy('category')->orderBy('name')->get();
+
+        return response()->json([
+            'success' => true,
+            'permissions' => $permissions,
+            'mappings' => $mappings,
+        ]);
+    }
+
+    /**
+     * Get permissions organized by menu structure (sidebar order)
+     * With main menu and sub-menu grouping
+     */
+    public function getPermissionsStructured()
+    {
+        $permissions = Permission::all();
+        
+        // Permission structure sesuai menu sidebar
+        $structured = [
+            [
+                'menu' => 'Dashboard',
+                'icon' => 'mgc_home_3_line',
+                'order' => 1,
+                'permissions' => $permissions->where('category', 'Dashboard')->values()->all(),
+            ],
+            [
+                'menu' => 'Purchase',
+                'icon' => 'mgc_shopping_cart_2_line',
+                'order' => 2,
+                'submenus' => [
+                    [
+                        'submenu' => 'PR (Purchase Request)',
+                        'permissions' => $permissions->filter(function($p) {
+                            return $p->category === 'Purchase' && strpos($p->name, 'purchase-requests') !== false;
+                        })->values()->all(),
+                    ],
+                    [
+                        'submenu' => 'PO (Purchase Order)',
+                        'permissions' => $permissions->filter(function($p) {
+                            return $p->category === 'Purchase' && strpos($p->name, 'purchase-orders') !== false;
+                        })->values()->all(),
+                    ],
+                ]
+            ],
+            [
+                'menu' => 'Invoice',
+                'icon' => 'mgc_bill_line',
+                'order' => 3,
+                'submenus' => [
+                    [
+                        'submenu' => 'Dari Vendor',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'invoices.dari-vendor') !== false;
+                        })->values()->all(),
+                    ],
+                    [
+                        'submenu' => 'Pengajuan',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'invoices.pengajuan') !== false;
+                        })->values()->all(),
+                    ],
+                    [
+                        'submenu' => 'Pembayaran',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'invoices.pembayaran') !== false;
+                        })->values()->all(),
+                    ],
+                ]
+            ],
+            [
+                'menu' => 'Konfigurasi',
+                'icon' => 'mgc_settings_1_line',
+                'order' => 4,
+                'submenus' => [
+                    [
+                        'submenu' => 'Klasifikasi',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'classifications') !== false;
+                        })->values()->all(),
+                    ],
+                    [
+                        'submenu' => 'Unit Kerja',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'locations') !== false;
+                        })->values()->all(),
+                    ],
+                    [
+                        'submenu' => 'Supplier',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'suppliers') !== false;
+                        })->values()->all(),
+                    ],
+                ]
+            ],
+            [
+                'menu' => 'Export Data',
+                'icon' => 'mgc_file_export_line',
+                'order' => 5,
+                'permissions' => $permissions->filter(function($p) {
+                    return strpos($p->name, 'reports.export') !== false;
+                })->values()->all(),
+            ],
+            [
+                'menu' => 'Manajemen Akses',
+                'icon' => 'mgc_shield_line',
+                'order' => 6,
+                'isDivider' => true,
+                'submenus' => [
+                    [
+                        'submenu' => 'Roles',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'roles') !== false;
+                        })->values()->all(),
+                    ],
+                    [
+                        'submenu' => 'Users',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'users') !== false;
+                        })->values()->all(),
+                    ],
+                    [
+                        'submenu' => 'Activity Log',
+                        'permissions' => $permissions->filter(function($p) {
+                            return strpos($p->name, 'activity-log') !== false;
+                        })->values()->all(),
+                    ],
+                ]
+            ],
+        ];
+
+        return response()->json([
+            'success' => true,
+            'structured' => $structured,
         ]);
     }
 }

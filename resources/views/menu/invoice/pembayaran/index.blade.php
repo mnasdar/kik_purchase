@@ -134,6 +134,24 @@
             </div>
         </div>
     </div>
+
+    <!-- Detail Invoice Modal -->
+    <div id="detailPembayaranModal" class="fixed inset-0 z-50 hidden overflow-y-auto transition-opacity duration-300 ease-out" style="opacity: 0;">
+        <div id="detailPembayaranModalBackdrop" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity duration-300 ease-out" style="opacity: 0;"></div>
+        <div class="relative min-h-screen flex items-center justify-center px-4">
+            <div id="detailPembayaranModalContent" class="relative w-full max-w-3xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl transition-all duration-300 ease-out transform" style="transform: scale(0.95); opacity: 0;">
+                <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detail PR & PO</h3>
+                    <button type="button" id="detailPembayaranModalClose" class="btn bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">
+                        <i class="mgc_close_line"></i>
+                    </button>
+                </div>
+                <div class="p-6" id="detailPembayaranContent">
+                    <!-- populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('script')

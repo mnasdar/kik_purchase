@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Config\Location;
 use App\Models\Invoice\Invoice;
 use App\Models\Invoice\Payment;
+use Illuminate\Support\Facades\Log;
 use App\Models\Purchase\PurchaseOrder;
 use App\Models\Purchase\PurchaseRequest;
 use App\Models\Purchase\PurchaseOrderItem;
@@ -102,7 +103,7 @@ class DashboardController extends Controller
             'chart' => $chartData,
         ]);
         } catch (\Exception $e) {
-            \Log::error('Dashboard getData error: ' . $e->getMessage(), [
+            Log::error('Dashboard getData error: ' . $e->getMessage(), [
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
@@ -115,6 +116,233 @@ class DashboardController extends Controller
         }
     }
 
+    /**
+     * Cost Saving analytics per location with %Cost Saving and average SLA metrics
+     */
+    public function costSavingAnalytics(Request $request)
+    {
+        $user = auth()->user();
+        $isSuperAdmin = $user && method_exists($user, 'hasRole') ? $user->hasRole('Super Admin') : false;
+
+        $start = $request->input('start_date') ? Carbon::parse($request->input('start_date'))->startOfDay() : Carbon::now()->subYear()->startOfDay();
+        $end = $request->input('end_date') ? Carbon::parse($request->input('end_date'))->endOfDay() : Carbon::now()->endOfDay();
+        $locationId = $request->input('location_id');
+
+        $query = PurchaseOrderItem::with([
+            'purchaseOrder',
+            'purchaseRequestItem.purchaseRequest.location',
+            'onsites.invoice',
+        ]);
+
+        // Date filter based on PO approved_date; fallback to created_at
+        if ($start && $end) {
+            $query->whereHas('purchaseOrder', function ($q) use ($start, $end) {
+                $q->whereBetween('approved_date', [$start->toDateString(), $end->toDateString()]);
+            });
+        }
+
+        // Determine if we should show per-location comparison
+        $showPerLocation = $isSuperAdmin && !$locationId;
+
+        // Location scoping: Super Admin can filter, others limited to own location
+        if ($isSuperAdmin) {
+            if ($locationId) {
+                $query->whereHas('purchaseRequestItem.purchaseRequest', function ($q) use ($locationId) {
+                    $q->where('location_id', $locationId);
+                });
+            }
+        } else {
+            if ($user && $user->location_id) {
+                $query->whereHas('purchaseRequestItem.purchaseRequest', function ($q) use ($user) {
+                    $q->where('location_id', $user->location_id);
+                });
+            }
+        }
+
+        $items = $query->get();
+
+        // Determine grouping granularity: daily (<=31 days) or monthly (>31 days)
+        $days = $start->diffInDays($end);
+        $groupMonthly = $days > 31;
+
+        // Build bucket sequence for categories
+        $categories = [];
+        $cursor = $start->copy();
+        if ($groupMonthly) {
+            $cursor->startOfMonth();
+            while ($cursor <= $end) {
+                $categories[] = $cursor->format('Y-m');
+                $cursor->addMonth()->startOfMonth();
+            }
+        } else {
+            while ($cursor <= $end) {
+                $categories[] = $cursor->format('Y-m-d');
+                $cursor->addDay();
+            }
+        }
+
+        // Helper: bucket key for item based on PO approved_date (fallback created_at)
+        $getBucketKey = function ($approved) use ($groupMonthly) {
+            if (!$approved) return null;
+            return $groupMonthly ? $approved->format('Y-m') : $approved->format('Y-m-d');
+        };
+
+        if ($showPerLocation) {
+            // Per-location comparison mode
+            // Group items by location
+            $locationGroups = [];
+            foreach ($items as $it) {
+                $location = optional($it->purchaseRequestItem)->purchaseRequest->location ?? null;
+                if (!$location) continue;
+                
+                $locId = $location->id;
+                $locName = $location->name;
+                
+                if (!isset($locationGroups[$locId])) {
+                    $locationGroups[$locId] = [
+                        'name' => $locName,
+                        'items' => []
+                    ];
+                }
+                $locationGroups[$locId]['items'][] = $it;
+            }
+
+            // Build series per location
+            $seriesTotal = [];
+            $seriesPercent = [];
+            $seriesSla = [];
+
+            foreach ($locationGroups as $locId => $locData) {
+                $locName = $locData['name'];
+                $locItems = $locData['items'];
+
+                // Initialize bucket data for this location
+                $bucketData = [];
+                foreach ($categories as $cat) {
+                    $bucketData[$cat] = [
+                        'sumSaving' => 0.0,
+                        'sumAmount' => 0.0,
+                        'slaValues' => [],
+                        'costSavingPercents' => [],
+                    ];
+                }
+
+                // Aggregate per bucket
+                foreach ($locItems as $it) {
+                    $approved = optional($it->purchaseOrder)->approved_date ?? optional($it->purchaseOrder)->created_at;
+                    if (!$approved) continue;
+                    $key = $getBucketKey($approved);
+                    if ($key === null || !isset($bucketData[$key])) continue;
+
+                    $bucketData[$key]['sumSaving'] += (float) ($it->cost_saving ?? 0);
+                    $bucketData[$key]['sumAmount'] += (float) ($it->amount ?? 0);
+
+                    // Calculate per-item cost saving percentage
+                    $itemAmount = (float) ($it->amount ?? 0);
+                    $itemSaving = (float) ($it->cost_saving ?? 0);
+                    if ($itemAmount > 0) {
+                        $bucketData[$key]['costSavingPercents'][] = ($itemSaving / $itemAmount) * 100;
+                    }
+
+                    // SLA PR → PO only
+                    $realPrPo = $it->sla_pr_to_po_realization;
+                    $targetPrPo = optional($it->purchaseRequestItem)->sla_pr_to_po_target;
+                    if ($realPrPo !== null && $targetPrPo !== null && $targetPrPo > 0) {
+                        $bucketData[$key]['slaValues'][] = ($realPrPo <= $targetPrPo) ? 100 : 0;
+                    }
+                }
+
+                // Finalize arrays for this location
+                $totalCostSaving = [];
+                $percentCostSaving = [];
+                $avgSlaPercent = [];
+                
+                foreach ($categories as $cat) {
+                    $sumSaving = $bucketData[$cat]['sumSaving'];
+                    $sumAmount = $bucketData[$cat]['sumAmount'];
+                    $vals = $bucketData[$cat]['slaValues'];
+                    $percentVals = $bucketData[$cat]['costSavingPercents'];
+
+                    $totalCostSaving[] = round($sumSaving, 0);
+                    $percentCostSaving[] = count($percentVals) > 0 ? round(array_sum($percentVals) / count($percentVals), 2) : 0;
+                    $avgSlaPercent[] = count($vals) > 0 ? round(array_sum($vals) / count($vals), 2) : 0;
+                }
+
+                $seriesTotal[] = ['name' => $locName, 'type' => 'column', 'data' => $totalCostSaving];
+                $seriesPercent[] = ['name' => $locName . ' - % Cost Saving', 'type' => 'line', 'data' => $percentCostSaving];
+                $seriesSla[] = ['name' => $locName . ' - % SLA', 'type' => 'line', 'data' => $avgSlaPercent];
+            }
+
+            return response()->json([
+                'categories' => $categories,
+                'seriesTotal' => $seriesTotal,
+                'seriesPercent' => $seriesPercent,
+                'seriesSla' => $seriesSla,
+                'mode' => 'per-location'
+            ]);
+        } else {
+            // Aggregated mode (single location or non-Super Admin)
+            $bucketData = [];
+            foreach ($categories as $cat) {
+                $bucketData[$cat] = [
+                    'sumSaving' => 0.0,
+                    'sumAmount' => 0.0,
+                    'slaValues' => [],
+                    'costSavingPercents' => [],
+                ];
+            }
+
+            foreach ($items as $it) {
+                $approved = optional($it->purchaseOrder)->approved_date ?? optional($it->purchaseOrder)->created_at;
+                if (!$approved) continue;
+                $key = $getBucketKey($approved);
+                if ($key === null || !isset($bucketData[$key])) continue;
+
+                $bucketData[$key]['sumSaving'] += (float) ($it->cost_saving ?? 0);
+                $bucketData[$key]['sumAmount'] += (float) ($it->amount ?? 0);
+
+                // Calculate per-item cost saving percentage
+                $itemAmount = (float) ($it->amount ?? 0);
+                $itemSaving = (float) ($it->cost_saving ?? 0);
+                if ($itemAmount > 0) {
+                    $bucketData[$key]['costSavingPercents'][] = ($itemSaving / $itemAmount) * 100;
+                }
+
+                // SLA PR → PO only
+                $realPrPo = $it->sla_pr_to_po_realization;
+                $targetPrPo = optional($it->purchaseRequestItem)->sla_pr_to_po_target;
+                if ($realPrPo !== null && $targetPrPo !== null && $targetPrPo > 0) {
+                    $bucketData[$key]['slaValues'][] = ($realPrPo <= $targetPrPo) ? 100 : 0;
+                }
+            }
+
+            // Finalize per bucket arrays
+            $totalCostSaving = array_fill(0, count($categories), 0);
+            $percentCostSaving = array_fill(0, count($categories), 0);
+            $avgSlaPercent = array_fill(0, count($categories), 0);
+
+            foreach ($categories as $idx => $cat) {
+                $sumSaving = $bucketData[$cat]['sumSaving'];
+                $sumAmount = $bucketData[$cat]['sumAmount'];
+                $vals = $bucketData[$cat]['slaValues'];
+                $percentVals = $bucketData[$cat]['costSavingPercents'];
+
+                $totalCostSaving[$idx] = round($sumSaving, 0);
+                $percentCostSaving[$idx] = count($percentVals) > 0 ? round(array_sum($percentVals) / count($percentVals), 2) : 0;
+                $avgSlaPercent[$idx] = count($vals) > 0 ? round(array_sum($vals) / count($vals), 2) : 0;
+            }
+
+            return response()->json([
+                'categories' => $categories,
+                'series' => [
+                    [ 'name' => 'Total Cost Saving', 'type' => 'column', 'data' => $totalCostSaving ],
+                    [ 'name' => '% Cost Saving', 'type' => 'line', 'data' => $percentCostSaving ],
+                    [ 'name' => 'Avg % SLA', 'type' => 'line', 'data' => $avgSlaPercent ],
+                ],
+                'mode' => 'aggregated'
+            ]);
+        }
+    }
     /**
      * Get chart data for trend visualization
      */
@@ -216,7 +444,8 @@ class DashboardController extends Controller
 
             // Get PO items in this month through PurchaseOrder relationship
             $query = PurchaseOrderItem::whereHas('purchaseOrder', function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('created_at', [$startDate, $endDate]);
+                $query->whereNotNull('approved_date')
+                      ->whereBetween('approved_date', [$startDate, $endDate]);
             });
 
             // Apply location filter
@@ -266,6 +495,96 @@ class DashboardController extends Controller
                     'name' => 'Jumlah PO',
                     'type' => 'line',
                     'data' => $poCounts,
+                ],
+                [
+                    'name' => 'Avg SLA %',
+                    'type' => 'line',
+                    'data' => $slaPercentages,
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Get PR Analytics data (12 months)
+     */
+    public function getPrAnalytics(Request $request)
+    {
+        $request->validate([
+            'location_id' => 'nullable|exists:locations,id',
+        ]);
+
+        // Get location_id - dari request atau dari user yang login
+        $locationId = $request->location_id;
+        if (!$locationId && auth()->user()->location_id) {
+            $locationId = auth()->user()->location_id;
+        }
+
+        $months = [];
+        $totalAmounts = [];
+        $prCounts = [];
+        $slaPercentages = [];
+
+        // Get data for last 12 months
+        for ($i = 11; $i >= 0; $i--) {
+            $startDate = Carbon::now()->subMonths($i)->startOfMonth();
+            $endDate = Carbon::now()->subMonths($i)->endOfMonth();
+
+            // Month label
+            $months[] = $startDate->format('M Y');
+
+            // Get PR items in this month through PurchaseRequest relationship
+            $query = PurchaseRequestItem::whereHas('purchaseRequest', function ($query) use ($startDate, $endDate) {
+                $query->whereNotNull('approved_date')
+                      ->whereBetween('approved_date', [$startDate, $endDate]);
+            });
+
+            // Apply location filter
+            if ($locationId) {
+                $query->whereHas('purchaseRequest', function ($q) use ($locationId) {
+                    $q->where('location_id', $locationId);
+                });
+            }
+
+            $prItems = $query->get();
+
+            // Calculate total amount
+            $totalAmount = $prItems->sum('amount');
+            $totalAmounts[] = round($totalAmount / 1000000, 2); // Convert to millions
+
+            // Count PR items
+            $prCounts[] = $prItems->count();
+
+            // Calculate average SLA percentage (PR to PO)
+            $slaData = [];
+            foreach ($prItems as $item) {
+                if ($item->sla_pr_to_po_target && $item->sla_pr_to_po_realization !== null) {
+                    $target = $item->sla_pr_to_po_target;
+                    $realization = $item->sla_pr_to_po_realization;
+                    
+                    // If realization > target, then 0%, else 100%
+                    $slaPercent = $realization <= $target ? 100 : 0;
+                    $slaData[] = $slaPercent;
+                }
+            }
+
+            // Average SLA percentage for this month
+            $avgSla = count($slaData) > 0 ? round(array_sum($slaData) / count($slaData), 1) : 0;
+            $slaPercentages[] = $avgSla;
+        }
+
+        return response()->json([
+            'categories' => $months,
+            'series' => [
+                [
+                    'name' => 'Total Amount (Juta)',
+                    'type' => 'column',
+                    'data' => $totalAmounts,
+                ],
+                [
+                    'name' => 'Jumlah PR',
+                    'type' => 'line',
+                    'data' => $prCounts,
                 ],
                 [
                     'name' => 'Avg SLA %',

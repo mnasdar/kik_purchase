@@ -6,7 +6,7 @@
 
 @section('content')
     <!-- Date Range Filter -->
-    <div class="card mb-6">
+    <div class="card mb-6 sticky top-20 z-40 shadow-lg">
         <div class="p-6">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
@@ -18,19 +18,18 @@
                 <div class="flex items-center gap-3 flex-wrap">
 
                     <!-- Unit Filter -->
-                    @if(auth()->user()->hasRole('Super Admin'))
-                        <div class="relative">
-                            <select id="unitFilter" 
-                                class="search-select pr-10">
+                    <div class="relative">
+                        <select id="unitFilter" 
+                            class="search-select pr-10"
+                            @if(!auth()->user()->hasRole('Super Admin')) disabled @endif>
+                            @if(auth()->user()->hasRole('Super Admin'))
                                 <option value="">Semua Unit</option>
-                                @foreach($locations as $location)
-                                    <option value="{{ $location->id }}">{{ $location->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @else
-                        <input type="hidden" id="unitFilter" value="{{ auth()->user()->location_id }}">
-                    @endif
+                            @endif
+                            @foreach($locations as $location)
+                                <option value="{{ $location->id }}" @if(!auth()->user()->hasRole('Super Admin') && auth()->user()->location_id == $location->id) selected @endif>{{ $location->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
                     <!-- Date Type Filter -->
                     <div class="relative">
@@ -137,7 +136,7 @@
         <!-- Progress Flow -->
         <div class="card">
             <div class="card-header">
-                <h4 class="text-lg font-semibold text-gray-800 dark:text-white">Progress Flow</h4>
+                <h4 class="text-lg font-semibold text-gray-800 dark:text-white" id="progressFlowTitle">Progress Flow</h4>
                 <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
                     Alur proses dari PR hingga Payment
                 </p>
@@ -210,7 +209,7 @@
         <!-- Chart Visualization -->
         <div class="card">
             <div class="card-header">
-                <h4 class="text-lg font-semibold text-gray-800 dark:text-white">Trend Purchasing</h4>
+                <h4 class="text-lg font-semibold text-gray-800 dark:text-white" id="chartItemTitle">Grafik Jumlah Item</h4>
                 <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
                     Grafik perbandingan volume data
                 </p>
@@ -224,70 +223,72 @@
     <!-- PO Analytics Chart -->
     <div class="card mb-6">
         <div class="card-header">
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-white">Analisis Purchase Order (PO)</h4>
-            <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                Grafik total amount, jumlah PO, dan rata-rata % realisasi SLA per bulan (12 bulan terakhir)
-            </p>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-800 dark:text-white" id="poChartTitle">Grafik Purchase Order (PO)</h4>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-1" id="poChartSubtitle">
+                        Grafik total amount, jumlah PO, dan rata-rata % realisasi SLA per bulan (12 bulan terakhir)
+                    </p>
+                </div>
+                <div class="relative">
+                    <select id="poAnalyticsFilter" 
+                        class="search-select pr-10">
+                        <option value="po">Purchase Order</option>
+                        <option value="pr">Purchase Request</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <div class="p-6">
             <div id="chart-po-analytics" style="min-height: 400px;"></div>
         </div>
     </div>
 
-    <!-- Details Table -->
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <!-- Recent PR -->
+    <!-- Cost Saving Analytics Charts -->
+    <!-- Total Cost Saving Chart (Full Width) -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <div>
+                <h4 class="text-lg font-semibold text-gray-800 dark:text-white" id="totalCostSavingTitle">Total Cost Saving</h4>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Total penghematan biaya per periode
+                </p>
+            </div>
+        </div>
+        <div class="p-6">
+            <div id="chart-cost-saving-total" style="min-height: 380px;"></div>
+        </div>
+    </div>
+
+    <!-- % Cost Saving and % SLA Charts (2 Columns) -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+        <!-- % Cost Saving Chart -->
         <div class="card">
             <div class="card-header">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800 dark:text-white">Recent Purchase Requests</h4>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                            5 PR terbaru dalam periode
-                        </p>
-                    </div>
-                    <a href="{{ route('purchase-request.index') }}" 
-                        class="text-sm text-primary hover:underline">
-                        Lihat Semua →
-                    </a>
-                </div>
+                <h4 class="text-lg font-semibold text-gray-800 dark:text-white" id="percentCostSavingTitle">% Cost Saving</h4>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Persentase penghematan rata-rata per item
+                </p>
             </div>
             <div class="p-6">
-                <div class="space-y-3" id="recent-pr-list">
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="mgc_loading_line text-3xl animate-spin"></i>
-                        <p class="mt-2">Memuat data...</p>
-                    </div>
-                </div>
+                <div id="chart-cost-saving-percent" style="min-height: 380px;"></div>
             </div>
         </div>
 
-        <!-- Recent Payments -->
+        <!-- % SLA Chart -->
         <div class="card">
             <div class="card-header">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800 dark:text-white">Recent Payments</h4>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                            5 Pembayaran terbaru dalam periode
-                        </p>
-                    </div>
-                    <a href="{{ route('pembayaran.index') }}" 
-                        class="text-sm text-primary hover:underline">
-                        Lihat Semua →
-                    </a>
-                </div>
+                <h4 class="text-lg font-semibold text-gray-800 dark:text-white" id="slaCostSavingTitle">% SLA PR → PO</h4>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    Compliance SLA (<= target = 100%, > target = 0%)
+                </p>
             </div>
             <div class="p-6">
-                <div class="space-y-3" id="recent-payment-list">
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="mgc_loading_line text-3xl animate-spin"></i>
-                        <p class="mt-2">Memuat data...</p>
-                    </div>
-                </div>
+                <div id="chart-sla-percent" style="min-height: 380px;"></div>
             </div>
         </div>
     </div>
+
 @endsection
 
 @section('script')

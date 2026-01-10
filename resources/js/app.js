@@ -50,6 +50,91 @@ function initNumberOnlyInputs() {
     });
 }
 
+function initTopbarMenuSearch() {
+    const items = Array.isArray(window.menuSearchItems) ? window.menuSearchItems : [];
+    const input = document.getElementById('topbar-search-input');
+    const results = document.getElementById('topbar-search-results');
+    const emptyState = document.getElementById('topbar-search-empty');
+
+    if (!input || !results) return;
+
+    const clearResults = () => {
+        results.innerHTML = '';
+        results.classList.add('hidden');
+        if (emptyState) emptyState.classList.add('hidden');
+    };
+
+    const buildRow = (item) => {
+        const row = document.createElement('a');
+        row.href = item.url || '#';
+        row.className = 'flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition';
+
+        const meta = document.createElement('div');
+        const title = document.createElement('p');
+        title.className = 'text-sm font-semibold text-gray-900 dark:text-gray-100';
+        title.textContent = item.title || '';
+        const parent = document.createElement('p');
+        parent.className = 'text-xs text-gray-500 dark:text-gray-400';
+        parent.textContent = item.parent ? `Dalam ${item.parent}` : 'Menu utama';
+        meta.appendChild(title);
+        meta.appendChild(parent);
+
+        const hint = document.createElement('span');
+        hint.className = 'text-xs text-primary font-semibold';
+        hint.textContent = 'Buka';
+
+        row.appendChild(meta);
+        row.appendChild(hint);
+        return row;
+    };
+
+    const renderResults = (keyword) => {
+        const query = keyword.toLowerCase().trim();
+        if (!query) {
+            clearResults();
+            return;
+        }
+
+        const filtered = items
+            .filter(({ title = '', parent = '' }) => `${title} ${parent}`.toLowerCase().includes(query))
+            .slice(0, 8);
+
+        results.innerHTML = '';
+
+        if (!filtered.length) {
+            results.classList.add('hidden');
+            if (emptyState) emptyState.classList.remove('hidden');
+            return;
+        }
+
+        filtered.forEach((item) => results.appendChild(buildRow(item)));
+        results.classList.remove('hidden');
+        if (emptyState) emptyState.classList.add('hidden');
+    };
+
+    input.addEventListener('input', (e) => renderResults(e.target.value));
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const first = results.querySelector('a');
+            if (first) {
+                window.location.href = first.href;
+            }
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const trigger = e.target.closest('[data-fc-target="topbar-search-modal"]');
+        if (trigger) {
+            setTimeout(() => {
+                input.value = '';
+                clearResults();
+                input.focus();
+            }, 150);
+        }
+    });
+}
+
 class App {
 
     // Components
@@ -454,4 +539,5 @@ class ThemeCustomizer {
 
 new App().init();
 new ThemeCustomizer().init();
+initTopbarMenuSearch();
 initNumberOnlyInputs();

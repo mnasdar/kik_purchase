@@ -94,7 +94,7 @@ function submitUpdate(data, $form) {
 
             // Redirect
             setTimeout(() => {
-                window.location.href = response.redirect || route("pengajuan.history");
+                window.location.href = response.redirect || route("pengajuan.index");
             }, 1500);
         },
         error: function (xhr) {

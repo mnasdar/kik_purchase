@@ -1,36 +1,7 @@
 @extends('layouts.vertical', ['title' => 'Tambah Invoice', 'sub_title' => 'Invoice'])
 
 @section('css')
-    @vite(['node_modules/flatpickr/dist/flatpickr.min.css'])
-    <style>
-        /* Enhanced search styling */
-        #search-po-table {
-            transition: all 0.3s ease;
-        }
-
-        #search-po-table:focus {
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        /* Table sorting enhancement */
-        table thead th {
-            transition: background-color 0.2s ease;
-        }
-
-        /* Highlight filtered rows */
-        table tbody tr.filtered-out {
-            opacity: 0.3;
-        }
-
-        /* Better hover effect */
-        table tbody tr:hover {
-            background-color: rgba(59, 130, 246, 0.05);
-        }
-
-        .dark table tbody tr:hover {
-            background-color: rgba(59, 130, 246, 0.1);
-        }
-    </style>
+    @vite(['node_modules/gridjs/dist/theme/mermaid.min.css', 'node_modules/flatpickr/dist/flatpickr.min.css'])
 @endsection
 
 @section('content')
@@ -59,91 +30,15 @@
                         Centang PO Onsite yang akan dibuatkan invoice
                     </p>
                 </div>
-                <div class="w-full sm:w-64">
-                    <div class="relative">
-                        <input type="text" id="search-po-table" class="form-input pl-10 pr-4"
-                            placeholder="Cari PO atau PR..." autocomplete="off">
-                        <i class="mgc_search_line absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                    </div>
-                </div>
+                <button type="button" id="toggle-table" class="btn bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 px-3 py-2 flex items-center gap-2">
+                    <i class="mgc_minimize_line text-lg"></i>
+                    <span>Sembunyikan tabel</span>
+                </button>
             </div>
         </div>
-        <div class="p-6">
-            <!-- Table PO Onsite -->
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead class="bg-gray-50 dark:bg-slate-800">
-                        <tr>
-                            <th
-                                class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase w-10">
-                                <input type="checkbox" id="select-all-checkbox" class="form-checkbox">
-                            </th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                                PO Number</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                                PR Number</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                                Supplier</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                                Item Description</th>
-                            <th
-                                class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase whitespace-nowrap">
-                                Unit Price</th>
-                            <th
-                                class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase whitespace-nowrap">
-                                Qty</th>
-                            <th
-                                class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase whitespace-nowrap">
-                                Amount</th>
-                            <th
-                                class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase whitespace-nowrap">
-                                Onsite Date</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-700">
-                        @forelse($onsites as $onsite)
-                            @php
-                                $item = $onsite->purchaseOrderItem;
-                                $po = $item->purchaseOrder ?? null;
-                                $pr = $item->purchaseRequestItem->purchaseRequest ?? null;
-                                $supplier = $item->purchaseOrder->supplier ?? null;
-                            @endphp
-                            <tr class="hover:bg-gray-50 dark:hover:bg-slate-800">
-                                <td class="px-4 py-3 text-center">
-                                    <input type="checkbox" class="form-checkbox row-checkbox"
-                                        data-onsite-id="{{ $onsite->id }}" data-row-index="{{ $loop->index }}"
-                                        data-po-number="{{ $po->po_number ?? '-' }}"
-                                        data-pr-number="{{ $pr->pr_number ?? '-' }}"
-                                        data-supplier="{{ $supplier->name ?? '-' }}"
-                                        data-item-desc="{{ $item->purchaseRequestItem->item_desc ?? '-' }}"
-                                        data-onsite-date="{{ $onsite->onsite_date ? $onsite->onsite_date->format('d-M-y') : '-' }}"
-                                        data-unit-price="{{ $item->unit_price ?? 0 }}"
-                                        data-quantity="{{ $item->quantity ?? 0 }}" data-amount="{{ $item->amount ?? 0 }}">
-                                </td>
-                                <td class="px-4 py-3 text-sm font-semibold text-primary">{{ $po->po_number ?? '-' }}</td>
-                                <td class="px-4 py-3 text-sm">{{ $pr->pr_number ?? '-' }}</td>
-                                <td class="px-4 py-3 text-sm">{{ $supplier->name ?? '-' }}</td>
-                                <td class="px-4 py-3 text-sm">{{ $item->purchaseRequestItem->item_desc ?? '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-right font-semibold whitespace-nowrap">
-                                    {{ number_format($item->unit_price ?? 0, 0, ',', '.') }}</td>
-                                <td class="px-4 py-3 text-sm text-center whitespace-nowrap">
-                                    {{ number_format($item->quantity ?? 0, 0, ',', '.') }}</td>
-                                <td class="px-4 py-3 text-sm text-right font-semibold text-primary whitespace-nowrap">
-                                    {{ number_format($item->amount ?? 0, 0, ',', '.') }}</td>
-                                <td class="px-4 py-3 text-sm text-center whitespace-nowrap">
-                                    {{ $onsite->onsite_date ? $onsite->onsite_date->format('d-M-y') : '-' }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="9" class="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
-                                    <i class="mgc_inbox_line text-4xl mb-2"></i>
-                                    <p>Tidak ada data PO Onsite yang belum memiliki invoice</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+        <div id="selection-card-body" class="p-6">
+            <!-- GridJS Table -->
+            <div id="table-onsites" class="w-full"></div>
         </div>
     </div>
 
@@ -185,5 +80,5 @@
 @endsection
 
 @section('script')
-    @vite(['resources/js/custom/invoice/dari-vendor/dari-vendor-create.js'])
+    @vite(['resources/js/pages/highlight.js', 'resources/js/pages/extended-tippy.js', 'resources/js/custom/invoice/dari-vendor/dari-vendor-create.js'])
 @endsection

@@ -30,6 +30,7 @@ class PurchasingDataExport implements FromCollection, WithHeadings, WithStyles, 
     protected $endDate;
     protected $userId;
     protected $filterType;
+    protected $locationId;
 
     /**
      * Constructor untuk inisialisasi parameter export
@@ -38,13 +39,15 @@ class PurchasingDataExport implements FromCollection, WithHeadings, WithStyles, 
      * @param string $endDate Tanggal akhir filter
      * @param int $userId ID user yang melakukan export
      * @param string $filterType Tipe filter: 'pr' atau 'po'
+     * @param int|null $locationId ID lokasi untuk filter
      */
-    public function __construct($startDate, $endDate, $userId, $filterType = 'pr')
+    public function __construct($startDate, $endDate, $userId, $filterType = 'pr', $locationId = null)
     {
         $this->startDate = Carbon::parse($startDate)->startOfDay();
         $this->endDate = Carbon::parse($endDate)->endOfDay();
         $this->userId = $userId;
         $this->filterType = $filterType;
+        $this->locationId = $locationId;
     }
 
     /**
@@ -72,7 +75,10 @@ class PurchasingDataExport implements FromCollection, WithHeadings, WithStyles, 
             $query->whereHas('purchaseRequest', function ($q) use ($user) {
                 $q->whereBetween('approved_date', [$this->startDate, $this->endDate]);
                 
-                if ($user && $user->location_id) {
+                // Apply location filter
+                if ($this->locationId) {
+                    $q->where('location_id', $this->locationId);
+                } elseif ($user && $user->location_id) {
                     $q->where('location_id', $user->location_id);
                 }
             });
@@ -82,7 +88,10 @@ class PurchasingDataExport implements FromCollection, WithHeadings, WithStyles, 
                 $q->whereBetween('approved_date', [$this->startDate, $this->endDate]);
             })
             ->whereHas('purchaseRequest', function ($q) use ($user) {
-                if ($user && $user->location_id) {
+                // Apply location filter
+                if ($this->locationId) {
+                    $q->where('location_id', $this->locationId);
+                } elseif ($user && $user->location_id) {
                     $q->where('location_id', $user->location_id);
                 }
             });

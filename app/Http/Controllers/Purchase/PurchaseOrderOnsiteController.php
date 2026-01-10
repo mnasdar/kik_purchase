@@ -27,18 +27,24 @@ class PurchaseOrderOnsiteController extends Controller
         $isSuperAdmin = $user?->hasRole('Super Admin');
         $userLocationId = $user?->location_id;
 
-        // Base query with location filter and exclude received invoices
+        // Base query with location filter (include with/without invoice)
         $baseQuery = PurchaseOrderOnsite::query()
-            ->whereDoesntHave('invoice')
             ->whereHas('purchaseOrderItem.purchaseRequestItem.purchaseRequest', function ($q) use ($isSuperAdmin, $userLocationId) {
                 if (!$isSuperAdmin && $userLocationId) {
                     $q->where('location_id', $userLocationId);
                 }
             });
 
+        // 1. Total PO Onsite
         $totalOnsites = (clone $baseQuery)->count();
-        $completedOnsites = (clone $baseQuery)->whereNotNull('sla_po_to_onsite_realization')->count();
-        $pendingOnsites = (clone $baseQuery)->whereNull('sla_po_to_onsite_realization')->count();
+
+        // 2. Total Item PO Onsite (total items dalam onsite records)
+        $totalOnsiteItems = (clone $baseQuery)->count();
+
+        // 3. Total PO yang belum diterima dari Vendor (onsite yang belum ada realization)
+        $totalPONotReceived = (clone $baseQuery)->whereDoesntHave('invoice')->count();
+
+        // 4. Total PO Onsite dalam 30 hari terakhir
         $recentOnsites = (clone $baseQuery)->where('created_at', '>=', now()->subDays(30))->count();
 
         // Resources for filters
@@ -50,8 +56,8 @@ class PurchaseOrderOnsiteController extends Controller
 
         return view('menu.purchase.po-onsite.index', compact(
             'totalOnsites',
-            'completedOnsites',
-            'pendingOnsites',
+            'totalOnsiteItems',
+            'totalPONotReceived',
             'recentOnsites',
             'locations',
             'classifications'
@@ -453,7 +459,8 @@ class PurchaseOrderOnsiteController extends Controller
     {
         $po_onsite->load([
             'purchaseOrderItem.purchaseOrder',
-            'purchaseOrderItem.purchaseRequestItem.purchaseRequest',
+            'purchaseOrderItem.purchaseRequestItem.purchaseRequest.location',
+            'purchaseOrderItem.purchaseRequestItem.classification',
             'creator'
         ]);
 
@@ -462,18 +469,63 @@ class PurchaseOrderOnsiteController extends Controller
         $pri = $item->purchaseRequestItem;
         $pr = $pri ? $pri->purchaseRequest : null;
 
+        // Hitung percentage cost saving
+        // Cost saving % = (cost_saving / (pr_quantity * pr_unit_price)) * 100
+        $costSavingPercentage = 0;
+        if ($item->cost_saving && $pri && $pri->quantity && $pri->unit_price) {
+            $prTotal = $pri->quantity * $pri->unit_price;
+            $costSavingPercentage = ($item->cost_saving / $prTotal) * 100;
+        }
+
+        // Hitung percentage SLA PR ke PO
+        // 100% jika realization <= target, 0% jika lebih dari target
+        $slaPrToPoPercentage = null;
+        if ($pri && $pri->sla_pr_to_po_target && $item->sla_pr_to_po_realization) {
+            $slaPrToPoPercentage = $item->sla_pr_to_po_realization <= $pri->sla_pr_to_po_target ? 100 : 0;
+        }
+
+        // Hitung percentage SLA PO to Onsite
+        // 100% jika realization <= target, 0% jika lebih dari target
+        $slaPercentage = 0;
+        if ($item->sla_po_to_onsite_target && $po_onsite->sla_po_to_onsite_realization) {
+            $slaPercentage = $po_onsite->sla_po_to_onsite_realization <= $item->sla_po_to_onsite_target ? 100 : 0;
+        }
+
         return response()->json([
             'id' => $po_onsite->id,
-            'po_number' => $po->po_number,
+            // PR Data
             'pr_number' => $pr ? $pr->pr_number : '-',
-            'item_name' => $pri->item_desc ?? '-',
-            'quantity' => $item->quantity,
-            'unit' => $pri->uom ?? '-',
+            'pr_location' => $pr && $pr->location ? $pr->location->name : '-',
+            'pr_approved_date' => $pr && $pr->approved_date ? Carbon::parse($pr->approved_date)->format('d-M-Y') : '-',
+            'pr_request_type' => $pr ? ucfirst($pr->request_type) : '-',
+            // PR Item Data
+            'item_name' => $pri ? $pri->item_desc : '-',
+            'classification' => $pri && $pri->classification ? $pri->classification->name : '-',
+            'unit' => $pri ? $pri->uom : '-',
+            'pr_quantity' => $pri ? number_format($pri->quantity, 0, ',', '.') : '-',
+            'pr_unit_price' => $pri ? number_format($pri->unit_price, 0, ',', '.') : '-',
+            'pr_amount' => number_format($pri->amount ?? 0, 0, ',', '.'),
+            'sla_pr_to_po_target' => $pri ? ($pri->sla_pr_to_po_target ? $pri->sla_pr_to_po_target . ' hari' : '-') : '-',
+            // PO Data
+            'po_number' => $po ? $po->po_number : '-',
+            'supplier_name' => $po && $po->supplier ? $po->supplier->name : '-',
+            'po_approved_date' => $po && $po->approved_date ? Carbon::parse($po->approved_date)->format('d-M-Y') : '-',
+            // PO Item Data
+            'po_quantity' => number_format($item->quantity ?? 0, 0, ',', '.'),
+            'po_unit_price' => number_format($item->unit_price ?? 0, 0, ',', '.'),
+            'po_amount' => number_format($item->amount ?? 0, 0, ',', '.'),
+            'cost_saving' => $item->cost_saving ? number_format($item->cost_saving, 0, ',', '.') : '-',
+            'cost_saving_percentage' => $item->cost_saving ? number_format($costSavingPercentage, 2, ',', '.') . '%' : '-',
+            'sla_po_to_onsite_target' => $item->sla_po_to_onsite_target ? $item->sla_po_to_onsite_target . ' hari' : '-',
+            'sla_pr_to_po_realization' => $item->sla_pr_to_po_realization ? $item->sla_pr_to_po_realization . ' hari' : '-',
+            'sla_pr_to_po_percentage' => $slaPrToPoPercentage !== null ? $slaPrToPoPercentage . '%' : '-',
+            // Onsite Data
             'onsite_date' => $po_onsite->onsite_date ? Carbon::parse($po_onsite->onsite_date)->format('d-M-Y') : '-',
-            'sla_target' => $item->sla_po_to_onsite_target ?? '-',
-            'sla_realization' => $po_onsite->sla_po_to_onsite_realization ?? '-',
-            'created_by' => $po_onsite->creator->name ?? '-',
-            'created_at' => $po_onsite->created_at->format('d-M-Y H:i'),
+            'sla_po_to_onsite_realization' => $po_onsite->sla_po_to_onsite_realization ? $po_onsite->sla_po_to_onsite_realization . ' hari' : '-',
+            'sla_po_to_onsite_percentage' => $slaPercentage . '%',
+            // Metadata
+            'created_by' => $po_onsite->creator ? $po_onsite->creator->name : '-',
+            'created_at' => $po_onsite->created_at ? $po_onsite->created_at->format('d-M-Y H:i') : '-',
         ]);
     }
 }

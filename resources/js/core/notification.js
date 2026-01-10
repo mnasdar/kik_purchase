@@ -32,7 +32,7 @@ const defaultConfig = {
 export function showSuccess(message, title = 'Sukses!', options = {}) {
     return Swal.fire({
         icon: 'success',
-        title,
+        title, 
         text: message,
         ...defaultConfig,
         ...options

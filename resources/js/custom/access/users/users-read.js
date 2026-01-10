@@ -134,95 +134,100 @@ $(document).on("click", ".btn-permissions-user", async function () {
 });
 
 /**
- * Initialize category checkbox states and event handlers
- */
-function initCategoryCheckboxes() {
-    // Update all category checkboxes based on current state
-    $(".category-select-all").each(function () {
-        updateCategoryCheckboxState($(this).data("category"));
-    });
-
-    // Handle category checkbox click (select/deselect all in category)
-    $(document).off("change", ".category-select-all").on("change", ".category-select-all", function () {
-        const category = $(this).data("category");
-        const isChecked = $(this).prop("checked");
-        
-        // Select/deselect all permissions in this category
-        $(`.permission-checkbox[data-category="${category}"]`).prop("checked", isChecked);
-        
-        // Update the category checkbox state (remove indeterminate)
-        updateCategoryCheckboxState(category);
-    });
-
-    // Handle individual permission checkbox click
-    $(document).off("change", ".permission-checkbox").on("change", ".permission-checkbox", function () {
-        const category = $(this).data("category");
-        updateCategoryCheckboxState(category);
-    });
-}
-
-/**
- * Update category checkbox state based on its permissions
- */
-function updateCategoryCheckboxState(category) {
-    const categoryCheckbox = $(`.category-select-all[data-category="${category}"]`);
-    const permissionCheckboxes = $(`.permission-checkbox[data-category="${category}"]`);
-    
-    const total = permissionCheckboxes.length;
-    const checked = permissionCheckboxes.filter(":checked").length;
-    
-    if (checked === 0) {
-        // None checked
-        categoryCheckbox.prop("checked", false);
-        categoryCheckbox.prop("indeterminate", false);
-    } else if (checked === total) {
-        // All checked
-        categoryCheckbox.prop("checked", true);
-        categoryCheckbox.prop("indeterminate", false);
-    } else {
-        // Some checked (indeterminate state)
-        categoryCheckbox.prop("checked", false);
-        categoryCheckbox.prop("indeterminate", true);
-    }
-}
-
-/**
- * Load user permissions (role + custom) dengan design modern
+ * Load user permissions dengan struktur menu (sesuai roles)
  */
 async function loadUserPermissions(userId) {
     try {
-        const response = await fetch(route("users.permissions", { user: userId }));
+        const response = await fetch(route("users.permissionsStructured", { user: userId }));
         const data = await response.json();
 
         const rolePermissions = data.rolePermissions || [];
         const customPermissions = data.customPermissions || [];
-        const allPermissions = data.allPermissions || [];
-        const categories = data.categories || [];
+        const structured = data.structured || [];
+        const customIds = customPermissions.map((p) => p.id);
 
-        // Render role permissions (read-only)
+        // Render role permissions (read-only) dengan struktur menu
         let rolePermHtml = "";
-        if (rolePermissions.length > 0) {
-            rolePermissions.forEach((perm) => {
+        
+        structured.forEach((menu) => {
+            let menuHasPermissions = false;
+            let menuPermsHtml = "";
+
+            if (menu.submenus && menu.submenus.length > 0) {
+                // Menu dengan sub-menus
+                menu.submenus.forEach((submenu) => {
+                    const submenuPerms = submenu.permissions.filter((p) =>
+                        rolePermissions.some((rp) => rp.id === p.id)
+                    );
+
+                    if (submenuPerms.length > 0) {
+                        menuHasPermissions = true;
+                        menuPermsHtml += `
+                            <div class="ml-4 space-y-1">
+                                <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                    ${submenu.submenu}
+                                </p>
+                        `;
+
+                        submenuPerms.forEach((perm) => {
+                            menuPermsHtml += `
+                                <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors duration-200">
+                                    <div class="w-4 h-4 rounded-full bg-green-500 dark:bg-green-600 flex items-center justify-center flex-shrink-0">
+                                        <i class="mgc_check_line text-white text-xs"></i>
+                                    </div>
+                                    <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                        ${getActionLabel(perm.name)} ${perm.display_name || perm.name}
+                                    </span>
+                                </div>
+                            `;
+                        });
+
+                        menuPermsHtml += `</div>`;
+                    }
+                });
+            } else if (menu.permissions && menu.permissions.length > 0) {
+                // Menu tanpa sub-menus
+                const menuPerms = menu.permissions.filter((p) =>
+                    rolePermissions.some((rp) => rp.id === p.id)
+                );
+
+                if (menuPerms.length > 0) {
+                    menuHasPermissions = true;
+
+                    menuPerms.forEach((perm) => {
+                        menuPermsHtml += `
+                            <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors duration-200">
+                                <div class="w-4 h-4 rounded-full bg-green-500 dark:bg-green-600 flex items-center justify-center flex-shrink-0">
+                                    <i class="mgc_check_line text-white text-xs"></i>
+                                </div>
+                                <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                    ${getActionLabel(perm.name)} ${perm.display_name || perm.name}
+                                </span>
+                            </div>
+                        `;
+                    });
+                }
+            }
+
+            if (menuHasPermissions) {
                 rolePermHtml += `
-                    <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors duration-200 group role-permission-item">
-                        <div class="w-5 h-5 rounded-full bg-green-500 dark:bg-green-600 flex items-center justify-center flex-shrink-0">
-                            <i class="mgc_check_line text-white text-xs"></i>
+                    <div class="mb-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i class="${menu.icon} text-blue-600 dark:text-blue-400"></i>
+                            <h5 class="text-sm font-bold text-gray-800 dark:text-gray-100">${menu.menu}</h5>
                         </div>
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            ${perm.display_name || perm.name}
-                        </span>
-                        <span class="ml-auto text-xs px-2 py-1 bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 rounded-full">
-                            from role
-                        </span>
+                        ${menuPermsHtml}
                     </div>
                 `;
-            });
-        } else {
+            }
+        });
+
+        if (rolePermHtml === "") {
             rolePermHtml = `
-                <div class="flex items-center justify-center py-8 text-center role-permission-item">
+                <div class="flex items-center justify-center py-6 text-center">
                     <div>
-                        <i class="mgc_inbox_line text-3xl text-gray-400 dark:text-gray-600 mb-2 block"></i>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                        <i class="mgc_inbox_line text-2xl text-gray-400 dark:text-gray-600 mb-2 block"></i>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
                             User tidak memiliki role atau role tidak memiliki permissions
                         </p>
                     </div>
@@ -231,99 +236,131 @@ async function loadUserPermissions(userId) {
         }
         $("#rolePermissionsContainer").html(rolePermHtml);
 
-        // Render custom permissions (editable)
+        // Render custom permissions dengan struktur menu (editable)
         let customPermHtml = "";
-        const customIds = customPermissions.map((p) => p.id);
 
-        if (categories.length === 0) {
-            customPermHtml = `
-                <div class="flex items-center justify-center py-8 text-center">
-                    <div>
-                        <i class="mgc_inbox_line text-3xl text-gray-400 dark:text-gray-600 mb-2 block"></i>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                            Tidak ada permissions yang tersedia
-                        </p>
-                    </div>
-                </div>
-            `;
-        } else {
-            categories.forEach((category) => {
-                const categoryPerms = allPermissions.filter(
-                    (p) => p.category === category
-                );
+        structured.forEach((menu) => {
+            const menuSlug = (menu.menu || "Other").toLowerCase().replace(/\s+/g, '-');
+            let hasEditablePerms = false;
+            let submenuHtml = "";
 
-                if (categoryPerms.length > 0) {
-                    // Filter permissions yang tidak ada di role (editable)
-                    const editablePermsInCategory = categoryPerms.filter((perm) => {
-                        return !rolePermissions.some((rp) => rp.id === perm.id);
+            if (menu.submenus && menu.submenus.length > 0) {
+                // Menu dengan sub-menus
+                menu.submenus.forEach((submenu) => {
+                    const submenuSlug = (submenu.submenu || "Other").toLowerCase().replace(/\s+/g, '-');
+                    const editablePerms = submenu.permissions.filter((p) => {
+                        return !rolePermissions.some((rp) => rp.id === p.id);
                     });
 
-                    // Hanya render jika ada permission yang bisa diedit
-                    if (editablePermsInCategory.length > 0) {
-                        const categorySlug = (category || "Other").toLowerCase().replace(/\s+/g, '-');
-                        
-                        customPermHtml += `
-                            <div class="space-y-2" data-category="${categorySlug}">
-                                <div class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-slate-600/50 sticky top-0 z-10">
-                                    <label class="font-bold text-xs uppercase tracking-wider text-gray-700 dark:text-gray-200 flex items-center gap-2 cursor-pointer hover:text-gray-900 dark:hover:text-white transition-colors">
+                    if (editablePerms.length > 0) {
+                        hasEditablePerms = true;
+
+                        submenuHtml += `
+                            <div class="ml-4 pl-3 border-l-2 border-purple-300 dark:border-purple-700 space-y-2" data-submenu="${submenuSlug}">
+                                <div class="px-3 py-2 rounded-lg bg-purple-50 dark:bg-slate-700/40">
+                                    <label class="font-medium text-xs uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-2 cursor-pointer hover:text-purple-900 dark:hover:text-purple-100 transition-colors">
                                         <input type="checkbox" 
-                                            class="category-select-all w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 dark:border-gray-600 dark:bg-slate-700 cursor-pointer"
-                                            data-category="${categorySlug}">
-                                        <span class="w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-purple-600"></span>
-                                        ${category || "Other"}
+                                            class="submenu-select-all w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 dark:border-gray-600 dark:bg-slate-700 cursor-pointer"
+                                            data-menu="${menuSlug}"
+                                            data-submenu="${submenuSlug}">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-purple-600 dark:bg-purple-400"></span>
+                                        ${submenu.submenu}
                                     </label>
                                 </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-2">
                         `;
 
-                        editablePermsInCategory.forEach((perm) => {
-                            const isChecked = customIds.includes(perm.id);
-
-                            customPermHtml += `
-                                <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer group">
+                        editablePerms.forEach((perm) => {
+                            const isChecked = customIds.includes(perm.id) ? "checked" : "";
+                            submenuHtml += `
+                                <label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-purple-100 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer group">
                                     <input type="checkbox" name="permissions[]" 
                                         value="${perm.id}" 
                                         class="permission-checkbox w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 dark:border-gray-600 dark:bg-slate-700 cursor-pointer"
-                                        data-category="${categorySlug}"
-                                        ${isChecked ? "checked" : ""}>
-                                    <span class="text-sm text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-                                        ${perm.display_name || perm.name}
+                                        data-menu="${menuSlug}"
+                                        data-submenu="${submenuSlug}"
+                                        ${isChecked}>
+                                    <span class="text-xs text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                                        <strong>${getActionLabel(perm.name)}</strong>
                                     </span>
                                 </label>
                             `;
                         });
 
-                        customPermHtml += `
+                        submenuHtml += `
                                 </div>
                             </div>
                         `;
                     }
+                });
+            } else if (menu.permissions && menu.permissions.length > 0) {
+                // Menu tanpa sub-menus
+                const editablePerms = menu.permissions.filter((p) => {
+                    return !rolePermissions.some((rp) => rp.id === p.id);
+                });
+
+                if (editablePerms.length > 0) {
+                    hasEditablePerms = true;
+
+                    submenuHtml += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-4">`;
+
+                    editablePerms.forEach((perm) => {
+                        const isChecked = customIds.includes(perm.id) ? "checked" : "";
+                        submenuHtml += `
+                            <label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-purple-100 dark:hover:bg-slate-600 transition-colors duration-200 cursor-pointer group">
+                                <input type="checkbox" name="permissions[]" 
+                                    value="${perm.id}" 
+                                    class="permission-checkbox w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 dark:border-gray-600 dark:bg-slate-700 cursor-pointer"
+                                    data-menu="${menuSlug}"
+                                    ${isChecked}>
+                                <span class="text-xs text-gray-700 dark:text-gray-300 font-medium group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                                    <strong>${getActionLabel(perm.name)}</strong>
+                                </span>
+                            </label>
+                        `;
+                    });
+
+                    submenuHtml += `</div>`;
                 }
-            });
+            }
 
-            // Check if there are any editable permissions
-            const editablePerms = allPermissions.filter((p) => {
-                return !rolePermissions.some((rp) => rp.id === p.id);
-            });
-
-            if (editablePerms.length === 0) {
-                customPermHtml = `
-                    <div class="flex items-center justify-center py-8 text-center">
-                        <div>
-                            <i class="mgc_checkbox_line text-3xl text-gray-400 dark:text-gray-600 mb-2 block"></i>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">
-                                Semua permissions sudah tercakup dari role
-                            </p>
+            if (hasEditablePerms) {
+                customPermHtml += `
+                    <div class="space-y-3" data-menu="${menuSlug}">
+                        <div class="px-4 py-3 rounded-lg bg-gradient-to-r from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-800/20 border border-purple-200 dark:border-purple-800 sticky top-0 z-10">
+                            <div class="flex items-center gap-3">
+                                <i class="${menu.icon} text-lg text-purple-600 dark:text-purple-400"></i>
+                                <label class="font-semibold text-sm text-purple-900 dark:text-purple-100 flex-1 cursor-pointer">
+                                    <input type="checkbox" 
+                                        class="menu-select-all w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 dark:border-gray-600 dark:bg-slate-700 cursor-pointer mr-2"
+                                        data-menu="${menuSlug}">
+                                    <span>${menu.menu}</span>
+                                </label>
+                            </div>
                         </div>
+                        ${submenuHtml}
                     </div>
                 `;
             }
+        });
+
+        if (customPermHtml === "") {
+            customPermHtml = `
+                <div class="flex items-center justify-center py-6 text-center">
+                    <div>
+                        <i class="mgc_checkbox_line text-2xl text-gray-400 dark:text-gray-600 mb-2 block"></i>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            Semua permissions sudah tercakup dari role
+                        </p>
+                    </div>
+                </div>
+            `;
         }
 
         $("#customPermissionsContainer").html(customPermHtml);
         
-        // Initialize category checkbox states and event handlers
-        initCategoryCheckboxes();
+        // Initialize menu/submenu checkboxes
+        initUserMenuCheckboxes();
     } catch (error) {
         console.error("Error loading permissions:", error);
         const errorHtml = `
@@ -343,6 +380,122 @@ async function loadUserPermissions(userId) {
         $("#customPermissionsContainer").html(errorHtml);
     }
 }
+
+/**
+ * Get human-readable action label
+ */
+function getActionLabel(permissionName) {
+    const actions = {
+        '.view': '👁️',
+        '.create': '➕',
+        '.edit': '✏️',
+        '.delete': '🗑️',
+        '.approve': '✅',
+        '.export': '📤',
+    };
+
+    for (const [key, label] of Object.entries(actions)) {
+        if (permissionName.includes(key)) {
+            return label;
+        }
+    }
+
+    return '🔐';
+}
+
+/**
+ * Initialize user menu/submenu checkbox states and event handlers
+ */
+function initUserMenuCheckboxes() {
+    // Update all menu/submenu checkboxes based on current state
+    $(".menu-select-all").each(function () {
+        updateUserMenuCheckboxState($(this).data("menu"));
+    });
+
+    $(".submenu-select-all").each(function () {
+        updateUserSubmenuCheckboxState($(this).data("menu"), $(this).data("submenu"));
+    });
+
+    // Handle menu checkbox click
+    $(document).off("change", ".menu-select-all").on("change", ".menu-select-all", function () {
+        const menu = $(this).data("menu");
+        const isChecked = $(this).prop("checked");
+        
+        $(`.permission-checkbox[data-menu="${menu}"]`).prop("checked", isChecked);
+        $(`.submenu-select-all[data-menu="${menu}"]`).each(function() {
+            $(this).prop("checked", isChecked).prop("indeterminate", false);
+        });
+        
+        updateUserMenuCheckboxState(menu);
+    });
+
+    // Handle submenu checkbox click
+    $(document).off("change", ".submenu-select-all").on("change", ".submenu-select-all", function () {
+        const menu = $(this).data("menu");
+        const submenu = $(this).data("submenu");
+        const isChecked = $(this).prop("checked");
+        
+        $(`.permission-checkbox[data-menu="${menu}"][data-submenu="${submenu}"]`).prop("checked", isChecked);
+        
+        updateUserMenuCheckboxState(menu);
+    });
+
+    // Handle individual permission checkbox click
+    $(document).off("change", ".permission-checkbox").on("change", ".permission-checkbox", function () {
+        const menu = $(this).data("menu");
+        const submenu = $(this).data("submenu");
+        
+        if (submenu) {
+            updateUserSubmenuCheckboxState(menu, submenu);
+        }
+        updateUserMenuCheckboxState(menu);
+    });
+}
+
+/**
+ * Update user menu checkbox state
+ */
+function updateUserMenuCheckboxState(menu) {
+    const menuCheckbox = $(`.menu-select-all[data-menu="${menu}"]`);
+    const permissionCheckboxes = $(`.permission-checkbox[data-menu="${menu}"]`);
+    
+    const total = permissionCheckboxes.length;
+    const checked = permissionCheckboxes.filter(":checked").length;
+    
+    if (checked === 0) {
+        menuCheckbox.prop("checked", false);
+        menuCheckbox.prop("indeterminate", false);
+    } else if (checked === total) {
+        menuCheckbox.prop("checked", true);
+        menuCheckbox.prop("indeterminate", false);
+    } else {
+        menuCheckbox.prop("checked", false);
+        menuCheckbox.prop("indeterminate", true);
+    }
+}
+
+/**
+ * Update user submenu checkbox state
+ */
+function updateUserSubmenuCheckboxState(menu, submenu) {
+    const submenuCheckbox = $(`.submenu-select-all[data-menu="${menu}"][data-submenu="${submenu}"]`);
+    const permissionCheckboxes = $(`.permission-checkbox[data-menu="${menu}"][data-submenu="${submenu}"]`);
+    
+    const total = permissionCheckboxes.length;
+    const checked = permissionCheckboxes.filter(":checked").length;
+    
+    if (checked === 0) {
+        submenuCheckbox.prop("checked", false);
+        submenuCheckbox.prop("indeterminate", false);
+    } else if (checked === total) {
+        submenuCheckbox.prop("checked", true);
+        submenuCheckbox.prop("indeterminate", false);
+    } else {
+        submenuCheckbox.prop("checked", false);
+        submenuCheckbox.prop("indeterminate", true);
+    }
+}
+    
 
 /**
  * Handle permissions form submission

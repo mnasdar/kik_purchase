@@ -82,7 +82,7 @@
 
                 <!-- Action Buttons -->
                 <div class="flex gap-3 justify-end pt-6 border-t border-gray-200 dark:border-gray-700 mt-6">
-                    <a href="{{ route('pengajuan.history') }}"
+                    <a href="{{ route('pengajuan.index') }}"
                         class="btn bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 transition-all">
                         <i class="mgc_arrow_left_line"></i> Batal
                     </a>

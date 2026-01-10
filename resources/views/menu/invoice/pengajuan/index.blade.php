@@ -64,9 +64,9 @@
         <div class="card-header">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <h4 class="text-lg font-semibold text-gray-800 dark:text-white">Daftar Invoice Siap Diajukan</h4>
+                    <h4 class="text-lg font-semibold text-gray-800 dark:text-white">Invoice Diajukan (Belum Dibayar)</h4>
                     <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                        Data invoice yang sudah diterima dari vendor dan menunggu pengajuan ke finance
+                        Menampilkan invoice yang sudah diajukan ke finance namun belum dilakukan pembayaran
                     </p>
                 </div>
                 <div class="flex gap-2">
@@ -75,18 +75,24 @@
                         data-tippy-content="Refresh Data">
                         <i class="mgc_refresh_1_line text-lg"></i>
                     </button>
-                    <a href="{{ route('pengajuan.history') }}"
-                        class="btn bg-info text-white hover:bg-info-600"
-                        data-tippy-content="Lihat Riwayat Pengajuan">
-                        <i class="mgc_history_line text-lg"></i>
-                        <span>Riwayat</span>
-                    </a>
-                    <button type="button" id="btn-submit-selected"
-                        class="btn bg-success text-white hover:bg-success-600 hidden"
-                        data-tippy-content="Ajukan ke Finance">
-                        <i class="mgc_send_line text-lg"></i>
-                        <span>Ajukan (<span id="submit-count">0</span>)</span>
+                    <button type="button" id="btn-bulk-delete"
+                        class="btn bg-danger text-white hover:bg-danger-600 hidden"
+                        data-tippy-content="Hapus Terpilih">
+                        <i class="mgc_delete_2_line text-lg"></i>
+                        <span>Hapus Terpilih (<span id="delete-count">0</span>)</span>
                     </button>
+                    <button type="button" id="btn-bulk-edit"
+                        class="btn bg-warning text-white hover:bg-warning-600 hidden"
+                        data-tippy-content="Edit Terpilih">
+                        <i class="mgc_edit_line text-lg"></i>
+                        <span>Edit Terpilih (<span id="edit-count">0</span>)</span>
+                    </button>
+                    <a href="{{ route('pengajuan.create') }}"
+                        class="btn bg-success text-white hover:bg-success-600"
+                        data-tippy-content="Tambah Pengajuan">
+                        <i class="mgc_add_line text-lg"></i>
+                        <span>Tambah Pengajuan</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -100,46 +106,19 @@
         </div>
     </div>
 
-    <!-- Submit Modal -->
-    <div id="submitModal" class="fixed inset-0 z-50 hidden overflow-y-auto transition-opacity duration-300 ease-out"
-        style="opacity: 0;">
-        <div id="submitModalBackdrop"
-            class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity duration-300 ease-out"
-            style="opacity: 0;"></div>
-
+    <!-- Detail Invoice Modal -->
+    <div id="detailInvoiceModal" class="fixed inset-0 z-50 hidden overflow-y-auto transition-opacity duration-300 ease-out" style="opacity: 0;">
+        <div id="detailInvoiceModalBackdrop" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity duration-300 ease-out" style="opacity: 0;"></div>
         <div class="relative min-h-screen flex items-center justify-center px-4">
-            <div id="submitModalContent"
-                class="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-xl shadow-2xl transition-all duration-300 ease-out transform"
-                style="transform: scale(0.95); opacity: 0;">
-                <div class="p-6">
-                    <div class="flex items-center gap-4 mb-4">
-                        <div class="flex-shrink-0 w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
-                            <i class="mgc_send_line text-2xl text-success"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Ajukan ke Finance</h3>
-                            <p class="text-sm text-slate-600 dark:text-slate-400 mt-1" id="submitMessage">
-                                Tentukan tanggal pengajuan ke finance.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-3">
-                        <label class="block text-sm text-slate-700 dark:text-slate-300">Tanggal Pengajuan</label>
-                        <input type="date" id="invoice_submitted_at"
-                            class="form-input w-full" />
-                    </div>
-
-                    <div class="flex gap-3 justify-end mt-6">
-                        <button type="button" id="submitModalCancel"
-                            class="btn bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">
-                            Batal
-                        </button>
-                        <button type="button" id="submitModalConfirm"
-                            class="btn bg-success text-white hover:bg-success-600">
-                            Ajukan
-                        </button>
-                    </div>
+            <div id="detailInvoiceModalContent" class="relative w-full max-w-3xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl transition-all duration-300 ease-out transform" style="transform: scale(0.95); opacity: 0;">
+                <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detail Invoice & PO</h3>
+                    <button type="button" id="detailInvoiceModalClose" class="btn bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600">
+                        <i class="mgc_close_line"></i>
+                    </button>
+                </div>
+                <div class="p-6" id="detailInvoiceContent">
+                    <!-- populated by JS -->
                 </div>
             </div>
         </div>

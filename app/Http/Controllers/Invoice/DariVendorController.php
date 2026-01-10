@@ -28,11 +28,11 @@ class DariVendorController extends Controller
         }
         
         $totalInvoices = (clone $query)->count();
-        $receivedInvoices = (clone $query)->whereNotNull('invoice_received_at')->count();
-        $submittedInvoices = (clone $query)->whereNotNull('invoice_submitted_at')->count();
+        $totalReceivedItems = (clone $query)->whereNotNull('invoice_received_at')->count();
+        $totalUnsubmittedItems = (clone $query)->whereNull('invoice_submitted_at')->count();
         $recentInvoices = (clone $query)->where('created_at', '>=', now()->subDays(30))->count();
 
-        return view('menu.invoice.dari-vendor.index', compact('totalInvoices', 'receivedInvoices', 'submittedInvoices', 'recentInvoices'));
+        return view('menu.invoice.dari-vendor.index', compact('totalInvoices', 'totalReceivedItems', 'totalUnsubmittedItems', 'recentInvoices'));
     }
 
     public function getData()
@@ -41,7 +41,7 @@ class DariVendorController extends Controller
             'purchaseOrderOnsite.purchaseOrderItem.purchaseOrder',
             'purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest',
             'creator'
-        ]);
+        ])->whereNull('invoice_submitted_at');
 
         // Filter by user's location_id
         $user = auth()->user();
@@ -76,7 +76,6 @@ class DariVendorController extends Controller
                 'number' => $index + 1,
                 'invoice_number' => $invoice->invoice_number ?? '-',
                 'po_number' => $po->po_number ?? '-',
-                'pr_number' => $pr->pr_number ?? '-',
                 'item_desc' => $pritem->item_desc ?? '-',
                 'unit_price' => number_format($unitPrice, 0, ',', '.'),
                 'qty' => $qty,
@@ -148,13 +147,18 @@ class DariVendorController extends Controller
 
     public function create()
     {
+        return view('menu.invoice.dari-vendor.create');
+    }
+
+    public function getOnsitesData(Request $request)
+    {
         $user = auth()->user();
         
         // Get all PO Onsites that don't have invoice received yet
         $query = PurchaseOrderOnsite::with([
             'purchaseOrderItem.purchaseOrder',
-            'purchaseOrderItem.purchaseRequestItem.purchaseRequest',
-            'purchaseOrderItem.purchaseOrder.supplier'
+            'purchaseOrderItem.purchaseOrder.supplier',
+            'purchaseOrderItem.purchaseRequestItem.purchaseRequest'
         ])
         ->whereDoesntHave('invoice', function ($query) {
             $query->whereNotNull('invoice_received_at');
@@ -169,7 +173,29 @@ class DariVendorController extends Controller
 
         $onsites = $query->latest()->get();
 
-        return view('menu.invoice.dari-vendor.create', compact('onsites'));
+        $data = $onsites->map(function ($onsite, $index) {
+            $item = $onsite->purchaseOrderItem;
+            $po = $item->purchaseOrder ?? null;
+            $supplier = $po->supplier ?? null;
+            $pr = $item->purchaseRequestItem->purchaseRequest ?? null;
+            $pritem = $item->purchaseRequestItem ?? null;
+
+            return [
+                'id' => $onsite->id,
+                'number' => $index + 1,
+                'po_number' => $po->po_number ?? '-',
+                'pr_number' => $pr->pr_number ?? '-',
+                'supplier' => $supplier->name ?? '-',
+                'item_desc' => $pritem->item_desc ?? '-',
+                'unit_price' => number_format($item->unit_price ?? 0, 0, ',', '.'),
+                'quantity' => number_format($item->quantity ?? 0, 0, ',', '.'),
+                'amount' => number_format($item->amount ?? 0, 0, ',', '.'),
+                'onsite_date' => $onsite->onsite_date ? $onsite->onsite_date->format('d-M-y') : '-',
+                'checkbox' => '<input type="checkbox" class="form-checkbox row-checkbox" data-onsite-id="' . $onsite->id . '" data-po-number="' . ($po->po_number ?? '-') . '" data-pr-number="' . ($pr->pr_number ?? '-') . '" data-supplier="' . ($supplier->name ?? '-') . '" data-item-desc="' . ($pritem->item_desc ?? '-') . '" data-unit-price="' . ($item->unit_price ?? 0) . '" data-quantity="' . ($item->quantity ?? 0) . '" data-amount="' . ($item->amount ?? 0) . '" data-onsite-date="' . ($onsite->onsite_date ? $onsite->onsite_date->format('d-M-y') : '') . '">',
+            ];
+        });
+
+        return response()->json($data);
     }
 
     public function store(Request $request)
@@ -305,6 +331,77 @@ class DariVendorController extends Controller
 
         $dari_vendor->update($validated);
         return response()->json(['message' => 'Invoice berhasil diupdate', 'data' => $dari_vendor]);
+    }
+
+    /**
+     * Detail invoice: ambil PR & PO dan informasi invoice
+     */
+    public function show(Invoice $dari_vendor)
+    {
+        $dari_vendor->load([
+            'purchaseOrderOnsite.purchaseOrderItem.purchaseOrder.supplier',
+            'purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.purchaseRequest.location',
+            'purchaseOrderOnsite.purchaseOrderItem.purchaseRequestItem.classification',
+            'creator'
+        ]);
+
+        $onsite = $dari_vendor->purchaseOrderOnsite;
+        $item = $onsite?->purchaseOrderItem;
+        $po = $item?->purchaseOrder;
+        $pri = $item?->purchaseRequestItem;
+        $pr = $pri?->purchaseRequest;
+
+        // Persentase SLA PR->PO (100% jika realisasi <= target, 0% jika > target)
+        $slaPrToPoPercentage = null;
+        if ($pri && $pri->sla_pr_to_po_target && $item && $item->sla_pr_to_po_realization) {
+            $slaPrToPoPercentage = $item->sla_pr_to_po_realization <= $pri->sla_pr_to_po_target ? 100 : 0;
+        }
+
+        // Persentase SLA PO->Onsite (jika data onsite tersedia)
+        $slaPoToOnsitePercentage = null;
+        if ($item && $item->sla_po_to_onsite_target && $onsite && $onsite->sla_po_to_onsite_realization) {
+            $slaPoToOnsitePercentage = $onsite->sla_po_to_onsite_realization <= $item->sla_po_to_onsite_target ? 100 : 0;
+        }
+
+        return response()->json([
+            'id' => $dari_vendor->id,
+            // PR Data
+            'pr_number' => $pr?->pr_number ?? '-',
+            'pr_location' => $pr && $pr->location ? $pr->location->name : '-',
+            'pr_approved_date' => $pr && $pr->approved_date ? \Carbon\Carbon::parse($pr->approved_date)->format('d-M-Y') : '-',
+            'pr_request_type' => $pr ? ucfirst($pr->request_type) : '-',
+            // PR Item Data
+            'item_name' => $pri?->item_desc ?? '-',
+            'classification' => $pri && $pri->classification ? $pri->classification->name : '-',
+            'unit' => $pri?->uom ?? '-',
+            'pr_quantity' => $pri ? number_format($pri->quantity ?? 0, 0, ',', '.') : '-',
+            'pr_unit_price' => $pri ? number_format($pri->unit_price ?? 0, 0, ',', '.') : '-',
+            'pr_amount' => number_format($pri?->amount ?? 0, 0, ',', '.'),
+            'sla_pr_to_po_target' => $pri && $pri->sla_pr_to_po_target ? $pri->sla_pr_to_po_target . ' hari' : '-',
+            'sla_pr_to_po_realization' => $item && $item->sla_pr_to_po_realization ? $item->sla_pr_to_po_realization . ' hari' : '-',
+            'sla_pr_to_po_percentage' => $slaPrToPoPercentage !== null ? $slaPrToPoPercentage . '%' : '-',
+            // PO Data
+            'po_number' => $po?->po_number ?? '-',
+            'supplier_name' => $po && $po->supplier ? $po->supplier->name : '-',
+            'po_approved_date' => $po && $po->approved_date ? \Carbon\Carbon::parse($po->approved_date)->format('d-M-Y') : '-',
+            // PO Item Data
+            'po_quantity' => number_format($item?->quantity ?? 0, 0, ',', '.'),
+            'po_unit_price' => number_format($item?->unit_price ?? 0, 0, ',', '.'),
+            'po_amount' => number_format($item?->amount ?? 0, 0, ',', '.'),
+            'cost_saving' => $item && $item->cost_saving ? number_format($item->cost_saving, 0, ',', '.') : '-',
+            'sla_po_to_onsite_target' => $item && $item->sla_po_to_onsite_target ? $item->sla_po_to_onsite_target . ' hari' : '-',
+            'sla_po_to_onsite_realization' => $onsite && $onsite->sla_po_to_onsite_realization ? $onsite->sla_po_to_onsite_realization . ' hari' : '-',
+            'sla_po_to_onsite_percentage' => $slaPoToOnsitePercentage !== null ? $slaPoToOnsitePercentage . '%' : '-',
+            // Onsite Data
+            'onsite_date' => $onsite && $onsite->onsite_date ? $onsite->onsite_date->format('d-M-Y') : '-',
+            // Invoice Data
+            'invoice_number' => $dari_vendor->invoice_number ?? '-',
+            'invoice_received_at' => $dari_vendor->invoice_received_at ? $dari_vendor->invoice_received_at->format('d-M-Y') : '-',
+            'sla_invoice_to_finance_target' => $dari_vendor->sla_invoice_to_finance_target ?? '-',
+            // Metadata
+            'created_by' => $dari_vendor->creator?->name ?? '-',
+            'created_at' => $dari_vendor->created_at ? $dari_vendor->created_at->format('d-M-Y H:i') : '-',
+        ]);
     }
 
     public function bulkDestroy(Request $request)

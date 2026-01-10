@@ -1,3 +1,30 @@
+@php
+    $menuService = app(\App\Services\MenuService::class);
+    $menuSearchItems = $menuService->getAccessibleMenuItems()->flatMap(function ($item) {
+        if (($item['type'] ?? '') === 'divider') {
+            return [];
+        }
+
+        if (!empty($item['children'])) {
+            return collect($item['children'])->map(function ($child) use ($item) {
+                return [
+                    'id' => $child['id'] ?? null,
+                    'title' => $child['title'] ?? '',
+                    'parent' => $item['title'] ?? null,
+                    'url' => isset($child['route']) ? route($child['route']) : '#',
+                ];
+            })->values();
+        }
+
+        return [[
+            'id' => $item['id'] ?? null,
+            'title' => $item['title'] ?? '',
+            'parent' => null,
+            'url' => isset($item['route']) ? route($item['route']) : '#',
+        ]];
+    })->values();
+@endphp
+
 <!-- Topbar Start -->
 <header class="app-header flex items-center px-4 gap-3">
     <!-- Sidenav Menu Toggle Button -->
@@ -31,40 +58,6 @@
         </span>
     </button>
 
-    <!-- Language Dropdown Button -->
-    <div class="relative">
-        <button data-fc-type="dropdown" data-fc-placement="bottom-end" type="button" class="nav-link p-2 fc-dropdown">
-            <span class="flex items-center justify-center h-6 w-6">
-                <img src="/images/flags/us.jpg" alt="user-image" class="h-4 w-6">
-            </span>
-        </button>
-        <div class="fc-dropdown fc-dropdown-open:opacity-100 hidden opacity-0 w-40 z-50 mt-2 transition-[margin,opacity] duration-300 bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg p-2">
-            <!-- item-->
-            <a href="javascript:void(0);" class="flex items-center gap-2.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300">
-                <img src="/images/flags/germany.jpg" alt="user-image" class="h-4">
-                <span class="align-middle">German</span>
-            </a>
-
-            <!-- item-->
-            <a href="javascript:void(0);" class="flex items-center gap-2.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300">
-                <img src="/images/flags/italy.jpg" alt="user-image" class="h-4">
-                <span class="align-middle">Italian</span>
-            </a>
-
-            <!-- item-->
-            <a href="javascript:void(0);" class="flex items-center gap-2.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300">
-                <img src="/images/flags/spain.jpg" alt="user-image" class="h-4">
-                <span class="align-middle">Spanish</span>
-            </a>
-
-            <!-- item-->
-            <a href="javascript:void(0);" class="flex items-center gap-2.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300">
-                <img src="/images/flags/russia.jpg" alt="user-image" class="h-4">
-                <span class="align-middle">Russian</span>
-            </a>
-        </div>
-    </div>
-
     <!-- Fullscreen Toggle Button -->
     <div class="md:flex hidden">
         <button data-toggle="fullscreen" type="button" class="nav-link p-2">
@@ -76,7 +69,7 @@
     </div>
 
     <!-- Notification Bell Button -->
-    <div class="relative md:flex hidden">
+    {{-- <div class="relative md:flex hidden">
         <button data-fc-type="dropdown" data-fc-placement="bottom-end" type="button" class="nav-link p-2">
             <span class="sr-only">View notifications</span>
             <span class="flex items-center justify-center h-6 w-6">
@@ -181,7 +174,7 @@
                 View All
             </a>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Light/Dark Toggle Button -->
     <div class="flex">
@@ -195,27 +188,17 @@
 
     <!-- Profile Dropdown Button -->
     <div class="relative">
-        <button data-fc-type="dropdown" data-fc-placement="bottom-end" type="button" class="nav-link">
-            <img src="/images/users/user-6.jpg" alt="user-image" class="rounded-full h-10">
+        <button data-fc-type="dropdown" data-fc-placement="bottom-end" type="button" class="nav-link flex items-center gap-2">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold">
+                <span>{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}</span>
+            </div>
+            <span class="hidden md:block text-sm font-semibold text-gray-800 dark:text-gray-200">{{ auth()->user()->name ?? 'User' }}</span>
         </button>
         <div class="fc-dropdown fc-dropdown-open:opacity-100 hidden opacity-0 w-44 z-50 transition-[margin,opacity] duration-300 mt-2 bg-white shadow-lg border rounded-lg p-2 border-gray-200 dark:border-gray-700 dark:bg-gray-800">
-            <a class="flex items-center py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="pages-gallery.html">
-                <i class="mgc_pic_2_line  me-2"></i>
-                <span>Gallery</span>
-            </a>
-            <a class="flex items-center py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="apps-kanban.html">
-                <i class="mgc_task_2_line  me-2"></i>
-                <span>Kanban</span>
-            </a>
-            <a class="flex items-center py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="{{ route('second', ['auth', 'login']) }}">
-                <i class="mgc_lock_line  me-2"></i>
-                <span>Lock Screen</span>
-            </a>
-            <hr class="my-2 -mx-2 border-gray-200 dark:border-gray-700">
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="w-full text-start flex items-center py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300">
-                    <i class="mgc_exit_line  me-2"></i>
+                    <i class="mgc_exit_line me-2"></i>
                     <span>Log Out</span>
                 </button>
             </form>
@@ -233,9 +216,17 @@
                     <div class="pointer-events-none absolute top-3.5 start-4 text-gray-900 text-opacity-40 dark:text-gray-200">
                         <i class="mgc_search_line text-xl"></i>
                     </div>
-                    <input type="search" class="h-12 w-full border-0 bg-transparent ps-11 pe-4 text-gray-900 placeholder-gray-500 dark:placeholder-gray-300 dark:text-gray-200 focus:ring-0 sm:text-sm" placeholder="Search...">
+                    <input id="topbar-search-input" type="search" autocomplete="off" class="h-12 w-full border-0 bg-transparent ps-11 pe-4 text-gray-900 placeholder-gray-500 dark:placeholder-gray-300 dark:text-gray-200 focus:ring-0 sm:text-sm" placeholder="Cari menu...">
+                </div>
+                <div class="border-t border-gray-100 dark:border-gray-700" aria-live="polite">
+                    <div id="topbar-search-results" class="divide-y divide-gray-100 dark:divide-gray-700 max-h-80 overflow-y-auto hidden"></div>
+                    <div id="topbar-search-empty" class="py-5 text-center text-sm text-gray-500 dark:text-gray-400 hidden">Tidak ada menu yang cocok</div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    window.menuSearchItems = @json($menuSearchItems);
+</script>

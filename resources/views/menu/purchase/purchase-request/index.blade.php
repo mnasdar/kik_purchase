@@ -23,7 +23,7 @@
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <!-- Total PRs -->
-        <div class="card bg-primary text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+        <div class="card bg-primary text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer stat-card" data-stat-filter="total_prs">
             <div class="p-4">
                 <div class="flex items-center justify-between">
                     <div>
@@ -37,42 +37,42 @@
             </div>
         </div>
 
-        <!-- Pending PRs -->
-        <div class="card bg-blue-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+        <!-- Total Items PR -->
+        <div class="card bg-blue-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer stat-card" data-stat-filter="total_items">
             <div class="p-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-white/80 text-xs font-medium mb-1">PR Pending</p>
-                        <h3 class="text-2xl font-bold text-white">{{ $pendingPRs ?? 0 }}</h3>
+                        <p class="text-white/80 text-xs font-medium mb-1">Total Item PR</p>
+                        <h3 class="text-2xl font-bold text-white">{{ $totalItems ?? 0 }}</h3>
                     </div>
                     <div class="text-4xl">
-                        <i class="mgc_time_line"></i>
+                        <i class="mgc_shopping_bag_3_line"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Completed PRs -->
-        <div class="card bg-green-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+        <!-- Total PR with PO -->
+        <div class="card bg-warning text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer stat-card active ring-4 ring-white/30" data-stat-filter="items_without_po">
             <div class="p-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-white/80 text-xs font-medium mb-1">PR Selesai</p>
-                        <h3 class="text-2xl font-bold text-white">{{ $completedPRs ?? 0 }}</h3>
+                        <p class="text-white/80 text-xs font-medium mb-1">Item PR belum jadi PO</p>
+                        <h3 class="text-2xl font-bold text-white">{{ $totalItemsWithoutPO ?? 0 }}</h3>
                     </div>
                     <div class="text-4xl">
-                        <i class="mgc_check_circle_line"></i>
+                        <i class="mgc_alert_line"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Recent PRs -->
-        <div class="card bg-warning text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+        <div class="card bg-green-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer stat-card" data-stat-filter="recent_prs">
             <div class="p-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-white/80 text-xs font-medium mb-1">Baru (30 Hari)</p>
+                        <p class="text-white/80 text-xs font-medium mb-1">PR Dibuat (30 Hari)</p>
                         <h3 class="text-2xl font-bold text-white">{{ $recentPRs ?? 0 }}</h3>
                     </div>
                     <div class="text-4xl">

@@ -32,19 +32,23 @@ class PurchaseRequestController extends Controller
             $baseQuery->where('location_id', $userLocationId);
         }
 
+        // 1. Total PR
         $totalPRs = (clone $baseQuery)->count();
-        // Pending: all items still at stage 1
-        $pendingPRs = (clone $baseQuery)->whereHas('items')
-            ->whereDoesntHave('items', function ($q) {
-                $q->where('purchase_request_items.current_stage', '>', 1);
-            })
+
+        // 2. Total Item PR (total purchase request items)
+        $totalItems = PurchaseRequestItem::whereIn(
+            'purchase_request_id',
+            (clone $baseQuery)->pluck('id')
+        )->count();
+
+        // 3. Total Item PR yang sudah dibuatkan PO (items yang memiliki purchase order)
+        $totalItemsWithoutPO = PurchaseRequestItem::whereIn(
+            'purchase_request_id',
+            (clone $baseQuery)->pluck('id')
+        )->whereDoesntHave('purchaseOrderItems')
             ->count();
-        // Completed: all items have reached stage >= 7
-        $completedPRs = (clone $baseQuery)->whereHas('items')
-            ->whereDoesntHave('items', function ($q) {
-                $q->where('purchase_request_items.current_stage', '<', 7);
-            })
-            ->count();
+
+        // 4. Total PR yang dibuat dalam 30 hari terakhir
         $recentPRs = (clone $baseQuery)->where('created_at', '>=', now()->subDays(30))->count();
 
         $locations = $isSuperAdmin ? Location::all() : Location::where('id', $userLocationId)->get();
@@ -52,8 +56,8 @@ class PurchaseRequestController extends Controller
 
         return view('menu.purchase.purchase-request.index', compact(
             'totalPRs',
-            'pendingPRs',
-            'completedPRs',
+            'totalItems',
+            'totalItemsWithoutPO',
             'recentPRs',
             'locations',
             'classifications'
@@ -86,13 +90,38 @@ class PurchaseRequestController extends Controller
             || $request->filled('current_stage')
             || $request->filled('classification_id')
             || $request->filled('date_from')
-            || $request->filled('date_to');
+            || $request->filled('date_to')
+            || $request->filled('stat_filter');
 
-        // Hanya tampilkan PR yang masih punya item belum terhubung PO jika tidak ada filter
-        // Jika ada filter aktif, tampilkan semua PR (termasuk yang sudah memiliki PO)
-        if (!$hasActiveFilter) {
-            $query->whereHas('items', function ($q) {
-                $q->whereDoesntHave('purchaseOrderItems');
+        // Handle statistic card filters
+        if ($request->filled('stat_filter')) {
+            $statFilter = $request->stat_filter;
+            
+            switch ($statFilter) {
+                case 'total_prs':
+                    // Show all PRs - no additional filter
+                    break;
+                    
+                case 'total_items':
+                    // Show all PRs with items - no additional filter since all PR have items
+                    break;
+                    
+                case 'items_without_po':
+                    // Show PRs that have items without PO
+                    $query->whereHas('items', function ($iq) {
+                        $iq->whereDoesntHave('purchaseOrderItems');
+                    });
+                    break;
+                    
+                case 'recent_prs':
+                    // Show PRs created in last 30 days
+                    $query->where('created_at', '>=', now()->subDays(30));
+                    break;
+            }
+        } else if (!$hasActiveFilter) {
+            // Default (tanpa filter aktif): tampilkan hanya PR yang itemnya belum memiliki PO
+            $query->whereHas('items', function ($iq) {
+                $iq->whereDoesntHave('purchaseOrderItems');
             });
         }
 
@@ -169,6 +198,10 @@ class PurchaseRequestController extends Controller
             $stageColor = $colors[$maxStage] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
             $stageBadge = '<span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-semibold ' . $stageColor . '"><i class="mgc_box_3_line"></i>' . $stageLabel . '</span>';
 
+            // Calculate total amount from all items
+            $totalAmount = $pr->items->sum('amount');
+            $formattedAmount = 'Rp ' . number_format($totalAmount, 0, ',', '.');
+
             return [
                 'number' => $index + 1,
                 'pr_number' => '<span class="font-medium text-gray-900 dark:text-white">' . e($pr->pr_number) . $lockIcon . '</span>',
@@ -179,6 +212,10 @@ class PurchaseRequestController extends Controller
                                     <i class="mgc_shopping_bag_3_line"></i>
                                     ' . $pr->items->count() . ' Items
                                   </span>',
+                'total_amount' => '<span class="text-sm font-semibold text-gray-900 dark:text-white">' . $formattedAmount . '</span>',
+                'approved_date' => $pr->approved_date 
+                    ? '<span class="text-sm text-gray-600 dark:text-gray-400">' . Carbon::parse($pr->approved_date)->format('d M Y') . '</span>'
+                    : '<span class="text-gray-400">-</span>',
                 'status' => $stageBadge,
                 'request_type' => '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ' . ($pr->request_type === 'barang' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400') . '">' . ucfirst($pr->request_type) . '</span>',
                 'created_at' => '<span class="text-sm text-gray-600 dark:text-gray-400">' . $pr->created_at->format('d M Y') . '</span>',

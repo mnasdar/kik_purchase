@@ -39,16 +39,25 @@ class PurchaseOrderController extends Controller
             });
         }
 
+        // 1. Total PO
         $totalPO = (clone $baseQuery)->count();
-        $approvedLast30 = (clone $baseQuery)->whereDate('approved_date', '>=', now()->subDays(30))->count();
-        $withSupplier = (clone $baseQuery)->whereNotNull('supplier_id')->count();
-        $recentPOs = (clone $baseQuery)->latest()->take(5)->get(['id', 'po_number', 'approved_date']);
+
+        // 2. Total Item PO (total purchase order items)
+        $totalPOItems = DB::table('purchase_order_items')
+            ->whereIn('purchase_order_id', (clone $baseQuery)->pluck('id'))
+            ->count();
+
+        // 3. Total PO yang belum Onsite (PO yang itemnya belum ada di purchase_order_onsites)
+        $totalPONotOnsite = (clone $baseQuery)->whereDoesntHave('items.onsites')->count();
+
+        // 4. Total PO dalam 30 hari terakhir
+        $recentPOs = (clone $baseQuery)->where('created_at', '>=', now()->subDays(30))->count();
 
         // Resources for filters
         $suppliers = Supplier::orderBy('name')->get(['id', 'name']);
         $locations = $isSuperAdmin ? Location::orderBy('name')->get(['id', 'name']) : Location::where('id', $userLocationId)->get(['id', 'name']);
         $classifications = Classification::orderBy('name')->get(['id', 'name']);
-        return view('menu.purchase.purchase-order.index', compact('totalPO', 'approvedLast30', 'withSupplier', 'recentPOs', 'suppliers', 'locations', 'classifications'));
+        return view('menu.purchase.purchase-order.index', compact('totalPO', 'totalPOItems', 'totalPONotOnsite', 'recentPOs', 'suppliers', 'locations', 'classifications'));
     }
 
     /**
@@ -82,11 +91,13 @@ class PurchaseOrderController extends Controller
             || $request->filled('date_from')
             || $request->filled('date_to');
 
-        // Hanya tampilkan PO yang masih punya item belum PO Onsite jika tidak ada filter
-        // Jika ada filter aktif, tampilkan semua PO (termasuk yang sudah PO Onsite)
+        // Default (tanpa filter aktif): tampilkan PO 30 hari terakhir ATAU PO yang itemnya belum onsite
+        // Dengan ini, PO lama tetap tampil jika belum maju ke stage berikutnya
         if (!$hasActiveFilter) {
-            $query->whereHas('items.purchaseRequestItem', function ($q) {
-                $q->where('purchase_request_items.current_stage', '<', 3);
+            $recentDate = now()->subDays(30);
+            $query->where(function ($q) use ($recentDate) {
+                $q->whereDate('created_at', '>=', $recentDate)
+                  ->orWhereDoesntHave('items.onsites');
             });
         }
 

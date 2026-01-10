@@ -44,23 +44,40 @@
                 <form id="form-export" class="space-y-6">
                     @csrf
                     
-                    <!-- Filter Type Selection -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Filter Berdasarkan <span class="text-red-500">*</span>
-                        </label>
-                        <div class="flex gap-4">
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input type="radio" name="filter_type" value="pr" checked class="form-radio text-primary">
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">PR Approved Date</span>
+                    <!-- Filter Type & Location Selection -->
+                    <div class="flex flex-wrap gap-4 items-start">
+                        <!-- Filter Type Selection -->
+                        <div class="flex-shrink-0">
+                            <label for="filter_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Filter Berdasarkan <span class="text-red-500">*</span>
                             </label>
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input type="radio" name="filter_type" value="po" class="form-radio text-primary">
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">PO Approved Date</span>
-                            </label>
+                            <select id="filter_type" 
+                                name="filter_type"
+                                class="text-sm selectize">
+                                <option value="pr">PR Approved Date</option>
+                                <option value="po">PO Approved Date</option>
+                            </select>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">Pilih apakah filter tanggal akan diterapkan pada tanggal approved PR atau PO</p>
+
+                        <!-- Location Filter -->
+                        <div class="flex-shrink-0">
+                            <label for="export_location" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Lokasi <span class="text-red-500">*</span>
+                            </label>
+                            <select id="export_location" 
+                                name="location_id"
+                                class="text-sm selectize"
+                                @if(!auth()->user()->hasRole('Super Admin')) disabled @endif>
+                                @if(auth()->user()->hasRole('Super Admin'))
+                                    <option value="">Semua Lokasi</option>
+                                @endif
+                                @foreach($locations as $location)
+                                    <option value="{{ $location->id }}" @if(!auth()->user()->hasRole('Super Admin') && auth()->user()->location_id == $location->id) selected @endif>{{ $location->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
+                    <p class="text-xs text-gray-500 -mt-3">Pilih filter berdasarkan dan lokasi untuk data yang akan di-export</p>
 
                     <!-- Date Range Selection -->
                     <div>
@@ -216,5 +233,5 @@
 @endsection
 
 @section('script')
-    @vite(['resources/js/pages/form-flatpickr.js', 'resources/js/custom/export/index.js'])
+    @vite(['resources/js/pages/form-flatpickr.js','resources/js/pages/form-select.js', 'resources/js/custom/export/index.js'])
 @endsection

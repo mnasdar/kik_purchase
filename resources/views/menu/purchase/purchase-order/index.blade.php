@@ -20,32 +20,64 @@
     </div>
 
     <!-- Statistik ringkas -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <!-- Total PO -->
         <div class="card bg-primary text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-            <div class="p-4 flex items-center justify-between">
-                <div>
-                    <p class="text-white/80 text-xs font-medium mb-1">Total PO</p>
-                    <h3 class="text-2xl font-bold text-white">{{ $totalPO ?? 0 }}</h3>
+            <div class="p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white/80 text-xs font-medium mb-1">Total PO</p>
+                        <h3 class="text-2xl font-bold text-white">{{ $totalPO ?? 0 }}</h3>
+                    </div>
+                    <div class="text-4xl">
+                        <i class="mgc_file_check_line"></i>
+                    </div>
                 </div>
-                <i class="mgc_file_check_line text-3xl"></i>
             </div>
         </div>
+
+        <!-- Total Item PO -->
         <div class="card bg-blue-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-            <div class="p-4 flex items-center justify-between">
-                <div>
-                    <p class="text-white/80 text-xs font-medium mb-1">Disetujui 30 Hari</p>
-                    <h3 class="text-2xl font-bold text-white">{{ $approvedLast30 ?? 0 }}</h3>
+            <div class="p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white/80 text-xs font-medium mb-1">Total Item PO</p>
+                        <h3 class="text-2xl font-bold text-white">{{ $totalPOItems ?? 0 }}</h3>
+                    </div>
+                    <div class="text-4xl">
+                        <i class="mgc_shopping_bag_3_line"></i>
+                    </div>
                 </div>
-                <i class="mgc_time_line text-3xl"></i>
             </div>
         </div>
-        <div class="card bg-green-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-            <div class="p-4 flex items-center justify-between">
-                <div>
-                    <p class="text-white/80 text-xs font-medium mb-1">PO dengan Supplier</p>
-                    <h3 class="text-2xl font-bold text-white">{{ $withSupplier ?? 0 }}</h3>
+
+        <!-- PO Belum Onsite -->
+        <div class="card bg-warning text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+            <div class="p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white/80 text-xs font-medium mb-1">PO Belum Onsite</p>
+                        <h3 class="text-2xl font-bold text-white">{{ $totalPONotOnsite ?? 0 }}</h3>
+                    </div>
+                    <div class="text-4xl">
+                        <i class="mgc_alert_line"></i>
+                    </div>
                 </div>
-                <i class="mgc_building_line text-3xl"></i>
+            </div>
+        </div>
+
+        <!-- Recent POs -->
+        <div class="card bg-green-500 text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+            <div class="p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-white/80 text-xs font-medium mb-1">PO Dibuat (30 Hari)</p>
+                        <h3 class="text-2xl font-bold text-white">{{ $recentPOs ?? 0 }}</h3>
+                    </div>
+                    <div class="text-4xl">
+                        <i class="mgc_time_line"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
