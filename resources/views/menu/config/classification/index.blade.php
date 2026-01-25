@@ -73,11 +73,13 @@
                         <i class="mgc_delete_2_line mr-2"></i>
                         Hapus
                     </button>
+                    @haspermission('classifications.create')
                     <button id="btn-create-classification"
                         class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-primary hover:bg-primary-600 text-white transition-colors">
                         <i class="mgc_add_line mr-2"></i>
                         Tambah
                     </button>
+                    @endhaspermission
                 </div>
             </div>
         </div>

@@ -15,6 +15,8 @@ class SupplierController extends Controller
      */
     public function index()
     {
+        $this->authorize('suppliers.view');
+
         $totalSuppliers = Supplier::count();
         $companySuppliers = Supplier::where('supplier_type', 'Company')->count();
         $individualSuppliers = Supplier::where('supplier_type', 'Individual')->count();
@@ -38,11 +40,38 @@ class SupplierController extends Controller
         });
 
         $suppliersJson = $suppliers->map(function ($supplier, $index) {
+            $user = auth()->user();
+            $canEdit = $user && $user->hasPermissionTo('suppliers.edit');
+            $canDelete = $user && $user->hasPermissionTo('suppliers.delete');
+
             // Badge untuk tipe supplier
             $typeIcon = $supplier->supplier_type === 'Company' ? 'mgc_building_2_line' : 'mgc_user_3_line';
             $typeColor = $supplier->supplier_type === 'Company'
                 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
                 : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+
+            $actions = '<div class="flex gap-2">';
+            
+            if ($canEdit) {
+                $actions .= '<button class="btn-edit-supplier inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors" 
+                    data-id="' . $supplier->id . '"
+                    data-plugin="tippy" 
+                    data-tippy-content="Edit Supplier">
+                    <i class="mgc_edit_line text-base"></i>
+                </button>';
+            }
+            
+            if ($canDelete) {
+                $actions .= '<button class="btn-delete-supplier inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors" 
+                    data-id="' . $supplier->id . '"
+                    data-name="' . e($supplier->name) . '"
+                    data-plugin="tippy" 
+                    data-tippy-content="Hapus Supplier">
+                    <i class="mgc_delete_2_line text-base"></i>
+                </button>';
+            }
+            
+            $actions .= '</div>';
 
             return [
                 'number' => $index + 1,
@@ -63,26 +92,10 @@ class SupplierController extends Controller
                 'created_by' => $supplier->creator 
                     ? '<span class="text-sm text-gray-600 dark:text-gray-400">' . e($supplier->creator->name) . '</span>'
                     : '<span class="text-gray-400">System</span>',
-                    'npwp' => $supplier->tax_id 
+                'npwp' => $supplier->tax_id 
                     ? '<span class="text-sm text-gray-600 dark:text-gray-400">' . e($supplier->tax_id) . '</span>'
                     : '<span class="text-gray-400">-</span>',
-                'actions' => '
-                    <div class="flex gap-2">
-                        <button class="btn-edit-supplier inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors" 
-                            data-id="' . $supplier->id . '"
-                            data-plugin="tippy" 
-                            data-tippy-content="Edit Supplier">
-                            <i class="mgc_edit_line text-base"></i>
-                        </button>
-                        <button class="btn-delete-supplier inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors" 
-                            data-id="' . $supplier->id . '"
-                            data-name="' . e($supplier->name) . '"
-                            data-plugin="tippy" 
-                            data-tippy-content="Hapus Supplier">
-                            <i class="mgc_delete_2_line text-base"></i>
-                        </button>
-                    </div>
-                ',
+                'actions' => $actions,
                 'checkbox' => '<div class="form-check">
                                 <input type="checkbox" 
                                     class="form-checkbox rounded text-primary" 
@@ -99,6 +112,8 @@ class SupplierController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('suppliers.create');
+
         $validated = $request->validate([
             'supplier_type' => 'required|in:Company,Individual',
             'name' => 'required|string|min:3|max:255',
@@ -202,6 +217,8 @@ class SupplierController extends Controller
      */
     public function update(Request $request, Supplier $supplier)
     {
+        $this->authorize('suppliers.edit');
+
         $validated = $request->validate([
             'supplier_type' => 'required|in:Company,Individual',
             'name' => 'required|string|min:3|max:255',
@@ -241,6 +258,8 @@ class SupplierController extends Controller
      */
     public function destroy(Supplier $supplier)
     {
+        $this->authorize('suppliers.delete');
+
         $supplierName = $supplier->name;
         $supplier->delete();
 

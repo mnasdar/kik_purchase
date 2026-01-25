@@ -100,6 +100,9 @@ Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
     Route::prefix('config')->group(function () {
         /* ================= Classification ======================== */
         Route::get('/klasifikasi/data', [ClassificationController::class, 'getData'])->name('klasifikasi.data');
+        Route::get('/klasifikasi/{id}/pr-items', [ClassificationController::class, 'showPRItems'])->name('klasifikasi.pr-items');
+        Route::get('/klasifikasi/{id}/pr-items/data', [ClassificationController::class, 'getPRItemsData'])->name('klasifikasi.pr-items.data');
+        Route::get('/klasifikasi/{id}/pr-items/{prId}/detail', [ClassificationController::class, 'getPRDetail'])->name('klasifikasi.pr-items.detail');
         Route::delete('/klasifikasi', [ClassificationController::class, 'bulkDestroy'])->name('klasifikasi.bulkDestroy');
         Route::resource('/klasifikasi', ClassificationController::class)->except(['create']);
 

@@ -98,11 +98,13 @@
                         class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors">
                         <i class="mgc_refresh_2_line"></i>
                     </button>
+                    @haspermission('roles.create')
                     <button id="btn-create-role"
-                        class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors">
+                        class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-primary hover:bg-primary-600 text-white transition-colors">
                         <i class="mgc_add_line mr-2"></i>
                         Tambah Role
                     </button>
+                    @endhaspermission
                 </div>
             </div>
         </div>

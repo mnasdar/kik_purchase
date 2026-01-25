@@ -104,11 +104,13 @@
                         <i class="mgc_delete_2_line mr-2"></i>
                         Hapus
                     </button>
+                    @haspermission('suppliers.create')
                     <button id="btn-create-supplier"
                         class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors">
                         <i class="mgc_add_line mr-2"></i>
                         Tambah Supplier
                     </button>
+                    @endhaspermission
                 </div>
             </div>
         </div>

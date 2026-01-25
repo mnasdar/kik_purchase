@@ -18,6 +18,8 @@ class RolesController extends Controller
      */
     public function index()
     {
+        $this->authorize('roles.view');
+
         $totalRoles = Role::count();
         $totalPermissions = Permission::count();
         $rolesWithUsers = Role::whereHas('users')->count();
@@ -36,6 +38,8 @@ class RolesController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('roles.create');
+
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:roles,name',
             'permissions' => 'nullable|array',
@@ -102,6 +106,8 @@ class RolesController extends Controller
      */
     public function update(Request $request, Role $role)
     {
+        $this->authorize('roles.edit');
+
         // Prevent updating Super Admin
         if ($role->name === 'Super Admin') {
             return response()->json([
@@ -184,6 +190,8 @@ class RolesController extends Controller
      */
     public function destroy(Role $role)
     {
+        $this->authorize('roles.delete');
+
         // Prevent deleting protected roles
         $protectedRoles = ['Super Admin', 'Staff'];
         

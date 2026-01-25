@@ -24,6 +24,8 @@ class ManajemenUserController extends Controller
      */
     public function index()
     {
+        $this->authorize('users.view');
+
         // Statistics untuk users
         $totalUsers = User::count();
         $activeUsers = User::where('is_active', true)->count();
@@ -52,6 +54,8 @@ class ManajemenUserController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('users.create');
+
         // Cek apakah email pernah ada tetapi dihapus (soft delete)
         $existingDeleted = User::withTrashed()
             ->where('email', $request->input('email'))
@@ -185,6 +189,8 @@ class ManajemenUserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $this->authorize('users.edit');
+
         $validated = $request->validate([
             'role' => ['required', Rule::exists('roles', 'id')],
             'location_id' => ['nullable', Rule::exists('locations', 'id')],
@@ -274,6 +280,8 @@ class ManajemenUserController extends Controller
      */
     public function destroy(User $user)
     {
+        $this->authorize('users.delete');
+
         try {
             DB::beginTransaction();
 

@@ -108,11 +108,13 @@
                         <i class="mgc_delete_2_line mr-2"></i>
                         Hapus Selected
                     </button>
+                    @haspermission('purchase-orders.create')
                     <a href="{{ route('purchase-order.create') }}"
                         class="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-primary hover:bg-primary-600 text-white transition-colors">
                         <i class="mgc_add_line mr-2"></i>
                         Tambah PO
                     </a>
+                    @endhaspermission
                 </div>
             </div>
         </div>

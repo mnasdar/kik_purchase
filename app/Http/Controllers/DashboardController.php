@@ -269,8 +269,8 @@ class DashboardController extends Controller
                 }
 
                 $seriesTotal[] = ['name' => $locName, 'type' => 'column', 'data' => $totalCostSaving];
-                $seriesPercent[] = ['name' => $locName . ' - % Cost Saving', 'type' => 'line', 'data' => $percentCostSaving];
-                $seriesSla[] = ['name' => $locName . ' - % SLA', 'type' => 'line', 'data' => $avgSlaPercent];
+                $seriesPercent[] = ['name' => $locName, 'type' => 'line', 'data' => $percentCostSaving];
+                $seriesSla[] = ['name' => $locName, 'type' => 'line', 'data' => $avgSlaPercent];
             }
 
             return response()->json([

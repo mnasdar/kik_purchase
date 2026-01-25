@@ -261,7 +261,7 @@
     </div>
 
     <!-- % Cost Saving and % SLA Charts (2 Columns) -->
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 gap-6 mb-6">
         <!-- % Cost Saving Chart -->
         <div class="card">
             <div class="card-header">

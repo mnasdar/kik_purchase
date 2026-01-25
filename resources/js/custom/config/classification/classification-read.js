@@ -65,6 +65,7 @@ export function initClassificationsTable() {
         onDataLoaded: (data) => {
             $("#data-count").text(data.length);
             initActionTooltips();
+            initPRItemsButtonHandlers();
         },
     });
 }
@@ -80,6 +81,22 @@ function initActionTooltips() {
     if (targets.length) {
         actionTippyInstances = tippy(targets, { arrow: true });
     }
+}
+
+/**
+ * Init PR items button click handlers
+ */
+function initPRItemsButtonHandlers() {
+    $(document).on('click', '.btn-view-pr-items', function(e) {
+        e.preventDefault();
+        const classificationId = $(this).data('classification-id');
+        const classificationName = $(this).data('classification-name');
+        
+        if (classificationId) {
+            // Navigate to PR items page
+            window.location.href = route('klasifikasi.pr-items', classificationId);
+        }
+    });
 }
 
 /**
@@ -117,6 +134,7 @@ function refreshTable() {
             // Reinit tooltips
             setTimeout(() => {
                 initActionTooltips();
+                initPRItemsButtonHandlers();
             }, 300);
 
             showToast('Data berhasil direfresh', 'success', 1500);

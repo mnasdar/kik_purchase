@@ -25,6 +25,8 @@ class PurchaseOrderController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('purchase-orders.view');
+
         $user = $request->user();
         $isSuperAdmin = $user?->hasRole('Super Admin');
         $userLocationId = $user?->location_id;
@@ -180,6 +182,10 @@ class PurchaseOrderController extends Controller
         });
 
         $ordersJson = $orders->map(function ($po, $index) {
+            $user = auth()->user();
+            $canEdit = $user && $user->hasPermissionTo('purchase-orders.edit');
+            $canDelete = $user && $user->hasPermissionTo('purchase-orders.delete');
+
             // Collect unique PRs with their stages and request types
             $prStages = [];
             $requestTypes = [];
@@ -262,23 +268,31 @@ class PurchaseOrderController extends Controller
                 'created_by' => $po->creator
                     ? '<span class="text-sm text-gray-600 dark:text-gray-400">' . e($po->creator->name) . '</span>'
                     : '<span class="text-gray-400">System</span>',
-                'actions' => '
-                    <div class="flex gap-2">
-                        <button class="btn-edit-po inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors" 
+                'actions' => (function() use ($po, $canEdit, $canDelete) {
+                    $actions = '<div class="flex gap-2">';
+                    
+                    if ($canEdit) {
+                        $actions .= '<button class="btn-edit-po inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors" 
                             data-id="' . $po->id . '"
                             data-plugin="tippy" 
                             data-tippy-content="Edit PO">
                             <i class="mgc_edit_line text-base"></i>
-                        </button>
-                        <button class="btn-delete-po inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors" 
+                        </button>';
+                    }
+                    
+                    if ($canDelete) {
+                        $actions .= '<button class="btn-delete-po inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors" 
                             data-id="' . $po->id . '"
                             data-number="' . e($po->po_number) . '"
                             data-plugin="tippy" 
                             data-tippy-content="Hapus PO">
                             <i class="mgc_delete_2_line text-base"></i>
-                        </button>
-                    </div>
-                ',
+                        </button>';
+                    }
+                    
+                    $actions .= '</div>';
+                    return $actions;
+                })(),
                 'checkbox' => '<div class="form-check">
                                 <input type="checkbox" 
                                     class="form-checkbox rounded text-primary" 
@@ -294,6 +308,8 @@ class PurchaseOrderController extends Controller
      */
     public function create(Request $request)
     {
+        $this->authorize('purchase-orders.create');
+
         $supplier = Supplier::latest()->get(['id', 'name']);
 
         return view('menu.purchase.purchase-order.create', compact('supplier'));
@@ -371,6 +387,8 @@ class PurchaseOrderController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('purchase-orders.create');
+
         $validated = $request->validate([
             'po_number' => 'required|string|max:100|unique:purchase_orders,po_number',
             'approved_date' => 'required|date',
@@ -484,6 +502,8 @@ class PurchaseOrderController extends Controller
      */
     public function edit(PurchaseOrder $purchase_order)
     {
+        $this->authorize('purchase-orders.edit');
+
         $supplier = Supplier::latest()->get(['id', 'name']);
 
         $purchase_order->load(['items', 'supplier', 'creator']);
@@ -495,6 +515,8 @@ class PurchaseOrderController extends Controller
      */
     public function update(Request $request, PurchaseOrder $purchase_order)
     {
+        $this->authorize('purchase-orders.edit');
+
         $validated = $request->validate([
             'po_number' => 'required|string|max:100|unique:purchase_orders,po_number,' . $purchase_order->id,
             'approved_date' => 'required|date',
@@ -714,6 +736,8 @@ class PurchaseOrderController extends Controller
      */
     public function destroy(PurchaseOrder $purchase_order)
     {
+        $this->authorize('purchase-orders.delete');
+
         DB::beginTransaction();
         try {
             // Ambil PR Item IDs dan PR IDs yang terkait sebelum dihapus

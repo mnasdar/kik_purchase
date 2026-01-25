@@ -22,6 +22,9 @@ class PurchaseRequestController extends Controller
      */
     public function index(Request $request)
     {
+        // Check permission
+        $this->authorize('purchase-requests.view');
+
         $user = $request->user();
         $isSuperAdmin = $user?->hasRole('Super Admin');
         $userLocationId = $user?->location_id;
@@ -184,6 +187,10 @@ class PurchaseRequestController extends Controller
         });
 
         $prsJson = $prs->map(function ($pr, $index) {
+            $user = auth()->user();
+            $canEdit = $user && $user->hasPermissionTo('purchase-requests.edit');
+            $canDelete = $user && $user->hasPermissionTo('purchase-requests.delete');
+
             // Lock PR if stage is not 1 (PR Created)
             $isLocked = $pr->isLocked();
             $lockIcon = $isLocked ? '<i class="mgc_lock_line text-xs ml-1"></i>' : '';
@@ -201,6 +208,32 @@ class PurchaseRequestController extends Controller
             // Calculate total amount from all items
             $totalAmount = $pr->items->sum('amount');
             $formattedAmount = 'Rp ' . number_format($totalAmount, 0, ',', '.');
+
+            // Build actions based on permissions
+            $actions = '<div class="flex gap-2">';
+            
+            if ($canEdit) {
+                $actions .= '<button class="btn-edit-pr inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors ' . $disabledClass . '" 
+                    data-id="' . $pr->id . '"
+                    data-plugin="tippy" 
+                    data-tippy-content="' . ($isLocked ? 'PR sudah terkunci' : 'Edit PR') . '"
+                    ' . $disabledAttr . '>
+                    <i class="mgc_edit_line text-base"></i>
+                </button>';
+            }
+            
+            if ($canDelete) {
+                $actions .= '<button class="btn-delete-pr inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors ' . $disabledClass . '" 
+                    data-id="' . $pr->id . '"
+                    data-number="' . e($pr->pr_number) . '"
+                    data-plugin="tippy" 
+                    data-tippy-content="' . ($isLocked ? 'PR sudah terkunci' : 'Hapus PR') . '"
+                    ' . $disabledAttr . '>
+                    <i class="mgc_delete_2_line text-base"></i>
+                </button>';
+            }
+            
+            $actions .= '</div>';
 
             return [
                 'number' => $index + 1,
@@ -222,25 +255,7 @@ class PurchaseRequestController extends Controller
                 'created_by' => $pr->creator 
                     ? '<span class="text-sm text-gray-600 dark:text-gray-400">' . e($pr->creator->name) . '</span>'
                     : '<span class="text-gray-400">System</span>',
-                'actions' => '
-                    <div class="flex gap-2">
-                        <button class="btn-edit-pr inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors ' . $disabledClass . '" 
-                            data-id="' . $pr->id . '"
-                            data-plugin="tippy" 
-                            data-tippy-content="' . ($isLocked ? 'PR sudah terkunci' : 'Edit PR') . '"
-                            ' . $disabledAttr . '>
-                            <i class="mgc_edit_line text-base"></i>
-                        </button>
-                        <button class="btn-delete-pr inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors ' . $disabledClass . '" 
-                            data-id="' . $pr->id . '"
-                            data-number="' . e($pr->pr_number) . '"
-                            data-plugin="tippy" 
-                            data-tippy-content="' . ($isLocked ? 'PR sudah terkunci' : 'Hapus PR') . '"
-                            ' . $disabledAttr . '>
-                            <i class="mgc_delete_2_line text-base"></i>
-                        </button>
-                    </div>
-                ',
+                'actions' => $actions,
                 'checkbox' => '<div class="form-check">
                                 <input type="checkbox" 
                                     class="form-checkbox rounded text-primary ' . $disabledClass . '" 
@@ -258,6 +273,9 @@ class PurchaseRequestController extends Controller
      */
     public function create(Request $request)
     {
+        // Check permission
+        $this->authorize('purchase-requests.create');
+
         $classifications = Classification::all();
 
         // Check if user is super admin
@@ -284,6 +302,9 @@ class PurchaseRequestController extends Controller
      */
     public function store(Request $request)
     {
+        // Check permission
+        $this->authorize('purchase-requests.create');
+
         $validated = $request->validate([
             'pr_number' => 'required|string|max:100|unique:purchase_requests,pr_number',
             'approved_date' => 'required|date',
@@ -396,6 +417,8 @@ class PurchaseRequestController extends Controller
      */
     public function edit(PurchaseRequest $purchase_request, Request $request)
     {
+        $this->authorize('purchase-requests.edit');
+
         $locations = Location::all();
         $classifications = Classification::all();
         
@@ -410,6 +433,8 @@ class PurchaseRequestController extends Controller
      */
     public function update(Request $request, PurchaseRequest $purchase_request)
     {
+        $this->authorize('purchase-requests.edit');
+
         $validated = $request->validate([
             'pr_number' => 'required|string|max:100|unique:purchase_requests,pr_number,' . $purchase_request->id,
             'approved_date' => 'required|date',

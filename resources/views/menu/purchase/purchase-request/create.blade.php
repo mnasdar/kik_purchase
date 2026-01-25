@@ -119,7 +119,8 @@
                                 <tr class="bg-gray-50 dark:bg-gray-800">
                                     <th class="border px-2 py-2 text-left text-sm font-semibold" style="width: 50px;">#</th>
                                     <th class="border px-2 py-2 text-left text-sm font-semibold" style="width: 150px;">
-                                        Classification</th>
+                                        Classification <span class="text-red-500">*</span>
+                                    </th>
                                     <th class="border px-2 py-2 text-left text-sm font-semibold" style="width: 300px;">Item
                                         Description <span class="text-red-500">*</span></th>
                                     <th class="border px-2 py-2 text-left text-sm font-semibold" style="width: 80px;">UOM
@@ -168,7 +169,7 @@
             <td class="border px-2 py-2">
                 <input type="text" name="items[0][classification_name]"
                     class="form-input form-input-sm w-full classification-input"
-                    placeholder="Ketik atau pilih classification" list="classification-list-0" autocomplete="off" />
+                    placeholder="Ketik atau pilih classification" list="classification-list-0" autocomplete="off" required />
                 <input type="hidden" name="items[0][classification_id]" class="classification-id" value="" />
                 <datalist id="classification-list-0">
                     @foreach ($classifications as $classification)

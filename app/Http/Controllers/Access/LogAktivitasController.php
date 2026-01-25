@@ -14,6 +14,8 @@ class LogAktivitasController extends Controller
      */
     public function index()
     {
+        $this->authorize('activity-log.view');
+
         $totalLogs = Activity::count();
 
         $createLogs = Activity::where(function ($query) {

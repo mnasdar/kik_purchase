@@ -15,6 +15,8 @@ class LocationController extends Controller
      */
     public function index()
     {
+        $this->authorize('locations.view');
+
         $totalLocations = Location::count();
         $withUsers = Location::whereHas('users')->count();
         $withPurchaseRequests = Location::whereHas('purchaseRequests')->count();
@@ -38,6 +40,33 @@ class LocationController extends Controller
         });
 
         $locationsJson = $locations->map(function ($location, $index) {
+            $user = auth()->user();
+            $canEdit = $user && $user->hasPermissionTo('locations.edit');
+            $canDelete = $user && $user->hasPermissionTo('locations.delete');
+
+            $actions = '<div class="flex gap-2">';
+            
+            if ($canEdit) {
+                $actions .= '<button class="btn-edit-location inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors" 
+                    data-id="' . $location->id . '"
+                    data-plugin="tippy" 
+                    data-tippy-content="Edit Unit Kerja">
+                    <i class="mgc_edit_line text-base"></i>
+                </button>';
+            }
+            
+            if ($canDelete) {
+                $actions .= '<button class="btn-delete-location inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors" 
+                    data-id="' . $location->id . '"
+                    data-name="' . e($location->name) . '"
+                    data-plugin="tippy" 
+                    data-tippy-content="Hapus Unit Kerja">
+                    <i class="mgc_delete_2_line text-base"></i>
+                </button>';
+            }
+            
+            $actions .= '</div>';
+
             return [
                 'number' => $index + 1,
                 'name' => '<span class="font-medium text-gray-900 dark:text-white">' . e($location->name) . '</span>',
@@ -50,23 +79,7 @@ class LocationController extends Controller
                                                 ' . $location->purchase_requests_count . ' PR
                                               </span>',
                 'created_at' => '<span class="text-sm text-gray-600 dark:text-gray-400">' . $location->created_at->format('d M Y') . '</span>',
-                'actions' => '
-                    <div class="flex gap-2">
-                        <button class="btn-edit-location inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors" 
-                            data-id="' . $location->id . '"
-                            data-plugin="tippy" 
-                            data-tippy-content="Edit Unit Kerja">
-                            <i class="mgc_edit_line text-base"></i>
-                        </button>
-                        <button class="btn-delete-location inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors" 
-                            data-id="' . $location->id . '"
-                            data-name="' . e($location->name) . '"
-                            data-plugin="tippy" 
-                            data-tippy-content="Hapus Unit Kerja">
-                            <i class="mgc_delete_2_line text-base"></i>
-                        </button>
-                    </div>
-                ',
+                'actions' => $actions,
                 'checkbox' => '<div class="form-check">
                                 <input type="checkbox" 
                                     class="form-checkbox rounded text-primary" 
@@ -83,6 +96,8 @@ class LocationController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('locations.create');
+
         $validated = $request->validate([
             'name' => 'required|string|min:3|max:255',
         ]);
@@ -176,6 +191,8 @@ class LocationController extends Controller
      */
     public function update(Request $request, Location $unit_kerja)
     {
+        $this->authorize('locations.edit');
+
         $validated = $request->validate([
             'name' => 'required|string|min:3|max:255',
         ]);
@@ -209,6 +226,8 @@ class LocationController extends Controller
      */
     public function destroy(Location $unit_kerja)
     {
+        $this->authorize('locations.delete');
+
         $locationName = $unit_kerja->name;
         $unit_kerja->delete();
 
