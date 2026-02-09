@@ -59,6 +59,18 @@
 
 </div>
 
+@php
+    $loginErrorMessage = session('error') ?? ($errors->any() ? $errors->first() : null);
+@endphp
+
+@if ($loginErrorMessage)
+    <script>
+        window.loginErrorMessage = @json($loginErrorMessage);
+    </script>
+@endif
+
+@vite(['resources/js/app.js', 'resources/js/pages/auth/login.js'])
+
 </body>
 
 </html>

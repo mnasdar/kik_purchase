@@ -49,6 +49,7 @@ export default defineConfig({
                 'resources/js/pages/extended-swiper.js',
                 'resources/js/pages/extended-tippy.js',
                 'resources/js/pages/extended-tour.js',
+                'resources/js/pages/auth/login.js',
                 'resources/js/pages/form-inputmask.js',
                 'resources/js/pages/form-fileupload.js',
                 'resources/js/pages/form-flatpickr.js',
