@@ -20,6 +20,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (file_exists(public_path('build/manifest.json')) && file_exists(public_path('hot'))) {
+            @unlink(public_path('hot'));
+        }
+
         Blade::directive('numeric', function ($money) {
             return "<?php echo number_format($money); ?>";
         });

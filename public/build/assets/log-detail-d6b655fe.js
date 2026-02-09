@@ -1,0 +1,38 @@
+import{$ as l}from"./modal-handler-2823516c.js";import"./_commonjsHelpers-725317a4.js";function o(s,e,t="info"){return`
+        <div class="${{info:"bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800",success:"bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800",warning:"bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800",danger:"bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800"}[t]} border rounded-lg p-4 mb-4">
+            <h3 class="text-sm font-bold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+                <i class="mgc_information_line"></i>
+                ${s}
+            </h3>
+            ${e}
+        </div>
+    `}function p(s,e){if(!e||e.length===0)return'<p class="text-sm text-gray-500">Tidak ada data</p>';let t='<div class="overflow-x-auto -mx-4 px-4"><table class="w-full text-sm">';return t+='<thead class="bg-gray-100 dark:bg-gray-800"><tr>',s.forEach(a=>{t+=`<th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">${a}</th>`}),t+="</tr></thead>",t+="<tbody>",e.forEach((a,r)=>{const d=r%2===0?"bg-white dark:bg-gray-900":"bg-gray-50 dark:bg-gray-800/50";t+=`<tr class="${d} hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">`,a.forEach(n=>{t+=`<td class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">${n||"-"}</td>`}),t+="</tr>"}),t+="</tbody></table></div>",t}function m(s,e,t){return`
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-1 font-medium">Sebelum</p>
+                <p class="text-sm font-semibold text-gray-800 dark:text-white">${s}</p>
+                <p class="text-sm text-gray-700 dark:text-gray-300 mt-2">${e||"-"}</p>
+            </div>
+            <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-1 font-medium">Sesudah</p>
+                <p class="text-sm font-semibold text-gray-800 dark:text-white">${s}</p>
+                <p class="text-sm text-gray-700 dark:text-gray-300 mt-2">${t||"-"}</p>
+            </div>
+        </div>
+    `}function f(s){return typeof s=="object"&&s!==null?`<pre class="bg-gray-800 text-green-400 p-3 rounded text-xs overflow-x-auto">${JSON.stringify(s,null,2)}</pre>`:s}l(document).on("click",".btn-log-detail",function(){const s=l(this).attr("data-detail");let e;try{e=JSON.parse(s),console.log("📈 Data parsed:",e)}catch(a){console.error("❌ Gagal parse JSON:",a),l("#logDetailContent").html(o("Error",'<p class="text-sm text-red-600">Data tidak valid atau rusak.</p>',"danger")),u();return}let t="";if(e.deleted_suppliers&&Array.isArray(e.deleted_suppliers)){const a=e.deleted_suppliers.map((r,d)=>[d+1,r]);t=o("🏢 Supplier yang Dihapus",p(["#","Nama Supplier"],a)+(e.count?`<p class="mt-3 text-sm font-medium text-red-600 dark:text-red-400">Total: ${e.count} supplier dihapus</p>`:""),"danger")}else if(e.deleted_locations&&Array.isArray(e.deleted_locations)){const a=e.deleted_locations.map((r,d)=>[d+1,r]);t=o("📍 Unit Kerja yang Dihapus",p(["#","Nama Unit Kerja"],a)+(e.count?`<p class="mt-3 text-sm font-medium text-red-600 dark:text-red-400">Total: ${e.count} unit kerja dihapus</p>`:""),"danger")}else if(e.deleted_supplier)t=o("🏢 Supplier yang Dihapus",`<p class="text-sm text-gray-800 dark:text-white font-medium">${e.deleted_supplier}</p>`,"danger");else if(e.deleted_location)t=o("📍 Unit Kerja yang Dihapus",`<p class="text-sm text-gray-800 dark:text-white font-medium">${e.deleted_location}</p>`,"danger");else if(e.deleted_classifications&&Array.isArray(e.deleted_classifications)){const a=e.deleted_classifications.map((r,d)=>[d+1,r]);t=o("📋 Klasifikasi yang Dihapus",p(["#","Nama Klasifikasi"],a)+(e.count?`<p class="mt-3 text-sm font-medium text-red-600 dark:text-red-400">Total: ${e.count} klasifikasi dihapus</p>`:""),"danger")}else if(e.deleted_classification)t=o("📋 Klasifikasi yang Dihapus",`<p class="text-sm text-gray-800 dark:text-white font-medium">${e.deleted_classification}</p>`,"danger");else if(e.name&&(e.supplier_type||e.location_id!==void 0||e.type||e.sla!==void 0)){let a='<div class="space-y-2 text-sm">';Object.entries(e).forEach(([r,d])=>{if(r!=="id"&&r!=="created_at"&&r!=="updated_at"&&r!=="deleted_at"&&d!==null){const n=r.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());a+=`
+                    <div class="flex justify-between border-b border-gray-200 dark:border-gray-700 py-2">
+                        <span class="font-medium text-gray-600 dark:text-gray-400">${n}:</span>
+                        <span class="text-gray-800 dark:text-white">${d}</span>
+                    </div>
+                `}}),a+="</div>",t=o("✨ Data yang Ditambahkan",a,"success")}else if(Array.isArray(e)&&e.length>0&&e[0].name&&e[0].id){const a=e.map((r,d)=>[d+1,r.name||"-",r.sku||"-",r.kode||"-"]);t=o("📦 Item yang Dihapus",p(["#","Nama","SKU/Kode","ID"],a),"danger")}else if(e.old&&e.new){t=o("🔄 Perubahan Data","","warning");const a=e.old,r=e.new,d=[...new Set([...Object.keys(a),...Object.keys(r)])],n=["id","created_at","updated_at","is_new","is_update","deleted_at","created_by"];d.filter(i=>!n.includes(i)).forEach(i=>{JSON.stringify(a[i])!==JSON.stringify(r[i])&&(t+=m(i.replace(/_/g," ").toUpperCase(),typeof a[i]=="object"?JSON.stringify(a[i]):a[i],typeof r[i]=="object"?JSON.stringify(r[i]):r[i]))})}else if(e.cleared_products&&Array.isArray(e.cleared_products))e.cleared_products.forEach((a,r)=>{const d=(a.old_barcodes||[]).map((n,c)=>[c+1,n.level||"-",n.barcode||"-"]);t+=o(`📦 ${r+1}. ${a.name||"-"} (${a.sku||"-"})`,p(["#","Level Unit","Barcode Lama"],d),"warning")});else if(Array.isArray(e)&&e[0]&&e[0].changes)e.forEach((a,r)=>{const d=a.produk||{},n=a.changes.map((c,i)=>[i+1,c.level||"-",c.old_barcode||"-",c.new_barcode||"-"]);t+=o(`📝 ${r+1}. ${d.name||"-"} (${d.sku||"-"})`,p(["#","Level","Barcode Lama","Barcode Baru"],n),"info")});else if(e.produk_ids&&Array.isArray(e.produk_ids)){const a=e.produk_ids.map((r,d)=>[d+1,r]);t=o("📦 Produk yang Diproses",p(["#","Produk ID"],a)+(e.count?`<p class="mt-3 text-sm font-medium">Total: ${e.count} produk</p>`:""),"info")}else e.produk_id&&e.produk_name?t=o("📦 Detail Produk",`
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                        <p class="text-gray-600 dark:text-gray-400 font-medium">Produk ID:</p>
+                        <p class="text-gray-800 dark:text-white">${e.produk_id}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600 dark:text-gray-400 font-medium">Nama Produk:</p>
+                        <p class="text-gray-800 dark:text-white">${e.produk_name}</p>
+                    </div>
+                </div>
+            `,"info"):t=o(" Detail Data",f(e),"info");t||(t=o("Informasi",'<p class="text-sm text-gray-500">Tidak ada detail khusus untuk ditampilkan.</p>',"info")),l("#logDetailContent").html(t),u()});function u(){l("#logDetailModal").removeClass("hidden"),l("body").addClass("overflow-hidden")}function g(){l("#logDetailModal").addClass("hidden"),l("body").removeClass("overflow-hidden")}l("#closeLogDetailModal, #closeLogDetailModalBtn").on("click",function(){g()});l("#logDetailModal").on("click",function(s){l(s.target).is("#logDetailModal")&&g()});l(document).on("keydown",function(s){s.key==="Escape"&&!l("#logDetailModal").hasClass("hidden")&&g()});

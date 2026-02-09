@@ -1,0 +1,1 @@
+import{s as e}from"./notification-d92c8c7c.js";import"./notification-5f085df9.js";import"./_commonjsHelpers-725317a4.js";document.addEventListener("DOMContentLoaded",()=>{const o=window.loginErrorMessage;o&&e(o,"error",4e3,"top-end")});
